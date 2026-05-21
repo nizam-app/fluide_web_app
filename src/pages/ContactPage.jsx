@@ -5,10 +5,17 @@ import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { faqItems } from '../data/mockData'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
-const partners = [
-  { icon: 'account_balance', title: 'Municipalities', description: 'Partnering with local governments for safe, verified locations and streamlined permitting.', link: 'Learn more →' },
-  { icon: 'diversity_3', title: 'Associations', description: 'Supporting clubs, schools, and non-profits with robust itinerary and roster tools.', link: 'Learn more →' },
-  { icon: 'local_shipping', title: 'Providers', description: 'Connect transport, lodging, and activity vendors with group organizers seamlessly.', link: 'Join as Provider →', wide: true },
+const audienceCards = [
+  {
+    icon: 'groups',
+    title: 'Organizers',
+    description: 'Municipalities, associations, schools, and local institutions planning group outings.',
+  },
+  {
+    icon: 'storefront',
+    title: 'Providers',
+    description: 'Transport, activities, restaurants, hotels, and other local services.',
+  },
 ]
 
 function FormField({ label, children }) {
@@ -25,107 +32,112 @@ function FormField({ label, children }) {
 export function ContactPage() {
   return (
     <MarketingLayout>
-      <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py="12">
-        <Box textAlign="center" mb="12">
-          <Text textStyle="headlineXl" mb="3">
-            Contact FluideApp
+      <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py={{ base: 10, md: 12 }}>
+        <Box textAlign="center" mb={{ base: 10, md: 12 }}>
+          <Text textStyle="headlineXl" mb="4" px={{ base: 0, md: 4 }}>
+            Contact Fluide
           </Text>
-          <Text textStyle="bodyLg" color="onSurfaceVariant" maxW="2xl" mx="auto">
-            Have questions about our platform? Our team is here to help municipalities, associations, and providers get started.
+          <Text textStyle="bodyLg" color="onSurfaceVariant" maxW="2xl" mx="auto" lineHeight="1.65">
+            Whether you want to organize a group outing or offer transport, activities, or services, Fluide helps
+            centralize requests and simplify coordination.
           </Text>
         </Box>
 
-        <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap="8" mb="20">
-          <Box bg="surface" borderRadius="fluide3xl" p="8" shadow="level1" borderWidth="1px" borderColor="outlineVariant">
+        <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={{ base: 6, lg: 8 }} mb={{ base: 14, md: 20 }}>
+          <Box bg="surface" borderRadius="fluide3xl" p={{ base: 6, md: 8 }} shadow="level1" borderWidth="1px" borderColor="outlineVariant">
+            <Text textStyle="headlineSm" mb="6">
+              Send a message
+            </Text>
             <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4" mb="4">
-              <FormField label="Full Name">
-                <Input placeholder="Alex Morgan" css={fluideInputStyles} />
+              <FormField label="Full name">
+                <Input placeholder="Your name" css={fluideInputStyles} />
               </FormField>
               <FormField label="Email">
-                <Input type="email" placeholder="alex@example.com" css={fluideInputStyles} />
+                <Input type="email" placeholder="you@organization.fr" css={fluideInputStyles} />
               </FormField>
             </Grid>
-            <FormField label="I am a...">
+            <FormField label="I am a…">
               <NativeSelect.Root>
                 <NativeSelect.Field css={fluideInputStyles}>
-                  <option>Organizer / Municipality</option>
-                  <option>Service Provider</option>
-                  <option>Association</option>
+                  <option value="organizer">Organizer</option>
+                  <option value="provider">Provider</option>
+                  <option value="municipality">Organizer — Municipality</option>
+                  <option value="association">Organizer — Association</option>
+                  <option value="school">Organizer — School</option>
+                  <option value="other">Other / general question</option>
                 </NativeSelect.Field>
               </NativeSelect.Root>
             </FormField>
             <Box mt="4">
               <FormField label="Message">
-                <Textarea rows={5} placeholder="How can we help?" borderRadius="fluide" borderColor="outlineVariant" bg="surfaceContainerLow" />
+                <Textarea
+                  rows={5}
+                  placeholder="Tell Fluide about your outing or the services you offer…"
+                  borderRadius="fluide"
+                  borderColor="outlineVariant"
+                  bg="surfaceContainerLow"
+                />
               </FormField>
             </Box>
-            <Button mt="6" {...stitchBlackButton} px="8" py="3">
-              Send Message
+            <Text textStyle="bodySm" color="onSurfaceVariant" mt="4">
+              Fluide will review your request. Your message will be handled by Fluide, and we will respond as soon as
+              possible.
+            </Text>
+            <Button mt="6" {...stitchBlackButton} px="8" py="3" w={{ base: 'full', sm: 'auto' }}>
+              Send message
             </Button>
           </Box>
 
           <Stack gap="4">
-            <Box bg="primary" borderRadius="fluide3xl" p="6" color="onPrimary" overflow="hidden">
-              <Box bg="blackAlpha.300" borderRadius="2xl" h="40" mb="4" display="flex" alignItems="center" justifyContent="center">
-                <MaterialIcon name="smartphone" size={48} color="accentMint" />
-              </Box>
+            <Box bg="primary" borderRadius="fluide3xl" p="6" color="onPrimary">
+              <MaterialIcon name="mail" size={32} color="accentMint" mb="3" />
               <Text textStyle="headlineSm" mb="2">
-                In Person Support
+                Write to Fluide
               </Text>
-              <Text textStyle="bodySm" opacity={0.9}>
-                Visit our municipal partnership desk at City Hall, Lyon — Tuesdays & Thursdays.
+              <Text textStyle="bodySm" opacity={0.95} lineHeight="1.6">
+                Questions about organizing an outing, joining as a provider, or using the platform? Send a message and
+                Fluide will get back to you.
               </Text>
             </Box>
             <Box bg="accentMint" borderRadius="fluide3xl" p="6">
               <MaterialIcon name="schedule" size={28} color="primary" mb="3" />
-              <Text textStyle="labelMd" color="primary" mb="1">
-                Average response time: 2 hours
+              <Text textStyle="labelMd" color="primary" mb="2" fontWeight="700">
+                Response time
               </Text>
-              <Text textStyle="bodySm" color="onPrimaryContainer">
-                Support available Mon–Fri, 8am–6pm CET for all platform users.
+              <Text textStyle="bodySm" color="onPrimaryContainer" lineHeight="1.6">
+                Fluide will respond as soon as possible. We read every message and follow up when we can.
               </Text>
             </Box>
           </Stack>
         </Grid>
 
-        <Box textAlign="center" mb="10">
-          <Text textStyle="headlineLg" mb="2">
-            Our Network
-          </Text>
-          <Box w="12" h="1" bg="primary" mx="auto" borderRadius="full" />
-        </Box>
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap="6" mb="20">
-          {partners.map((p) => (
-            <Box
-              key={p.title}
-              bg="surface"
-              p="6"
-              borderRadius="fluide3xl"
-              borderWidth="1px"
-              borderColor="outlineVariant"
-              gridColumn={p.wide ? { md: 'span 1' } : undefined}
-            >
+        <Text textStyle="headlineLg" textAlign="center" mb={{ base: 6, md: 8 }}>
+          Who Fluide is for
+        </Text>
+        <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="6" mb={{ base: 14, md: 20 }} maxW="4xl" mx="auto">
+          {audienceCards.map((card) => (
+            <Box key={card.title} bg="surface" p="6" borderRadius="fluide3xl" borderWidth="1px" borderColor="outlineVariant">
               <Flex w="12" h="12" bg="surfaceContainer" borderRadius="lg" align="center" justify="center" mb="4">
-                <MaterialIcon name={p.icon} color="primary" />
+                <MaterialIcon name={card.icon} color="primary" />
               </Flex>
               <Text textStyle="headlineSm" mb="2">
-                {p.title}
+                {card.title}
               </Text>
-              <Text textStyle="bodySm" color="onSurfaceVariant" mb="4">
-                {p.description}
-              </Text>
-              <Text textStyle="labelMd" color="primary">
-                {p.link}
+              <Text textStyle="bodySm" color="onSurfaceVariant" lineHeight="1.55">
+                {card.description}
               </Text>
             </Box>
           ))}
         </Grid>
 
-        <Text textStyle="headlineLg" textAlign="center" mb="8">
-          Frequently Asked Questions
+        <Text textStyle="headlineLg" textAlign="center" mb="3">
+          Frequently asked questions
+        </Text>
+        <Text textStyle="bodyMd" color="onSurfaceVariant" textAlign="center" mb={{ base: 8, md: 10 }} maxW="xl" mx="auto">
+          Clear answers for organizers and providers.
         </Text>
         <Box maxW="3xl" mx="auto">
-          <FaqAccordion items={faqItems} />
+          <FaqAccordion items={faqItems} alwaysVisible />
         </Box>
       </Box>
     </MarketingLayout>

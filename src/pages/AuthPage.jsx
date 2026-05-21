@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Box, Button, Flex, Grid, Image, Input, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, Input, Text } from '@chakra-ui/react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { AuthBrandingPanel } from '../components/organisms/AuthBrandingPanel'
 import { AccountTypeCard } from '../components/molecules/AccountTypeCard'
 import { DemoCredentialsPanel } from '../components/molecules/DemoCredentialsPanel'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { useAuth } from '../context/AuthContext'
-import { accountTypeOptions, AUTH_BG_IMAGE } from '../data/mockData'
+import { accountTypeOptions } from '../data/mockData'
 import { getHomePath, ROLES } from '../lib/roles'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
@@ -16,6 +17,26 @@ function AccountTypePicker({ accountType, onChange }) {
         <AccountTypeCard key={opt.value} {...opt} checked={accountType === opt.value} onChange={() => onChange(opt.value)} />
       ))}
     </Grid>
+  )
+}
+
+function SecurityNote() {
+  return (
+    <Flex
+      align="center"
+      gap="2"
+      mt="4"
+      p="3"
+      borderRadius="fluide"
+      bg="surfaceContainerLow"
+      borderWidth="1px"
+      borderColor="outlineVariant"
+    >
+      <MaterialIcon name="lock" size={18} color="primary" />
+      <Text textStyle="bodySm" color="onSurfaceVariant">
+        Secure connection – your data is protected.
+      </Text>
+    </Flex>
   )
 }
 
@@ -62,7 +83,7 @@ export function AuthPage() {
     if (tab !== 'login') setTab('login')
   }
 
-  const handleRegister = (e) => {
+  const handleSignUp = (e) => {
     e.preventDefault()
     setError('')
     if (!email.trim() || !password.trim()) {
@@ -80,57 +101,44 @@ export function AuthPage() {
       })
       navigate(getHomePath(session.role), { replace: true })
     } catch (err) {
-      setError(err.message ?? 'Registration failed.')
+      setError(err.message ?? 'Sign up failed.')
     }
   }
 
   return (
-    <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} minH="100vh">
-      <Box bg="loginPanel" p={{ base: 10, lg: 16 }} display="flex" flexDirection="column" justifyContent="space-between" color="white">
-        <Flex align="center" gap="2">
-          <MaterialIcon name="eco" size={28} color="accentMint" />
-          <Text fontSize="xl" fontWeight="800" letterSpacing="0.05em">
-            FLUIDE
-          </Text>
-        </Flex>
-        <Box>
-          <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="700" lineHeight="1.2" mb="4">
-            Coordinate effortlessly,{' '}
-            <Box as="span" color="accentMint">
-              empower your community.
-            </Box>
-          </Text>
-          <Text color="whiteAlpha.700" textStyle="bodyMd" maxW="md" mb="8">
-            Organizers plan group outings. Providers respond with transport, activities, and local services.
-          </Text>
-          <Box borderRadius="2xl" overflow="hidden" bg="blackAlpha.400" p="4" maxW="md">
-            <Image src={AUTH_BG_IMAGE} alt="Dashboard preview" borderRadius="xl" w="full" />
-          </Box>
-        </Box>
-        <Text textStyle="bodySm" color="whiteAlpha.500">
-          © 2024 Fluide Organisation. All rights reserved.
-        </Text>
-      </Box>
+    <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} minH="100vh" alignItems="stretch">
+      <AuthBrandingPanel />
 
-      <Flex align="center" justify="center" p={{ base: 8, lg: 16 }} bg="surface">
-        <Box w="full" maxW="lg">
-          <Flex borderBottomWidth="1px" borderColor="outlineVariant" mb="8" gap="8">
-            {['login', 'register'].map((t) => (
+      <Flex
+        align="flex-start"
+        justify="center"
+        p={{ base: 6, lg: 10, xl: 12 }}
+        bg="surface"
+        order={{ base: 1, lg: 2 }}
+        minH={{ base: 'auto', lg: '100vh' }}
+        overflowY="auto"
+      >
+        <Box w="full" maxW="lg" py={{ base: 2, lg: 4 }}>
+          <Flex borderBottomWidth="1px" borderColor="outlineVariant" mb="8" gap={{ base: 6, sm: 8 }}>
+            {[
+              { id: 'login', label: 'Log in' },
+              { id: 'register', label: 'Sign up' },
+            ].map(({ id, label }) => (
               <Button
-                key={t}
+                key={id}
                 unstyled
                 pb="3"
                 textStyle="labelMd"
                 fontWeight="600"
-                color={tab === t ? 'onSurface' : 'onSurfaceVariant'}
+                color={tab === id ? 'onSurface' : 'onSurfaceVariant'}
                 borderBottomWidth="3px"
-                borderColor={tab === t ? 'primary' : 'transparent'}
+                borderColor={tab === id ? 'primary' : 'transparent'}
                 onClick={() => {
-                  setTab(t)
+                  setTab(id)
                   setError('')
                 }}
               >
-                {t === 'login' ? 'Log In' : 'Register'}
+                {label}
               </Button>
             ))}
           </Flex>
@@ -138,10 +146,10 @@ export function AuthPage() {
           {tab === 'login' ? (
             <>
               <Text textStyle="headlineLg" mb="1">
-                Welcome back
+                Log in
               </Text>
-              <Text textStyle="bodySm" color="onSurfaceVariant" mb="6">
-                Select your account type, then sign in. Admin uses internal credentials only.
+              <Text textStyle="bodySm" color="onSurfaceVariant" mb="6" lineHeight="1.55">
+                Choose your account type, then enter your email and password.
               </Text>
               <Flex as="form" direction="column" gap="5" onSubmit={handleLogin}>
                 <Box>
@@ -156,14 +164,14 @@ export function AuthPage() {
                   </Text>
                   <Input
                     type="email"
-                    placeholder="name@organization.gov"
+                    placeholder="name@organization.fr"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     css={fluideInputStyles}
                   />
                 </Box>
                 <Box>
-                  <Flex justify="space-between" mb="2">
+                  <Flex justify="space-between" mb="2" flexWrap="wrap" gap="2">
                     <Text textStyle="labelMd">Password</Text>
                     <Text textStyle="labelSm" color="primary" cursor="pointer">
                       Forgot password?
@@ -182,21 +190,28 @@ export function AuthPage() {
                     {error}
                   </Text>
                 )}
-                <Button w="full" py="3" type="submit" {...stitchBlackButton}>
-                  Log In
+                <Button w="full" py="3.5" type="submit" {...stitchBlackButton}>
+                  Log in
                 </Button>
+                <SecurityNote />
               </Flex>
               <DemoCredentialsPanel onUseCredential={fillDemoCredential} />
+              <Text textStyle="bodySm" color="onSurfaceVariant" mt="6" textAlign="center">
+                No account yet?{' '}
+                <Button unstyled textStyle="labelMd" color="primary" fontWeight="600" onClick={() => setTab('register')}>
+                  Sign up
+                </Button>
+              </Text>
             </>
           ) : (
             <>
               <Text textStyle="headlineLg" mb="1">
-                Create your account
+                Sign up
               </Text>
-              <Text textStyle="bodySm" color="onSurfaceVariant" mb="6">
-                Public registration is for Organizers and Providers only.
+              <Text textStyle="bodySm" color="onSurfaceVariant" mb="6" lineHeight="1.55">
+                Create an Organizer or Provider account. Admin access is managed internally by Fluide.
               </Text>
-              <Flex as="form" direction="column" gap="5" onSubmit={handleRegister}>
+              <Flex as="form" direction="column" gap="5" onSubmit={handleSignUp}>
                 <Box>
                   <Text textStyle="labelMd" mb="3">
                     Account type
@@ -205,17 +220,17 @@ export function AuthPage() {
                 </Box>
                 <Box>
                   <Text textStyle="labelMd" mb="2">
-                    Full Name
+                    Full name
                   </Text>
                   <Input placeholder="Alex Morgan" value={fullName} onChange={(e) => setFullName(e.target.value)} css={fluideInputStyles} />
                 </Box>
                 <Box>
                   <Text textStyle="labelMd" mb="2">
-                    Email Address
+                    Email
                   </Text>
                   <Input
                     type="email"
-                    placeholder="alex@example.com"
+                    placeholder="you@organization.fr"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     css={fluideInputStyles}
@@ -238,10 +253,17 @@ export function AuthPage() {
                     {error}
                   </Text>
                 )}
-                <Button w="full" py="3" type="submit" {...stitchBlackButton}>
-                  Create My Account
+                <Button w="full" py="3.5" type="submit" {...stitchBlackButton}>
+                  Sign up
                 </Button>
+                <SecurityNote />
               </Flex>
+              <Text textStyle="bodySm" color="onSurfaceVariant" mt="6" textAlign="center">
+                Already have an account?{' '}
+                <Button unstyled textStyle="labelMd" color="primary" fontWeight="600" onClick={() => setTab('login')}>
+                  Log in
+                </Button>
+              </Text>
             </>
           )}
         </Box>

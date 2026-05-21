@@ -1,20 +1,38 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 
-export function AccountTypeCard({ value, label, description, icon, checked, onChange }) {
+const accents = {
+  info: {
+    border: 'infoFg',
+    bg: 'infoBg',
+    badgeBg: '#E3F2FD',
+    badgeColor: '#1565C0',
+  },
+  provider: {
+    border: 'primary',
+    bg: 'secondaryContainer',
+    badgeBg: '#E8F5E9',
+    badgeColor: '#2D6A4F',
+  },
+}
+
+export function AccountTypeCard({ value, label, emoji, shortLabel, description, icon, accent = 'info', checked, onChange }) {
+  const theme = accents[accent] ?? accents.info
+
   return (
     <Box
       as="label"
       cursor="pointer"
       display="flex"
       flexDirection="column"
-      p="4"
-      borderRadius="fluide"
+      p={{ base: 4, sm: 5 }}
+      borderRadius="fluide3xl"
       borderWidth="2px"
-      borderColor={checked ? 'primary' : 'outlineVariant'}
-      bg={checked ? 'primaryContainer' : 'surface'}
+      borderColor={checked ? theme.border : 'outlineVariant'}
+      bg={checked ? theme.bg : 'surface'}
       transition="all 0.2s"
-      _hover={{ borderColor: 'primary' }}
+      shadow={checked ? 'level1' : 'none'}
+      _hover={{ borderColor: theme.border }}
     >
       <input
         type="radio"
@@ -24,15 +42,33 @@ export function AccountTypeCard({ value, label, description, icon, checked, onCh
         onChange={onChange}
         style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
       />
-      <Flex align="center" gap="3" mb="2">
-        <MaterialIcon name={icon} filled={checked} size={24} color={checked ? 'primary' : 'onSurfaceVariant'} />
-        <Text textStyle="labelMd" color="onSurface">
+      <Flex align="center" gap="2" mb="3">
+        <Text fontSize="lg" lineHeight="1" aria-hidden>
+          {emoji}
+        </Text>
+        <Text textStyle="headlineSm" color="onSurface" fontWeight="700">
           {label}
         </Text>
       </Flex>
-      <Text textStyle="bodySm" color="onSurfaceVariant" fontSize="xs">
-        {description}
-      </Text>
+      <Box
+        px="3"
+        py="1"
+        borderRadius="pill"
+        bg={theme.badgeBg}
+        color={theme.badgeColor}
+        textStyle="labelSm"
+        fontWeight="600"
+        w="fit-content"
+        mb="3"
+      >
+        {shortLabel}
+      </Box>
+      <Flex align="flex-start" gap="2">
+        <MaterialIcon name={icon} size={20} color={checked ? theme.border : 'onSurfaceVariant'} />
+        <Text textStyle="bodySm" color="onSurfaceVariant">
+          {description}
+        </Text>
+      </Flex>
     </Box>
   )
 }

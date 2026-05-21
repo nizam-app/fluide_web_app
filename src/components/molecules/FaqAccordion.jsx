@@ -2,45 +2,46 @@ import { useState } from 'react'
 import { Box, Button, Collapsible, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 
-function FaqItem({ question, answer }) {
-  const [open, setOpen] = useState(false)
+function FaqItem({ question, answer, defaultOpen = false, alwaysVisible = false }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  if (alwaysVisible) {
+    return (
+      <Box borderWidth="1px" borderColor="outlineVariant" borderRadius="fluide3xl" overflow="hidden" bg="surface" p={{ base: 5, md: 6 }}>
+        <Text textStyle="labelMd" color="onBackground" mb="3" fontWeight="700">
+          {question}
+        </Text>
+        <Text textStyle="bodyMd" color="onSurfaceVariant" lineHeight="1.6">
+          {answer}
+        </Text>
+      </Box>
+    )
+  }
 
   return (
-    <Box
-      borderWidth="1px"
-      borderColor="outlineVariant"
-      borderRadius="fluide"
-      overflow="hidden"
-      bg="surfaceContainerLowest"
-    >
+    <Box borderWidth="1px" borderColor="outlineVariant" borderRadius="fluide3xl" overflow="hidden" bg="surface">
       <Button
         unstyled
         w="full"
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        p="4"
+        p={{ base: 4, md: 5 }}
         textAlign="left"
         cursor="pointer"
         _hover={{ bg: 'surfaceContainerLow' }}
-        _focusVisible={{ outline: '2px solid', outlineColor: 'primary', bg: 'surfaceVariant' }}
+        _focusVisible={{ outline: '2px solid', outlineColor: 'primary' }}
         onClick={() => setOpen((v) => !v)}
       >
-        <Text textStyle="labelMd" color="onBackground">
+        <Text textStyle="labelMd" color="onBackground" fontWeight="700" pr="4">
           {question}
         </Text>
-        <MaterialIcon
-          name={open ? 'remove' : 'add'}
-          size={24}
-          color="outline"
-          transition="transform 0.3s"
-          transform={open ? 'rotate(180deg)' : 'none'}
-        />
+        <MaterialIcon name={open ? 'expand_less' : 'expand_more'} size={24} color="outline" flexShrink={0} />
       </Button>
       <Collapsible.Root open={open}>
         <Collapsible.Content>
-          <Box px="4" pb="4" borderTopWidth="1px" borderColor="outlineVariant/50">
-            <Text textStyle="bodySm" color="onSurfaceVariant" pt="2">
+          <Box px={{ base: 4, md: 5 }} pb={{ base: 4, md: 5 }} pt="0" borderTopWidth={open ? '1px' : 0} borderColor="outlineVariant">
+            <Text textStyle="bodyMd" color="onSurfaceVariant" lineHeight="1.6">
               {answer}
             </Text>
           </Box>
@@ -50,11 +51,11 @@ function FaqItem({ question, answer }) {
   )
 }
 
-export function FaqAccordion({ items }) {
+export function FaqAccordion({ items, alwaysVisible = false }) {
   return (
-    <Box display="flex" flexDirection="column" gap="2">
-      {items.map((item) => (
-        <FaqItem key={item.question} {...item} />
+    <Box display="flex" flexDirection="column" gap="4">
+      {items.map((item, i) => (
+        <FaqItem key={item.question} {...item} defaultOpen={i === 0} alwaysVisible={alwaysVisible} />
       ))}
     </Box>
   )

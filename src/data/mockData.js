@@ -70,15 +70,27 @@ export const accountTypeOptions = [
   {
     value: 'organizer',
     label: 'Organizer',
-    description: 'Municipalities, associations, schools — create trips and send booking requests.',
+    emoji: '🟦',
+    shortLabel: 'Organize outings',
+    description: 'Municipality, association, or school — plan trips and coordinate providers.',
     icon: 'groups',
+    accent: 'info',
   },
   {
     value: 'provider',
     label: 'Provider',
-    description: 'Transport, activities, catering, hotels — receive requests and propose services.',
+    emoji: '🟩',
+    shortLabel: 'Respond to requests',
+    description: 'Transport, activity, restaurant, hotel, or local service — submit offers.',
     icon: 'storefront',
+    accent: 'provider',
   },
+]
+
+export const homeValuePillars = [
+  { icon: 'groups', title: 'Built for local group outings', description: 'School trips, club outings, and community events in one place.' },
+  { icon: 'account_balance', title: 'Designed for municipalities, associations, and schools', description: 'A practical tool for teams who coordinate outings locally.' },
+  { icon: 'hub', title: 'A simple way to centralize trip organization', description: 'Transport, activities, services, and provider requests — together.' },
 ]
 
 export const providerDashboardStats = [
@@ -237,18 +249,38 @@ export const tripDetails = {
 }
 
 export const faqItems = [
-  { question: 'How do I create a trip?', answer: 'Navigate to Trips and click Create New Trip. Fill in the wizard and publish your request to our provider network.' },
-  { question: 'How do providers respond?', answer: 'Providers receive instant notifications and can accept, reject, or propose alternatives through their portal.' },
-  { question: 'Is payment included?', answer: 'FluideApp facilitates connections. Payment is handled directly between organizer and provider per their terms.' },
+  {
+    question: 'Who is Fluide for?',
+    answer:
+      'Fluide is for organizers (municipalities, associations, schools, local institutions) who plan group outings, and for providers (transport, activities, restaurants, hotels, local services) who respond to trip requests.',
+  },
+  {
+    question: 'How does an organizer create a trip?',
+    answer:
+      'Sign up as an Organizer, open your dashboard, and use Create Trip to describe the outing (date, location, participants, need type). You can then send requests to providers and compare their responses in one place.',
+  },
+  {
+    question: 'How does a provider respond?',
+    answer:
+      'Sign up as a Provider, browse available trips, and open a request to send your offer (message, price, availability). You can track pending, accepted, and completed bookings from your dashboard.',
+  },
+  {
+    question: 'What can I manage on one platform?',
+    answer:
+      'Transport, activities, services, provider requests, and trip coordination — so your team does not juggle spreadsheets, emails, and separate tools.',
+  },
+  {
+    question: 'Is payment handled in Fluide?',
+    answer:
+      'Not at this stage. Fluide helps you centralize requests and coordination. Payment terms stay between the organizer and the provider.',
+  },
 ]
 
-export const trustedOrgs = ['MunicipalityHub', 'EcoFleet', 'AssoConnect', 'TransitWise', 'GroupFlow']
-
 export const featureCards = [
-  { icon: 'schedule', title: 'Save Time', description: 'Automate request broadcasting and compare offers in one dashboard.' },
-  { icon: 'hub', title: 'Unified Network', description: 'Connect with verified transport, catering, and activity providers.' },
-  { icon: 'bar_chart', title: 'Track Progress', description: 'Monitor requests, approvals, and trip status in real time.' },
-  { icon: 'grid_view', title: 'Flexible Planning', description: 'Support schools, municipalities, and associations of any size.' },
+  { icon: 'directions_bus', title: 'Transport', description: 'Request coaches, shuttles, or local transport for your group outing.' },
+  { icon: 'hiking', title: 'Activities', description: 'Find guides, venues, and activity providers for your program.' },
+  { icon: 'storefront', title: 'Services', description: 'Restaurants, hotels, and other local services in one request flow.' },
+  { icon: 'forum', title: 'Provider requests', description: 'Send booking requests and compare responses without scattered emails.' },
 ]
 
 export const HERO_IMAGE =
