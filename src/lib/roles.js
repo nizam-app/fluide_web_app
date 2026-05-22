@@ -12,7 +12,7 @@ export function getHomePath(role) {
 }
 
 export function getRoleLabel(role) {
-  const labels = { admin: 'Admin', organizer: 'Organizer', provider: 'Provider' }
+  const labels = { admin: 'Admin', organizer: 'Organizer', provider: 'Supplier' }
   return labels[role] ?? role
 }
 

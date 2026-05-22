@@ -19,7 +19,7 @@ export function ProfilePage() {
         </Text>
         <Text textStyle="bodyMd" color="onSurfaceVariant" mb="8">
           {isOrganizer && 'Your organizer account for municipalities, associations, schools, and institutions.'}
-          {isProvider && 'Your provider account for transport, activities, catering, hotels, and services.'}
+          {isProvider && 'Your supplier account for transport, activities, catering, hotels, and services.'}
           {isAdmin && 'Internal admin account settings.'}
         </Text>
         <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant">
@@ -59,7 +59,7 @@ export function ProfilePage() {
             {isProvider && (
               <Box>
                 <Text textStyle="labelMd" mb="2">
-                  Provider type
+                  Supplier type
                 </Text>
                 <NativeSelect.Root>
                   <NativeSelect.Field css={fluideInputStyles} defaultValue={user?.providerType ?? 'Transport'}>

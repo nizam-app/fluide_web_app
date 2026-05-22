@@ -20,7 +20,7 @@ const themes = {
     bg: 'secondary',
     color: 'onSecondary',
     icon: 'storefront',
-    title: 'Provider Portal',
+    title: 'Supplier Portal',
     subtitle: 'Receive trip requests and propose your transport, catering, or activity services.',
   },
 }
@@ -35,7 +35,7 @@ export function RolePageHeader({ role }) {
         </Flex>
         <Box>
           <Text textStyle="labelSm" opacity={0.85} mb="1" textTransform="uppercase" letterSpacing="wider">
-            {role} workspace
+            {role === 'provider' ? 'Supplier' : role} workspace
           </Text>
           <Text textStyle="headlineLg" mb="2">
             {t.title}

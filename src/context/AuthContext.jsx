@@ -32,13 +32,13 @@ export function AuthProvider({ children }) {
       if (isAdminEmail(normalizedEmail)) {
         return persistUser({
           email: normalizedEmail,
-          name: 'Platform Admin',
+          name: 'Flunexia Admin',
           role: ROLES.ADMIN,
         })
       }
 
       if (accountType !== ROLES.ORGANIZER && accountType !== ROLES.PROVIDER) {
-        throw new Error('Please select Organizer or Provider.')
+        throw new Error('Please select Organizer or Supplier.')
       }
 
       const registered = findRegisteredUser(normalizedEmail)
@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
       }
 
       if (registered.role !== accountType) {
-        throw new Error(`This email is registered as ${registered.role === ROLES.ORGANIZER ? 'Organizer' : 'Provider'}.`)
+        throw new Error(`This email is registered as ${registered.role === ROLES.ORGANIZER ? 'Organizer' : 'Supplier'}.`)
       }
 
       return persistUser({
@@ -69,7 +69,7 @@ export function AuthProvider({ children }) {
         throw new Error('Admin accounts cannot be created through public registration.')
       }
       if (accountType !== ROLES.ORGANIZER && accountType !== ROLES.PROVIDER) {
-        throw new Error('Please select Organizer or Provider.')
+        throw new Error('Please select Organizer or Supplier.')
       }
       if (findRegisteredUser(normalizedEmail)) {
         throw new Error('An account with this email already exists. Please log in.')

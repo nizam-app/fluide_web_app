@@ -20,7 +20,7 @@ export function FluideLogo({ to = '/', variant = 'marketing', subtitle, ...props
           color={isAdmin ? 'navy' : 'brandBlack'}
           lineHeight="1.1"
         >
-          {isAdmin ? 'FluideAdmin' : 'FLUIDE'}
+          {isAdmin ? 'Flunexia Admin' : 'FLUNEXIA'}
         </Text>
         {isAdmin && (
           <Text fontSize="10px" color="onSurfaceVariant" mt="0.5" letterSpacing="0.12em" textTransform="uppercase" fontWeight="600">

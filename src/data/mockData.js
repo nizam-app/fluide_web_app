@@ -1,5 +1,5 @@
 /** Internal admin login only — not available on public registration */
-export const DEMO_ADMIN_EMAIL = 'admin@fluide.org'
+export const DEMO_ADMIN_EMAIL = 'admin@flunexia.org'
 export const DEMO_PASSWORD = 'demo123'
 
 export const demoCredentials = [
@@ -13,14 +13,14 @@ export const demoCredentials = [
   {
     role: 'organizer',
     label: 'Organizer',
-    email: 'organizer@fluide.org',
+    email: 'organizer@flunexia.org',
     password: DEMO_PASSWORD,
     hint: 'Municipalities, associations, schools',
   },
   {
     role: 'provider',
-    label: 'Provider',
-    email: 'provider@fluide.org',
+    label: 'Supplier',
+    email: 'supplier@flunexia.org',
     password: DEMO_PASSWORD,
     hint: 'Transport, activities, catering, hotels',
   },
@@ -28,7 +28,11 @@ export const demoCredentials = [
 
 export function isAdminEmail(email) {
   const normalized = email.trim().toLowerCase()
-  return normalized === DEMO_ADMIN_EMAIL || normalized.endsWith('@fluide.admin')
+  return (
+    normalized === DEMO_ADMIN_EMAIL ||
+    normalized.endsWith('@flunexia.admin') ||
+    normalized === 'admin@fluide.org'
+  )
 }
 
 export const organizerNavItems = [
@@ -78,10 +82,10 @@ export const accountTypeOptions = [
   },
   {
     value: 'provider',
-    label: 'Provider',
+    label: 'Supplier',
     emoji: '🟩',
     shortLabel: 'Respond to requests',
-    description: 'Transport, activity, restaurant, hotel, or local service — submit offers.',
+    description: 'Transport, activity, restaurant, hotel, or local service.',
     icon: 'storefront',
     accent: 'provider',
   },
@@ -248,39 +252,26 @@ export const tripDetails = {
   },
 }
 
-export const faqItems = [
+/** Short FAQ for contact page */
+export const contactFaqItems = [
   {
-    question: 'Who is Fluide for?',
-    answer:
-      'Fluide is for organizers (municipalities, associations, schools, local institutions) who plan group outings, and for providers (transport, activities, restaurants, hotels, local services) who respond to trip requests.',
+    question: 'Who can use Flunexia?',
+    answer: 'Organizers plan outings. Suppliers respond with transport, activities, or services.',
   },
   {
-    question: 'How does an organizer create a trip?',
-    answer:
-      'Sign up as an Organizer, open your dashboard, and use Create Trip to describe the outing (date, location, participants, need type). You can then send requests to providers and compare their responses in one place.',
+    question: 'How do I start?',
+    answer: 'Sign up, create a trip, or send us a message — we will guide you from there.',
   },
   {
-    question: 'How does a provider respond?',
-    answer:
-      'Sign up as a Provider, browse available trips, and open a request to send your offer (message, price, availability). You can track pending, accepted, and completed bookings from your dashboard.',
-  },
-  {
-    question: 'What can I manage on one platform?',
-    answer:
-      'Transport, activities, services, provider requests, and trip coordination — so your team does not juggle spreadsheets, emails, and separate tools.',
-  },
-  {
-    question: 'Is payment handled in Fluide?',
-    answer:
-      'Not at this stage. Fluide helps you centralize requests and coordination. Payment terms stay between the organizer and the provider.',
+    question: 'Is payment included?',
+    answer: 'No. Flunexia centralizes coordination; payment stays between organizer and supplier.',
   },
 ]
 
 export const featureCards = [
-  { icon: 'directions_bus', title: 'Transport', description: 'Request coaches, shuttles, or local transport for your group outing.' },
-  { icon: 'hiking', title: 'Activities', description: 'Find guides, venues, and activity providers for your program.' },
-  { icon: 'storefront', title: 'Services', description: 'Restaurants, hotels, and other local services in one request flow.' },
-  { icon: 'forum', title: 'Provider requests', description: 'Send booking requests and compare responses without scattered emails.' },
+  { icon: 'directions_bus', title: 'Transport', description: 'Coaches, shuttles, local transport.' },
+  { icon: 'hiking', title: 'Activities', description: 'Guides, venues, outdoor programs.' },
+  { icon: 'storefront', title: 'Services', description: 'Restaurants, hotels, local partners.' },
 ]
 
 export const HERO_IMAGE =

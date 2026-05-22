@@ -35,7 +35,7 @@ export function ProviderDashboardPage() {
           <Flex align="center" gap="3" mb="2">
             <MaterialIcon name="lightbulb" color="infoFg" />
             <Text textStyle="labelMd" color="infoFg">
-              Provider workflow
+              Supplier workflow
             </Text>
           </Flex>
           <Text textStyle="bodySm" color="onSurface">

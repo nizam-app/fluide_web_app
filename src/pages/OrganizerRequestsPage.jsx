@@ -47,7 +47,7 @@ export function OrganizerRequestsPage() {
           <Table.Root minW="800px">
             <Table.Header bg="surfaceContainerLow">
               <Table.Row>
-                {['Trip name', 'Provider', 'Need type', 'Date', 'Status', 'Actions'].map((col) => (
+                {['Trip name', 'Supplier', 'Need type', 'Date', 'Status', 'Actions'].map((col) => (
                   <Table.ColumnHeader key={col} py="3" px="5" textStyle="labelSm" color="onSurfaceVariant">
                     {col}
                   </Table.ColumnHeader>

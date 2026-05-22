@@ -63,12 +63,9 @@ export function AccountTypeCard({ value, label, emoji, shortLabel, description, 
       >
         {shortLabel}
       </Box>
-      <Flex align="flex-start" gap="2">
-        <MaterialIcon name={icon} size={20} color={checked ? theme.border : 'onSurfaceVariant'} />
-        <Text textStyle="bodySm" color="onSurfaceVariant">
-          {description}
-        </Text>
-      </Flex>
+      <Text textStyle="bodySm" color="onSurfaceVariant" lineHeight="1.45">
+        {description}
+      </Text>
     </Box>
   )
 }

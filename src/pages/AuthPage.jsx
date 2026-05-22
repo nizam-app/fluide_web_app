@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { Box, Button, Flex, Grid, Input, Text } from '@chakra-ui/react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { AuthBrandingPanel } from '../components/organisms/AuthBrandingPanel'
+import { Box, Button, Collapsible, Flex, Grid, Input, Text } from '@chakra-ui/react'
+import { Link as RouterLink, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AccountTypeCard } from '../components/molecules/AccountTypeCard'
 import { DemoCredentialsPanel } from '../components/molecules/DemoCredentialsPanel'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
@@ -10,9 +9,11 @@ import { accountTypeOptions } from '../data/mockData'
 import { getHomePath, ROLES } from '../lib/roles'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
+const SHOW_DEMO = import.meta.env.DEV
+
 function AccountTypePicker({ accountType, onChange }) {
   return (
-    <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
+    <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="3">
       {accountTypeOptions.map((opt) => (
         <AccountTypeCard key={opt.value} {...opt} checked={accountType === opt.value} onChange={() => onChange(opt.value)} />
       ))}
@@ -22,17 +23,8 @@ function AccountTypePicker({ accountType, onChange }) {
 
 function SecurityNote() {
   return (
-    <Flex
-      align="center"
-      gap="2"
-      mt="4"
-      p="3"
-      borderRadius="fluide"
-      bg="surfaceContainerLow"
-      borderWidth="1px"
-      borderColor="outlineVariant"
-    >
-      <MaterialIcon name="lock" size={18} color="primary" />
+    <Flex align="center" gap="2" p="3" borderRadius="fluide" bg="surfaceContainerLow" borderWidth="1px" borderColor="outlineVariant">
+      <MaterialIcon name="lock" size={16} color="primary" />
       <Text textStyle="bodySm" color="onSurfaceVariant">
         Secure connection – your data is protected.
       </Text>
@@ -47,6 +39,7 @@ export function AuthPage() {
   const [fullName, setFullName] = useState('')
   const [accountType, setAccountType] = useState(ROLES.ORGANIZER)
   const [error, setError] = useState('')
+  const [showDemo, setShowDemo] = useState(false)
   const { login, register, isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -106,20 +99,21 @@ export function AuthPage() {
   }
 
   return (
-    <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} minH="100vh" alignItems="stretch">
-      <AuthBrandingPanel />
+    <Flex minH="100vh" bg="surface" direction="column">
+      <Flex justify="center" pt={{ base: 6, md: 8 }} pb="2" px="6">
+        <RouterLink to="/">
+          <Flex align="center" gap="2">
+            <MaterialIcon name="eco" size={26} color="primary" />
+            <Text fontSize="lg" fontWeight="800" letterSpacing="0.05em" color="onSurface">
+              FLUNEXIA
+            </Text>
+          </Flex>
+        </RouterLink>
+      </Flex>
 
-      <Flex
-        align="flex-start"
-        justify="center"
-        p={{ base: 6, lg: 10, xl: 12 }}
-        bg="surface"
-        order={{ base: 1, lg: 2 }}
-        minH={{ base: 'auto', lg: '100vh' }}
-        overflowY="auto"
-      >
-        <Box w="full" maxW="lg" py={{ base: 2, lg: 4 }}>
-          <Flex borderBottomWidth="1px" borderColor="outlineVariant" mb="8" gap={{ base: 6, sm: 8 }}>
+      <Flex flex="1" align="flex-start" justify="center" px={{ base: 5, md: 6 }} pb="10">
+        <Box w="full" maxW="md">
+          <Flex borderBottomWidth="1px" borderColor="outlineVariant" mb="6" gap="8" justify="center">
             {[
               { id: 'login', label: 'Log in' },
               { id: 'register', label: 'Sign up' },
@@ -145,19 +139,11 @@ export function AuthPage() {
 
           {tab === 'login' ? (
             <>
-              <Text textStyle="headlineLg" mb="1">
-                Log in
+              <Text textStyle="headlineMd" mb="5" textAlign="center">
+                Log in to your space
               </Text>
-              <Text textStyle="bodySm" color="onSurfaceVariant" mb="6" lineHeight="1.55">
-                Choose your account type, then enter your email and password.
-              </Text>
-              <Flex as="form" direction="column" gap="5" onSubmit={handleLogin}>
-                <Box>
-                  <Text textStyle="labelMd" mb="3">
-                    Account type
-                  </Text>
-                  <AccountTypePicker accountType={accountType} onChange={setAccountType} />
-                </Box>
+              <Flex as="form" direction="column" gap="4" onSubmit={handleLogin}>
+                <AccountTypePicker accountType={accountType} onChange={setAccountType} />
                 <Box>
                   <Text textStyle="labelMd" mb="2">
                     Email
@@ -168,10 +154,11 @@ export function AuthPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     css={fluideInputStyles}
+                    size="lg"
                   />
                 </Box>
                 <Box>
-                  <Flex justify="space-between" mb="2" flexWrap="wrap" gap="2">
+                  <Flex justify="space-between" mb="2">
                     <Text textStyle="labelMd">Password</Text>
                     <Text textStyle="labelSm" color="primary" cursor="pointer">
                       Forgot password?
@@ -183,6 +170,7 @@ export function AuthPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     css={fluideInputStyles}
+                    size="lg"
                   />
                 </Box>
                 {error && (
@@ -190,14 +178,34 @@ export function AuthPage() {
                     {error}
                   </Text>
                 )}
-                <Button w="full" py="3.5" type="submit" {...stitchBlackButton}>
+                <Button w="full" py="4" type="submit" {...stitchBlackButton} fontSize="md">
                   Log in
                 </Button>
                 <SecurityNote />
               </Flex>
-              <DemoCredentialsPanel onUseCredential={fillDemoCredential} />
+
+              {SHOW_DEMO && (
+                <Box mt="4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    w="full"
+                    color="onSurfaceVariant"
+                    onClick={() => setShowDemo((v) => !v)}
+                  >
+                    <MaterialIcon name={showDemo ? 'expand_less' : 'expand_more'} size={18} />
+                    {showDemo ? 'Hide' : 'Show'} demo access (testing)
+                  </Button>
+                  <Collapsible.Root open={showDemo}>
+                    <Collapsible.Content>
+                      <DemoCredentialsPanel onUseCredential={fillDemoCredential} />
+                    </Collapsible.Content>
+                  </Collapsible.Root>
+                </Box>
+              )}
+
               <Text textStyle="bodySm" color="onSurfaceVariant" mt="6" textAlign="center">
-                No account yet?{' '}
+                No account?{' '}
                 <Button unstyled textStyle="labelMd" color="primary" fontWeight="600" onClick={() => setTab('register')}>
                   Sign up
                 </Button>
@@ -205,24 +213,22 @@ export function AuthPage() {
             </>
           ) : (
             <>
-              <Text textStyle="headlineLg" mb="1">
-                Sign up
+              <Text textStyle="headlineMd" mb="5" textAlign="center">
+                Create your account
               </Text>
-              <Text textStyle="bodySm" color="onSurfaceVariant" mb="6" lineHeight="1.55">
-                Create an Organizer or Provider account. Admin access is managed internally by Fluide.
-              </Text>
-              <Flex as="form" direction="column" gap="5" onSubmit={handleSignUp}>
-                <Box>
-                  <Text textStyle="labelMd" mb="3">
-                    Account type
-                  </Text>
-                  <AccountTypePicker accountType={accountType} onChange={setAccountType} />
-                </Box>
+              <Flex as="form" direction="column" gap="4" onSubmit={handleSignUp}>
+                <AccountTypePicker accountType={accountType} onChange={setAccountType} />
                 <Box>
                   <Text textStyle="labelMd" mb="2">
                     Full name
                   </Text>
-                  <Input placeholder="Alex Morgan" value={fullName} onChange={(e) => setFullName(e.target.value)} css={fluideInputStyles} />
+                  <Input
+                    placeholder="Alex Morgan"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    css={fluideInputStyles}
+                    size="lg"
+                  />
                 </Box>
                 <Box>
                   <Text textStyle="labelMd" mb="2">
@@ -234,6 +240,7 @@ export function AuthPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     css={fluideInputStyles}
+                    size="lg"
                   />
                 </Box>
                 <Box>
@@ -246,6 +253,7 @@ export function AuthPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     css={fluideInputStyles}
+                    size="lg"
                   />
                 </Box>
                 {error && (
@@ -253,13 +261,13 @@ export function AuthPage() {
                     {error}
                   </Text>
                 )}
-                <Button w="full" py="3.5" type="submit" {...stitchBlackButton}>
+                <Button w="full" py="4" type="submit" {...stitchBlackButton} fontSize="md">
                   Sign up
                 </Button>
                 <SecurityNote />
               </Flex>
               <Text textStyle="bodySm" color="onSurfaceVariant" mt="6" textAlign="center">
-                Already have an account?{' '}
+                Already registered?{' '}
                 <Button unstyled textStyle="labelMd" color="primary" fontWeight="600" onClick={() => setTab('login')}>
                   Log in
                 </Button>
@@ -268,6 +276,6 @@ export function AuthPage() {
           )}
         </Box>
       </Flex>
-    </Grid>
+    </Flex>
   )
 }

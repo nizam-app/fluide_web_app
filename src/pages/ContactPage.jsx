@@ -1,22 +1,10 @@
-import { Box, Button, Flex, Grid, Input, NativeSelect, Stack, Text, Textarea } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, Input, NativeSelect, Text, Textarea } from '@chakra-ui/react'
+import { Link as RouterLink } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { FaqAccordion } from '../components/molecules/FaqAccordion'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
-import { faqItems } from '../data/mockData'
+import { contactFaqItems } from '../data/mockData'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
-
-const audienceCards = [
-  {
-    icon: 'groups',
-    title: 'Organizers',
-    description: 'Municipalities, associations, schools, and local institutions planning group outings.',
-  },
-  {
-    icon: 'storefront',
-    title: 'Providers',
-    description: 'Transport, activities, restaurants, hotels, and other local services.',
-  },
-]
 
 function FormField({ label, children }) {
   return (
@@ -32,112 +20,70 @@ function FormField({ label, children }) {
 export function ContactPage() {
   return (
     <MarketingLayout>
-      <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py={{ base: 10, md: 12 }}>
-        <Box textAlign="center" mb={{ base: 10, md: 12 }}>
-          <Text textStyle="headlineXl" mb="4" px={{ base: 0, md: 4 }}>
-            Contact Fluide
+      <Box maxW="3xl" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py={{ base: 10, md: 14 }}>
+        <Box textAlign="center" mb={{ base: 8, md: 10 }}>
+          <Text textStyle="headlineXl" mb="3">
+            Contact us
           </Text>
-          <Text textStyle="bodyLg" color="onSurfaceVariant" maxW="2xl" mx="auto" lineHeight="1.65">
-            Whether you want to organize a group outing or offer transport, activities, or services, Fluide helps
-            centralize requests and simplify coordination.
+          <Text textStyle="bodyMd" color="onSurfaceVariant" maxW="lg" mx="auto" lineHeight="1.6">
+            Organizer or Supplier — send a message and Flunexia will respond as soon as possible.
           </Text>
         </Box>
 
-        <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={{ base: 6, lg: 8 }} mb={{ base: 14, md: 20 }}>
-          <Box bg="surface" borderRadius="fluide3xl" p={{ base: 6, md: 8 }} shadow="level1" borderWidth="1px" borderColor="outlineVariant">
-            <Text textStyle="headlineSm" mb="6">
-              Send a message
-            </Text>
-            <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4" mb="4">
-              <FormField label="Full name">
-                <Input placeholder="Your name" css={fluideInputStyles} />
-              </FormField>
-              <FormField label="Email">
-                <Input type="email" placeholder="you@organization.fr" css={fluideInputStyles} />
-              </FormField>
-            </Grid>
+        <Box
+          bg="surface"
+          borderRadius="fluide3xl"
+          p={{ base: 6, md: 10 }}
+          shadow="level2"
+          borderWidth="1px"
+          borderColor="outlineVariant"
+        >
+          <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4" mb="4">
+            <FormField label="Full name">
+              <Input placeholder="Your name" css={fluideInputStyles} size="lg" />
+            </FormField>
+            <FormField label="Email">
+              <Input type="email" placeholder="you@organization.fr" css={fluideInputStyles} size="lg" />
+            </FormField>
+          </Grid>
+          <Box mb="4">
             <FormField label="I am a…">
-              <NativeSelect.Root>
+              <NativeSelect.Root size="lg">
                 <NativeSelect.Field css={fluideInputStyles}>
                   <option value="organizer">Organizer</option>
-                  <option value="provider">Provider</option>
-                  <option value="municipality">Organizer — Municipality</option>
-                  <option value="association">Organizer — Association</option>
-                  <option value="school">Organizer — School</option>
-                  <option value="other">Other / general question</option>
+                  <option value="supplier">Supplier</option>
                 </NativeSelect.Field>
               </NativeSelect.Root>
             </FormField>
-            <Box mt="4">
-              <FormField label="Message">
-                <Textarea
-                  rows={5}
-                  placeholder="Tell Fluide about your outing or the services you offer…"
-                  borderRadius="fluide"
-                  borderColor="outlineVariant"
-                  bg="surfaceContainerLow"
-                />
-              </FormField>
-            </Box>
-            <Text textStyle="bodySm" color="onSurfaceVariant" mt="4">
-              Fluide will review your request. Your message will be handled by Fluide, and we will respond as soon as
-              possible.
-            </Text>
-            <Button mt="6" {...stitchBlackButton} px="8" py="3" w={{ base: 'full', sm: 'auto' }}>
+          </Box>
+          <FormField label="Message">
+            <Textarea
+              rows={5}
+              placeholder="Your question or demo request…"
+              borderRadius="fluide"
+              borderColor="outlineVariant"
+              bg="surfaceContainerLow"
+              fontSize="md"
+            />
+          </FormField>
+          <Flex mt="8" direction={{ base: 'column', sm: 'row' }} gap="3" align={{ sm: 'center' }} justify="space-between">
+            <Button {...stitchBlackButton} px="10" py="4" fontSize="md" w={{ base: 'full', sm: 'auto' }}>
+              <MaterialIcon name="send" size={20} />
               Send message
             </Button>
-          </Box>
+            <RouterLink to="/login">
+              <Text textStyle="labelMd" color="primary" textAlign={{ base: 'center', sm: 'right' }}>
+                Already have an account? Log in →
+              </Text>
+            </RouterLink>
+          </Flex>
+        </Box>
 
-          <Stack gap="4">
-            <Box bg="primary" borderRadius="fluide3xl" p="6" color="onPrimary">
-              <MaterialIcon name="mail" size={32} color="accentMint" mb="3" />
-              <Text textStyle="headlineSm" mb="2">
-                Write to Fluide
-              </Text>
-              <Text textStyle="bodySm" opacity={0.95} lineHeight="1.6">
-                Questions about organizing an outing, joining as a provider, or using the platform? Send a message and
-                Fluide will get back to you.
-              </Text>
-            </Box>
-            <Box bg="accentMint" borderRadius="fluide3xl" p="6">
-              <MaterialIcon name="schedule" size={28} color="primary" mb="3" />
-              <Text textStyle="labelMd" color="primary" mb="2" fontWeight="700">
-                Response time
-              </Text>
-              <Text textStyle="bodySm" color="onPrimaryContainer" lineHeight="1.6">
-                Fluide will respond as soon as possible. We read every message and follow up when we can.
-              </Text>
-            </Box>
-          </Stack>
-        </Grid>
-
-        <Text textStyle="headlineLg" textAlign="center" mb={{ base: 6, md: 8 }}>
-          Who Fluide is for
-        </Text>
-        <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="6" mb={{ base: 14, md: 20 }} maxW="4xl" mx="auto">
-          {audienceCards.map((card) => (
-            <Box key={card.title} bg="surface" p="6" borderRadius="fluide3xl" borderWidth="1px" borderColor="outlineVariant">
-              <Flex w="12" h="12" bg="surfaceContainer" borderRadius="lg" align="center" justify="center" mb="4">
-                <MaterialIcon name={card.icon} color="primary" />
-              </Flex>
-              <Text textStyle="headlineSm" mb="2">
-                {card.title}
-              </Text>
-              <Text textStyle="bodySm" color="onSurfaceVariant" lineHeight="1.55">
-                {card.description}
-              </Text>
-            </Box>
-          ))}
-        </Grid>
-
-        <Text textStyle="headlineLg" textAlign="center" mb="3">
-          Frequently asked questions
-        </Text>
-        <Text textStyle="bodyMd" color="onSurfaceVariant" textAlign="center" mb={{ base: 8, md: 10 }} maxW="xl" mx="auto">
-          Clear answers for organizers and providers.
-        </Text>
-        <Box maxW="3xl" mx="auto">
-          <FaqAccordion items={faqItems} alwaysVisible />
+        <Box mt={{ base: 10, md: 12 }}>
+          <Text textStyle="labelMd" color="onSurfaceVariant" mb="4" textAlign="center">
+            Quick answers
+          </Text>
+          <FaqAccordion items={contactFaqItems} alwaysVisible />
         </Box>
       </Box>
     </MarketingLayout>

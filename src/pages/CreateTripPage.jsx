@@ -29,7 +29,7 @@ export function CreateTripPage() {
             Create a Trip
           </Text>
           <Text textStyle="bodyMd" color="onSurfaceVariant">
-            Publish a new outing request to the Fluide provider network.
+            Publish a new outing request to the Flunexia supplier network.
           </Text>
         </Box>
 

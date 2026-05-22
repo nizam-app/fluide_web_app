@@ -1,5 +1,5 @@
-const SESSION_KEY = 'fluide_auth'
-const USERS_KEY = 'fluide_registered_users'
+const SESSION_KEY = 'flunexia_auth'
+const USERS_KEY = 'flunexia_registered_users'
 
 export function loadAuthSession() {
   try {
@@ -57,13 +57,13 @@ export function registerUser({ email, name, role, organizationType, providerType
 export function seedDemoUsers() {
   const demos = [
     {
-      email: 'organizer@fluide.org',
+      email: 'organizer@flunexia.org',
       name: 'Demo Organizer',
       role: 'organizer',
       organizationType: 'Municipality',
     },
     {
-      email: 'provider@fluide.org',
+      email: 'supplier@flunexia.org',
       name: 'Demo Provider',
       role: 'provider',
       providerType: 'Transport',

@@ -29,7 +29,7 @@ export function MarketingFooter({ compact = false }) {
             </Text>
           )}
           <Text textStyle="bodySm" color="onSurfaceVariant">
-            © 2024 Fluide Organisation. All rights reserved.
+            © 2024 Flunexia. All rights reserved.
           </Text>
         </HStack>
         <HStack as="nav" gap="6" flexWrap="wrap" justify="center">
