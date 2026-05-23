@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
+import { LocaleProvider } from './context/LocaleContext'
 import { ROLES } from './lib/roles'
 import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { AdminRequestsPage } from './pages/AdminRequestsPage'
@@ -20,8 +21,9 @@ const allRoles = [ROLES.ORGANIZER, ROLES.PROVIDER, ROLES.ADMIN]
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <LocaleProvider>
+      <AuthProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -105,7 +107,8 @@ export default function App() {
           <Route path="/trips/new" element={<Navigate to="/create-trip" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </LocaleProvider>
   )
 }

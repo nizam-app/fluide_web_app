@@ -6,13 +6,9 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { featureCards, HERO_IMAGE } from '../data/mockData'
 import { textWithBrand } from '../lib/textWithBrand'
+import { HOME_STEPS, HOME_STEPS_SECTION } from '../content/homeMarketing'
+import { useLocale } from '../context/LocaleContext'
 import { stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
-
-const steps = [
-  { icon: 'add_circle', title: 'Create a trip', description: 'Set date, location, and what you need.' },
-  { icon: 'send', title: 'Get responses', description: 'Suppliers send offers — compare in one view.' },
-  { icon: 'check_circle', title: 'Confirm', description: 'Accept an offer and keep coordination in one place.' },
-]
 
 const serviceVisuals = [
   { icon: 'directions_bus', label: 'Transport', iconBg: 'infoBg', iconColor: 'infoFg' },
@@ -23,7 +19,10 @@ const serviceVisuals = [
 const sectionPx = { base: 'marginMobile', md: 'marginDesktop' }
 
 export function HomePage() {
+  const { locale } = useLocale()
   const { isAuthenticated, user } = useAuth()
+  const steps = HOME_STEPS[locale]
+  const stepsSection = HOME_STEPS_SECTION[locale]
   const portalPath = user ? getHomePath(user.role) : '/login'
   const createTripPath =
     isAuthenticated && user?.role === ROLES.ORGANIZER ? '/create-trip' : '/login'
@@ -162,15 +161,15 @@ export function HomePage() {
       <Box w="full" bg="surfaceContainerLow" py={{ base: 10, md: 14, lg: 16 }}>
         <Box maxW="contentMax" mx="auto" px={sectionPx} w="full">
           <Text textStyle="headlineLg" textAlign="center" mb="2">
-            Three steps
+            {stepsSection.heading}
           </Text>
           <Text textStyle="bodyMd" color="onSurfaceVariant" textAlign="center" mb={{ base: 8, md: 10 }} maxW="md" mx="auto" px="2">
-            From outing idea to confirmed supplier — fast and clear.
+            {stepsSection.subheading}
           </Text>
           <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap="5" w="full">
             {steps.map((step, i) => (
               <Box
-                key={step.title}
+                key={step.icon}
                 bg="surface"
                 borderRadius="fluide3xl"
                 p="6"
