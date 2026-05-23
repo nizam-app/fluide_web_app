@@ -4,6 +4,7 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { FaqAccordion } from '../components/molecules/FaqAccordion'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { contactFaqItems } from '../data/mockData'
+import { textWithBrand } from '../lib/textWithBrand'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
 function FormField({ label, children }) {
@@ -26,7 +27,7 @@ export function ContactPage() {
             Contact us
           </Text>
           <Text textStyle="bodyMd" color="onSurfaceVariant" maxW="lg" mx="auto" lineHeight="1.6">
-            Organizer or Supplier — send a message and Flunexia will respond as soon as possible.
+            {textWithBrand('Organizer or Supplier — send a message and Flunexia will respond as soon as possible.')}
           </Text>
         </Box>
 

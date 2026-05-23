@@ -4,6 +4,7 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { PortalLayout } from '../components/templates/PortalLayout'
 import { NEED_TYPE_OPTIONS, trips } from '../data/mockData'
+import { textWithBrand } from '../lib/textWithBrand'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
 function FormField({ label, children }) {
@@ -29,7 +30,7 @@ export function CreateTripPage() {
             Create a Trip
           </Text>
           <Text textStyle="bodyMd" color="onSurfaceVariant">
-            Publish a new outing request to the Flunexia supplier network.
+            {textWithBrand('Publish a new outing request to the Flunexia supplier network.')}
           </Text>
         </Box>
 

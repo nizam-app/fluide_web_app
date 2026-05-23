@@ -11,6 +11,17 @@ body {
   margin: 0;
 }
 
+/* Keep brand name & icon ligatures untranslated (Chrome, Edge, Google Translate) */
+.notranslate,
+[translate='no'],
+.brand-lock {
+  translate: no;
+}
+
+.material-symbols-outlined {
+  translate: no;
+}
+
 @keyframes float {
   0% {
     transform: translateY(0);

@@ -4,9 +4,9 @@ import { MarketingFooter } from '../organisms/MarketingFooter'
 
 export function MarketingLayout({ children }) {
   return (
-    <Box minH="100vh" display="flex" flexDirection="column" bg="background">
+    <Box minH="100vh" display="flex" flexDirection="column" bg="background" overflowX="hidden">
       <MarketingNav />
-      <Box as="main" flex="1">
+      <Box as="main" flex="1" w="full">
         {children}
       </Box>
       <MarketingFooter />

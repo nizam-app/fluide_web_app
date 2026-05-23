@@ -7,6 +7,7 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { useAuth } from '../context/AuthContext'
 import { accountTypeOptions } from '../data/mockData'
 import { getHomePath, ROLES } from '../lib/roles'
+import { BrandName } from '../components/atoms/BrandName'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
 const SHOW_DEMO = import.meta.env.DEV
@@ -104,9 +105,9 @@ export function AuthPage() {
         <RouterLink to="/">
           <Flex align="center" gap="2">
             <MaterialIcon name="eco" size={26} color="primary" />
-            <Text fontSize="lg" fontWeight="800" letterSpacing="0.05em" color="onSurface">
-              FLUNEXIA
-            </Text>
+            <BrandName as="span" uppercase fontSize="lg" fontWeight="800" letterSpacing="0.05em" color="onSurface">
+              Flunexia
+            </BrandName>
           </Flex>
         </RouterLink>
       </Flex>

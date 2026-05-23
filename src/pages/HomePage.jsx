@@ -1,10 +1,11 @@
-import { Box, Button, Flex, Grid, HStack, Image, SimpleGrid, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, Image, SimpleGrid, Stack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getHomePath, ROLES } from '../lib/roles'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { featureCards, HERO_IMAGE } from '../data/mockData'
+import { textWithBrand } from '../lib/textWithBrand'
 import { stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
 const steps = [
@@ -14,10 +15,12 @@ const steps = [
 ]
 
 const serviceVisuals = [
-  { icon: 'directions_bus', label: 'Transport', color: 'infoBg', iconColor: 'infoFg' },
-  { icon: 'hiking', label: 'Activities', color: 'secondaryContainer', iconColor: 'primary' },
-  { icon: 'storefront', label: 'Services', color: 'accentMint', iconColor: 'primary' },
+  { icon: 'directions_bus', label: 'Transport', iconBg: 'infoBg', iconColor: 'infoFg' },
+  { icon: 'hiking', label: 'Activities', iconBg: 'primaryContainer', iconColor: 'primary' },
+  { icon: 'storefront', label: 'Services', iconBg: 'secondaryContainer', iconColor: 'primary' },
 ]
+
+const sectionPx = { base: 'marginMobile', md: 'marginDesktop' }
 
 export function HomePage() {
   const { isAuthenticated, user } = useAuth()
@@ -28,73 +31,143 @@ export function HomePage() {
   return (
     <MarketingLayout>
       {/* Hero */}
-      <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py={{ base: 10, md: 16 }}>
-        <Grid templateColumns={{ base: '1fr', lg: '1.05fr 0.95fr' }} gap={{ base: 8, lg: 10 }} alignItems="center">
-          <Box>
-            <Text as="h1" textStyle="headlineXl" color="onBackground" mb="4" lineHeight="1.12">
+      <Box w="full" maxW="contentMax" mx="auto" px={sectionPx} py={{ base: 8, md: 12, lg: 16 }}>
+        <Grid
+          w="full"
+          templateColumns={{ base: '1fr', lg: 'repeat(2, minmax(0, 1fr))' }}
+          gap={{ base: 8, lg: 12, xl: 16 }}
+          alignItems="center"
+        >
+          <Box w="full" minW={0} overflow="hidden">
+            <Text
+              as="h1"
+              fontSize={{ base: '2rem', sm: '2.25rem', md: '2.5rem', lg: '3rem' }}
+              lineHeight="1.15"
+              fontWeight="700"
+              letterSpacing="-0.02em"
+              color="onBackground"
+              mb="4"
+            >
               Save time on{' '}
-              <Box as="span" color="primary">
+              <Box as="span" color="primary" display="inline">
                 group trip coordination
               </Box>
             </Text>
-            <Text textStyle="bodyLg" color="onSurfaceVariant" mb="6" maxW="lg" lineHeight="1.6">
-              Flunexia centralizes transport, activities, services, and supplier requests — so municipalities,
-              associations, and schools stop juggling emails and spreadsheets.
+            <Text
+              fontSize={{ base: 'md', md: 'lg' }}
+              color="onSurfaceVariant"
+              mb="6"
+              lineHeight="1.65"
+            >
+              {textWithBrand(
+                'With Flunexia, centralize transport, activities, and services in one place. Fewer emails, less complexity — more visibility and control.',
+              )}
             </Text>
 
-            <Flex gap="3" flexWrap="wrap" mb="8" direction={{ base: 'column', sm: 'row' }}>
+            <Stack gap="3" mb="6" direction="column" w="full" maxW={{ lg: '100%' }}>
               <RouterLink to={createTripPath}>
-                <Button {...stitchBlackButton} px="8" py="4" fontSize="md" w={{ base: 'full', sm: 'auto' }}>
+                <Button
+                  {...stitchBlackButton}
+                  px="6"
+                  py="3.5"
+                  fontSize="md"
+                  w={{ base: 'full', lg: 'fit-content' }}
+                  maxW="100%"
+                  aria-label="Create a trip"
+                >
                   <MaterialIcon name="add" size={22} />
-                  Create a trip
+                  <Box as="span" ml="2">
+                    Create a trip
+                  </Box>
                 </Button>
               </RouterLink>
               <RouterLink to="/contact">
-                <Button {...stitchGreenButton} px="8" py="4" fontSize="md" w={{ base: 'full', sm: 'auto' }}>
+                <Button
+                  {...stitchGreenButton}
+                  px="6"
+                  py="3.5"
+                  fontSize="md"
+                  w={{ base: 'full', lg: 'fit-content' }}
+                  maxW="100%"
+                  aria-label="Request a demo"
+                >
                   <MaterialIcon name="videocam" size={22} />
-                  Request a demo
+                  <Box as="span" ml="2">
+                    Request a demo
+                  </Box>
                 </Button>
               </RouterLink>
-            </Flex>
+            </Stack>
 
-            <SimpleGrid columns={3} gap="3" maxW="md">
+            <Flex gap="2" flexWrap="wrap" w="full" maxW="100%">
               {serviceVisuals.map((s) => (
                 <Flex
                   key={s.label}
-                  direction="column"
                   align="center"
                   gap="2"
-                  p="4"
-                  bg={s.color}
-                  borderRadius="fluide3xl"
+                  px="3"
+                  py="2"
+                  bg="surface"
+                  borderRadius="pill"
                   borderWidth="1px"
                   borderColor="outlineVariant"
                 >
-                  <MaterialIcon name={s.icon} size={32} color={s.iconColor} />
-                  <Text textStyle="labelSm" fontWeight="700" color="onSurface">
+                  <Flex
+                    w="8"
+                    h="8"
+                    borderRadius="full"
+                    bg={s.iconBg}
+                    align="center"
+                    justify="center"
+                    flexShrink={0}
+                  >
+                    <MaterialIcon name={s.icon} size={18} color={s.iconColor} />
+                  </Flex>
+                  <Text fontSize="sm" fontWeight="600" color="onSurface">
                     {s.label}
                   </Text>
                 </Flex>
               ))}
-            </SimpleGrid>
+            </Flex>
           </Box>
 
-          <Box bg="primary" borderRadius="fluide3xl" p="3" shadow="level2">
-            <Image src={HERO_IMAGE} alt="Flunexia platform preview" borderRadius="2xl" w="full" />
+          <Box w="full" minW={0} maxW="100%">
+            <Box
+              w="full"
+              maxW="100%"
+              borderRadius="fluide3xl"
+              overflow="hidden"
+              shadow="level2"
+              borderWidth="2px"
+              borderColor="primary"
+              bg="surface"
+              aspectRatio={{ base: '16/10', lg: '4/3' }}
+            >
+              <Image
+                src={HERO_IMAGE}
+                alt="Flunexia platform preview"
+                w="full"
+                h="full"
+                objectFit="cover"
+                objectPosition="center"
+                translate="no"
+                display="block"
+              />
+            </Box>
           </Box>
         </Grid>
       </Box>
 
-      {/* How it works — compact */}
-      <Box bg="surfaceContainerLow" py={{ base: 12, md: 16 }}>
-        <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }}>
+      {/* How it works */}
+      <Box w="full" bg="surfaceContainerLow" py={{ base: 10, md: 14, lg: 16 }}>
+        <Box maxW="contentMax" mx="auto" px={sectionPx} w="full">
           <Text textStyle="headlineLg" textAlign="center" mb="2">
             Three steps
           </Text>
-          <Text textStyle="bodyMd" color="onSurfaceVariant" textAlign="center" mb="10" maxW="md" mx="auto">
+          <Text textStyle="bodyMd" color="onSurfaceVariant" textAlign="center" mb={{ base: 8, md: 10 }} maxW="md" mx="auto" px="2">
             From outing idea to confirmed supplier — fast and clear.
           </Text>
-          <SimpleGrid columns={{ base: 1, md: 3 }} gap="5">
+          <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap="5" w="full">
             {steps.map((step, i) => (
               <Box
                 key={step.title}
@@ -104,6 +177,7 @@ export function HomePage() {
                 borderWidth="1px"
                 borderColor="outlineVariant"
                 textAlign="center"
+                h="full"
               >
                 <Text textStyle="labelSm" color="primary" fontWeight="700" mb="3">
                   {i + 1}
@@ -123,12 +197,12 @@ export function HomePage() {
         </Box>
       </Box>
 
-      {/* What you manage — visual */}
-      <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py={{ base: 12, md: 16 }}>
-        <Text textStyle="headlineLg" mb="8" textAlign="center">
+      {/* Everything in one place */}
+      <Box w="full" maxW="contentMax" mx="auto" px={sectionPx} py={{ base: 10, md: 14, lg: 16 }}>
+        <Text textStyle="headlineLg" mb={{ base: 6, md: 8 }} textAlign="center">
           Everything in one place
         </Text>
-        <SimpleGrid columns={{ base: 1, md: 3 }} gap="6" mb="10">
+        <SimpleGrid columns={{ base: 1, md: 3 }} gap="6" mb={{ base: 8, md: 10 }} w="full">
           {featureCards.map((f) => (
             <Flex
               key={f.title}
@@ -139,6 +213,7 @@ export function HomePage() {
               borderColor="outlineVariant"
               align="flex-start"
               gap="4"
+              h="full"
             >
               <Flex w="14" h="14" borderRadius="xl" bg="primaryContainer" align="center" justify="center" flexShrink={0}>
                 <MaterialIcon name={f.icon} size={28} color="primary" />
@@ -155,44 +230,72 @@ export function HomePage() {
           ))}
         </SimpleGrid>
 
-        <Flex
-          justify="center"
-          gap="4"
-          flexWrap="wrap"
+        <Stack
           direction={{ base: 'column', sm: 'row' }}
-          align="center"
+          gap="3"
+          align="stretch"
+          justify="center"
+          maxW="32rem"
+          mx="auto"
         >
-          <RouterLink to="/login">
-            <Button variant="outline" borderColor="outlineVariant" borderRadius="pill" px="8" py="3" w={{ base: 'full', sm: 'auto' }}>
+          <RouterLink to="/login" style={{ flex: 1 }}>
+            <Button
+              variant="outline"
+              borderColor="outlineVariant"
+              borderRadius="pill"
+              px="6"
+              py="3"
+              w="full"
+              aria-label="Organizer log in"
+            >
               <MaterialIcon name="groups" size={18} color="primary" />
-              Organizer — Log in
+              <Box as="span" ml="2">
+                Organizer — Log in
+              </Box>
             </Button>
           </RouterLink>
-          <RouterLink to="/login">
-            <Button variant="outline" borderColor="outlineVariant" borderRadius="pill" px="8" py="3" w={{ base: 'full', sm: 'auto' }}>
+          <RouterLink to="/login" style={{ flex: 1 }}>
+            <Button
+              variant="outline"
+              borderColor="outlineVariant"
+              borderRadius="pill"
+              px="6"
+              py="3"
+              w="full"
+              aria-label="Supplier log in"
+            >
               <MaterialIcon name="storefront" size={18} color="primary" />
-              Supplier — Log in
+              <Box as="span" ml="2">
+                Supplier — Log in
+              </Box>
             </Button>
           </RouterLink>
-        </Flex>
+        </Stack>
       </Box>
 
       {/* Bottom CTA */}
-      <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} pb={{ base: 12, md: 20 }}>
-        <Box bg="brandBlack" borderRadius="fluide3xl" p={{ base: 8, md: 12 }} textAlign="center" color="white">
-          <Text textStyle="headlineLg" mb="3">
+      <Box w="full" maxW="contentMax" mx="auto" px={sectionPx} pb={{ base: 10, md: 16, lg: 20 }}>
+        <Box
+          bg="brandBlack"
+          borderRadius="fluide3xl"
+          p={{ base: 8, md: 10, lg: 12 }}
+          textAlign="center"
+          color="white"
+          mx="auto"
+        >
+          <Text textStyle="headlineLg" mb="3" fontSize={{ base: 'xl', md: '2xl' }}>
             Start your next outing
           </Text>
-          <Text textStyle="bodyMd" color="whiteAlpha.800" mb="8" maxW="md" mx="auto">
-            Create a trip now, or request a demo — we will show you how Flunexia simplifies coordination.
+          <Text textStyle="bodyMd" color="whiteAlpha.800" mb="8" maxW="md" mx="auto" px="2" lineHeight="1.6">
+            {textWithBrand('Create a trip now, or request a demo — we will show you how Flunexia simplifies coordination.')}
           </Text>
-          <HStack justify="center" gap="3" flexWrap="wrap">
-            <RouterLink to={createTripPath}>
-              <Button {...stitchGreenButton} px="8" py="3.5">
+          <Stack direction={{ base: 'column', sm: 'row' }} gap="3" justify="center" align="center" px="2">
+            <RouterLink to={createTripPath} style={{ width: '100%', maxWidth: '16rem' }}>
+              <Button {...stitchGreenButton} px="8" py="3.5" w="full">
                 Create a trip
               </Button>
             </RouterLink>
-            <RouterLink to="/contact">
+            <RouterLink to="/contact" style={{ width: '100%', maxWidth: '16rem' }}>
               <Button
                 bg="transparent"
                 color="white"
@@ -201,11 +304,12 @@ export function HomePage() {
                 borderRadius="pill"
                 px="8"
                 py="3.5"
+                w="full"
               >
                 Request a demo
               </Button>
             </RouterLink>
-          </HStack>
+          </Stack>
           {isAuthenticated && (
             <RouterLink to={portalPath}>
               <Text textStyle="labelMd" color="accentMint" mt="6" display="inline-block">

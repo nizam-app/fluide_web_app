@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Button, Flex, HStack, Stack } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, HStack, Stack } from '@chakra-ui/react'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { getHomePath } from '../../lib/roles'
@@ -18,67 +18,106 @@ export function MarketingNav() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <Box as="header" bg="surface" borderBottomWidth="1px" borderColor="outlineVariant" position="sticky" top="0" zIndex={50}>
-      <Flex maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} h="16" align="center" justify="space-between">
-        <FluideLogo to="/" />
-        <HStack as="nav" gap="8" display={{ base: 'none', md: 'flex' }}>
-          {publicLinks.map((link) => {
-            const active = pathname === link.href
-            return (
-              <RouterLink key={link.href} to={link.href}>
-                <Box
-                  textStyle="labelMd"
-                  color={active ? 'primary' : 'onSurface'}
-                  fontWeight="600"
-                  borderBottomWidth={active ? '3px' : 0}
-                  borderColor="primary"
-                  pb={active ? '1' : 0}
-                  _hover={{ color: 'primary' }}
-                >
-                  {link.label}
-                </Box>
-              </RouterLink>
-            )
-          })}
-        </HStack>
-        <HStack gap="4" display={{ base: 'none', md: 'flex' }}>
-          {isAuthenticated ? (
-            <RouterLink to={getHomePath(user.role)}>
-              <Button {...stitchBlackButton} px="6" py="2">
-                Go to Dashboard
-              </Button>
-            </RouterLink>
-          ) : (
-            <>
-              <RouterLink to="/login">
-                <Box textStyle="labelMd" fontWeight="600" _hover={{ color: 'primary' }}>
-                  Login
-                </Box>
-              </RouterLink>
-              <RouterLink to="/login">
-                <Button {...stitchBlackButton} px="6" py="2">
-                  Get Started
+    <Box
+      as="header"
+      bg="surface"
+      borderBottomWidth="1px"
+      borderColor="outlineVariant"
+      position="sticky"
+      top="0"
+      zIndex={50}
+      w="full"
+    >
+      <Box maxW="contentMax" mx="auto" px={{ base: 4, md: 8 }} w="full">
+        <Grid
+          templateColumns={{ base: '1fr auto', md: 'auto 1fr auto' }}
+          alignItems="center"
+          minH="16"
+          py="2"
+          gap={{ md: 8 }}
+          w="full"
+        >
+          <Box translate="no" lang="zxx" className="notranslate brand-lock">
+            <FluideLogo to="/" />
+          </Box>
+
+          <HStack
+            as="nav"
+            gap="8"
+            display={{ base: 'none', md: 'flex' }}
+            justify="center"
+            justifySelf="center"
+          >
+            {publicLinks.map((link) => {
+              const active = pathname === link.href
+              return (
+                <RouterLink key={link.href} to={link.href}>
+                  <Box
+                    textStyle="labelMd"
+                    color={active ? 'primary' : 'onSurface'}
+                    fontWeight="600"
+                    borderBottomWidth={active ? '3px' : 0}
+                    borderColor="primary"
+                    pb={active ? '1' : 0}
+                    whiteSpace="nowrap"
+                    _hover={{ color: 'primary' }}
+                  >
+                    {link.label}
+                  </Box>
+                </RouterLink>
+              )
+            })}
+          </HStack>
+
+          <HStack gap="4" display={{ base: 'none', md: 'flex' }} justifySelf="end">
+            {isAuthenticated ? (
+              <RouterLink to={getHomePath(user.role)}>
+                <Button {...stitchBlackButton} px="6" py="2" size="sm">
+                  Dashboard
                 </Button>
               </RouterLink>
-            </>
-          )}
-        </HStack>
-        <Button display={{ base: 'inline-flex', md: 'none' }} variant="ghost" size="sm" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
-          <MaterialIcon name="menu" />
-        </Button>
-      </Flex>
+            ) : (
+              <>
+                <RouterLink to="/login">
+                  <Box textStyle="labelMd" fontWeight="600" _hover={{ color: 'primary' }} whiteSpace="nowrap">
+                    Login
+                  </Box>
+                </RouterLink>
+                <RouterLink to="/login">
+                  <Button {...stitchBlackButton} px="6" py="2" size="sm" whiteSpace="nowrap">
+                    Get Started
+                  </Button>
+                </RouterLink>
+              </>
+            )}
+          </HStack>
+
+          <Button
+            display={{ base: 'inline-flex', md: 'none' }}
+            variant="ghost"
+            size="sm"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            justifySelf="end"
+          >
+            <MaterialIcon name={menuOpen ? 'close' : 'menu'} decorative />
+          </Button>
+        </Grid>
+      </Box>
+
       {menuOpen && (
-        <Box display={{ md: 'none' }} px="marginMobile" pb="4" borderTopWidth="1px" borderColor="outlineVariant">
-          <Stack gap="3" pt="3">
+        <Box display={{ md: 'none' }} px="4" pb="4" borderTopWidth="1px" borderColor="outlineVariant" w="full">
+          <Stack gap="3" pt="3" maxW="contentMax" mx="auto">
             {publicLinks.map((link) => (
               <RouterLink key={link.href} to={link.href} onClick={() => setMenuOpen(false)}>
-                <Box textStyle="labelMd" fontWeight="600">
+                <Box textStyle="labelMd" fontWeight="600" py="1">
                   {link.label}
                 </Box>
               </RouterLink>
             ))}
             <RouterLink to="/login" onClick={() => setMenuOpen(false)}>
-              <Box textStyle="labelMd" fontWeight="600">
+              <Box textStyle="labelMd" fontWeight="600" py="1">
                 Login
               </Box>
             </RouterLink>

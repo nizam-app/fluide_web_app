@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Box, Button, Collapsible, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
+import { textWithBrand } from '../../lib/textWithBrand'
 
 function FaqItem({ question, answer, defaultOpen = false, alwaysVisible = false }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -9,10 +10,10 @@ function FaqItem({ question, answer, defaultOpen = false, alwaysVisible = false 
     return (
       <Box borderWidth="1px" borderColor="outlineVariant" borderRadius="fluide3xl" overflow="hidden" bg="surface" p={{ base: 5, md: 6 }}>
         <Text textStyle="labelMd" color="onBackground" mb="3" fontWeight="700">
-          {question}
+          {textWithBrand(question)}
         </Text>
         <Text textStyle="bodyMd" color="onSurfaceVariant" lineHeight="1.6">
-          {answer}
+          {textWithBrand(answer)}
         </Text>
       </Box>
     )
@@ -34,7 +35,7 @@ function FaqItem({ question, answer, defaultOpen = false, alwaysVisible = false 
         onClick={() => setOpen((v) => !v)}
       >
         <Text textStyle="labelMd" color="onBackground" fontWeight="700" pr="4">
-          {question}
+          {textWithBrand(question)}
         </Text>
         <MaterialIcon name={open ? 'expand_less' : 'expand_more'} size={24} color="outline" flexShrink={0} />
       </Button>
@@ -42,7 +43,7 @@ function FaqItem({ question, answer, defaultOpen = false, alwaysVisible = false 
         <Collapsible.Content>
           <Box px={{ base: 4, md: 5 }} pb={{ base: 4, md: 5 }} pt="0" borderTopWidth={open ? '1px' : 0} borderColor="outlineVariant">
             <Text textStyle="bodyMd" color="onSurfaceVariant" lineHeight="1.6">
-              {answer}
+              {textWithBrand(answer)}
             </Text>
           </Box>
         </Collapsible.Content>

@@ -1,5 +1,6 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
+import { BrandName } from '../atoms/BrandName'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 
 /** Minimal branding for auth — form stays the focus */
@@ -20,16 +21,16 @@ export function AuthBrandingPanel() {
       <RouterLink to="/">
         <Flex align="center" gap="2">
           <MaterialIcon name="eco" size={24} color="accentMint" />
-          <Text fontSize="lg" fontWeight="800" letterSpacing="0.05em">
-            FLUNEXIA
-          </Text>
+          <BrandName uppercase fontSize="lg" fontWeight="800" letterSpacing="0.05em">
+            Flunexia
+          </BrandName>
         </Flex>
       </RouterLink>
       <Text textStyle="bodySm" color="whiteAlpha.700" lineHeight="1.6" maxW="xs">
         Save time on group outings — one place for transport, activities, and services.
       </Text>
       <Text textStyle="bodySm" color="whiteAlpha.500">
-        © 2024 Flunexia
+        © 2024 <BrandName />
       </Text>
     </Box>
   )
