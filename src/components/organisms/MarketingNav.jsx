@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Box, Button, Flex, Grid, HStack, Stack } from '@chakra-ui/react'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { useLocale } from '../../context/LocaleContext'
 import { getHomePath } from '../../lib/roles'
 import { FluideLogo } from '../atoms/FluideLogo'
 import { MaterialIcon } from '../atoms/MaterialIcon'
@@ -16,7 +15,6 @@ const publicLinks = [
 export function MarketingNav() {
   const { pathname } = useLocation()
   const { isAuthenticated, user } = useAuth()
-  const { locale, setLocale } = useLocale()
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -71,28 +69,7 @@ export function MarketingNav() {
             })}
           </HStack>
 
-          <HStack gap="3" display={{ base: 'none', md: 'flex' }} justifySelf="end" align="center">
-            <HStack gap="0" borderWidth="1px" borderColor="outlineVariant" borderRadius="pill" p="0.5" flexShrink={0}>
-              {(['en', 'fr']).map((code) => (
-                <Button
-                  key={code}
-                  size="xs"
-                  minW="8"
-                  borderRadius="pill"
-                  variant={locale === code ? 'solid' : 'ghost'}
-                  bg={locale === code ? 'primary' : 'transparent'}
-                  color={locale === code ? 'onPrimary' : 'onSurface'}
-                  fontWeight="700"
-                  fontSize="xs"
-                  px="3"
-                  onClick={() => setLocale(code)}
-                  aria-label={code === 'en' ? 'English' : 'Français'}
-                  aria-pressed={locale === code}
-                >
-                  {code.toUpperCase()}
-                </Button>
-              ))}
-            </HStack>
+          <HStack gap="4" display={{ base: 'none', md: 'flex' }} justifySelf="end">
             {isAuthenticated ? (
               <RouterLink to={getHomePath(user.role)}>
                 <Button {...stitchBlackButton} px="6" py="2" size="sm">
@@ -139,23 +116,6 @@ export function MarketingNav() {
                 </Box>
               </RouterLink>
             ))}
-            <HStack gap="2" pt="1">
-              {(['en', 'fr']).map((code) => (
-                <Button
-                  key={code}
-                  size="sm"
-                  flex="1"
-                  borderRadius="pill"
-                  variant={locale === code ? 'solid' : 'outline'}
-                  bg={locale === code ? 'primary' : 'transparent'}
-                  color={locale === code ? 'onPrimary' : 'onSurface'}
-                  borderColor="outlineVariant"
-                  onClick={() => setLocale(code)}
-                >
-                  {code.toUpperCase()}
-                </Button>
-              ))}
-            </HStack>
             <RouterLink to="/login" onClick={() => setMenuOpen(false)}>
               <Box textStyle="labelMd" fontWeight="600" py="1">
                 Login

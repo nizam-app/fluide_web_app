@@ -7,7 +7,7 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { featureCards, HERO_IMAGE } from '../data/mockData'
 import { textWithBrand } from '../lib/textWithBrand'
-import { HOME_STEPS, HOME_STEPS_SECTION } from '../content/homeMarketing'
+import { HOME_HERO, HOME_STEPS, HOME_STEPS_SECTION } from '../content/homeMarketing'
 import { useLocale } from '../context/LocaleContext'
 import { stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
