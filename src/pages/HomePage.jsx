@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { getHomePath, ROLES } from '../lib/roles'
 import { BrandName } from '../components/atoms/BrandName'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
+import { InstallAppBanner } from '../components/organisms/InstallAppBanner'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { featureCards, HERO_IMAGE } from '../data/mockData'
 import { textWithBrand } from '../lib/textWithBrand'
@@ -158,6 +159,8 @@ export function HomePage() {
           </Box>
         </Grid>
       </Box>
+
+      <InstallAppBanner />
 
       {/* How it works */}
       <Box w="full" bg="surfaceContainerLow" py={{ base: 10, md: 14, lg: 16 }}>
