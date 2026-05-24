@@ -2,6 +2,7 @@ import { Box, Button, Flex, Grid, Image, SimpleGrid, Stack, Text } from '@chakra
 import { Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getHomePath, ROLES } from '../lib/roles'
+import { BrandName } from '../components/atoms/BrandName'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { featureCards, HERO_IMAGE } from '../data/mockData'
@@ -10,10 +11,10 @@ import { HOME_STEPS, HOME_STEPS_SECTION } from '../content/homeMarketing'
 import { useLocale } from '../context/LocaleContext'
 import { stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
-const serviceVisuals = [
-  { icon: 'directions_bus', label: 'Transport', iconBg: 'infoBg', iconColor: 'infoFg' },
-  { icon: 'hiking', label: 'Activities', iconBg: 'primaryContainer', iconColor: 'primary' },
-  { icon: 'storefront', label: 'Services', iconBg: 'secondaryContainer', iconColor: 'primary' },
+const serviceVisualKeys = [
+  { key: 'transport', icon: 'directions_bus', iconBg: 'infoBg', iconColor: 'infoFg' },
+  { key: 'activities', icon: 'hiking', iconBg: 'primaryContainer', iconColor: 'primary' },
+  { key: 'services', icon: 'storefront', iconBg: 'secondaryContainer', iconColor: 'primary' },
 ]
 
 const sectionPx = { base: 'marginMobile', md: 'marginDesktop' }
@@ -21,6 +22,7 @@ const sectionPx = { base: 'marginMobile', md: 'marginDesktop' }
 export function HomePage() {
   const { locale } = useLocale()
   const { isAuthenticated, user } = useAuth()
+  const hero = HOME_HERO[locale]
   const steps = HOME_STEPS[locale]
   const stepsSection = HOME_STEPS_SECTION[locale]
   const portalPath = user ? getHomePath(user.role) : '/login'
@@ -47,9 +49,9 @@ export function HomePage() {
               color="onBackground"
               mb="4"
             >
-              Save time on{' '}
+              {hero.titleBefore}
               <Box as="span" color="primary" display="inline">
-                group trip coordination
+                {hero.titleHighlight}
               </Box>
             </Text>
             <Text
@@ -58,9 +60,9 @@ export function HomePage() {
               mb="6"
               lineHeight="1.65"
             >
-              {textWithBrand(
-                'With Flunexia, centralize transport, activities, and services in one place. Fewer emails, less complexity — more visibility and control.',
-              )}
+              {hero.introBefore}
+              <BrandName />
+              {hero.introAfter}
             </Text>
 
             <Stack gap="3" mb="6" direction="column" w="full" maxW={{ lg: '100%' }}>
@@ -72,11 +74,11 @@ export function HomePage() {
                   fontSize="md"
                   w={{ base: 'full', lg: 'fit-content' }}
                   maxW="100%"
-                  aria-label="Create a trip"
+                  aria-label={hero.ctaCreate}
                 >
                   <MaterialIcon name="add" size={22} />
                   <Box as="span" ml="2">
-                    Create a trip
+                    {hero.ctaCreate}
                   </Box>
                 </Button>
               </RouterLink>
@@ -88,20 +90,20 @@ export function HomePage() {
                   fontSize="md"
                   w={{ base: 'full', lg: 'fit-content' }}
                   maxW="100%"
-                  aria-label="Request a demo"
+                  aria-label={hero.ctaDemo}
                 >
                   <MaterialIcon name="videocam" size={22} />
                   <Box as="span" ml="2">
-                    Request a demo
+                    {hero.ctaDemo}
                   </Box>
                 </Button>
               </RouterLink>
             </Stack>
 
             <Flex gap="2" flexWrap="wrap" w="full" maxW="100%">
-              {serviceVisuals.map((s) => (
+              {serviceVisualKeys.map((s) => (
                 <Flex
-                  key={s.label}
+                  key={s.key}
                   align="center"
                   gap="2"
                   px="3"
@@ -123,7 +125,7 @@ export function HomePage() {
                     <MaterialIcon name={s.icon} size={18} color={s.iconColor} />
                   </Flex>
                   <Text fontSize="sm" fontWeight="600" color="onSurface">
-                    {s.label}
+                    {hero.services[s.key]}
                   </Text>
                 </Flex>
               ))}
