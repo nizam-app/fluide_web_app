@@ -40,6 +40,7 @@ export function AuthPage() {
   const [fullName, setFullName] = useState('')
   const [accountType, setAccountType] = useState(ROLES.ORGANIZER)
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const [showDemo, setShowDemo] = useState(false)
   const { login, register, isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
@@ -52,18 +53,21 @@ export function AuthPage() {
     return <Navigate to={target} replace />
   }
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
     if (!email.trim() || !password.trim()) {
       setError('Email and password are required.')
       return
     }
+    setSubmitting(true)
     try {
-      const session = login({ email, accountType })
+      const session = await login({ email, password })
       navigate(from ?? getHomePath(session.role), { replace: true })
     } catch (err) {
       setError(err.message ?? 'Login failed.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -77,15 +81,20 @@ export function AuthPage() {
     if (tab !== 'login') setTab('login')
   }
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault()
     setError('')
     if (!email.trim() || !password.trim()) {
       setError('Email and password are required.')
       return
     }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      return
+    }
+    setSubmitting(true)
     try {
-      const session = register({
+      const session = await register({
         email,
         password,
         accountType,
@@ -96,6 +105,8 @@ export function AuthPage() {
       navigate(getHomePath(session.role), { replace: true })
     } catch (err) {
       setError(err.message ?? 'Sign up failed.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -144,7 +155,6 @@ export function AuthPage() {
                 Log in to your space
               </Text>
               <Flex as="form" direction="column" gap="4" onSubmit={handleLogin}>
-                <AccountTypePicker accountType={accountType} onChange={setAccountType} />
                 <Box>
                   <Text textStyle="labelMd" mb="2">
                     Email
@@ -179,7 +189,7 @@ export function AuthPage() {
                     {error}
                   </Text>
                 )}
-                <Button w="full" py="4" type="submit" {...stitchBlackButton} fontSize="md">
+                <Button w="full" py="4" type="submit" {...stitchBlackButton} fontSize="md" loading={submitting} disabled={submitting}>
                   Log in
                 </Button>
                 <SecurityNote />
@@ -262,7 +272,7 @@ export function AuthPage() {
                     {error}
                   </Text>
                 )}
-                <Button w="full" py="4" type="submit" {...stitchBlackButton} fontSize="md">
+                <Button w="full" py="4" type="submit" {...stitchBlackButton} fontSize="md" loading={submitting} disabled={submitting}>
                   Sign up
                 </Button>
                 <SecurityNote />

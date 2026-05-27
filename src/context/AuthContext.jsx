@@ -1,107 +1,142 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { isAdminEmail } from '../data/mockData'
+import api, { onSessionExpired } from '../lib/api'
 import {
   clearAuthSession,
-  findRegisteredUser,
-  loadAuthSession,
-  registerUser,
-  saveAuthSession,
-  seedDemoUsers,
+  loadCachedUser,
+  loadToken,
+  saveCachedUser,
+  saveToken,
 } from '../lib/authStorage'
 import { ROLES } from '../lib/roles'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => loadAuthSession())
+  const [user, setUser] = useState(() => loadCachedUser())
+  const [hydrating, setHydrating] = useState(() => Boolean(loadToken()))
+  const [error, setError] = useState(null)
 
-  useEffect(() => {
-    seedDemoUsers()
+  const applySession = useCallback((session) => {
+    if (!session) {
+      clearAuthSession()
+      setUser(null)
+      return null
+    }
+    if (session.token) saveToken(session.token)
+    if (session.user) {
+      saveCachedUser(session.user)
+      setUser(session.user)
+    }
+    return session.user
   }, [])
 
-  const persistUser = useCallback((session) => {
-    saveAuthSession(session)
-    setUser(session)
-    return session
+  useEffect(() => {
+    const unsubscribe = onSessionExpired(() => {
+      setUser(null)
+      setError('Your session has expired. Please log in again.')
+    })
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    async function hydrate() {
+      const token = loadToken()
+      if (!token) {
+        setHydrating(false)
+        return
+      }
+      try {
+        const result = await api.auth.me()
+        if (!cancelled && result?.user) {
+          saveCachedUser(result.user)
+          setUser(result.user)
+        }
+      } catch (err) {
+        if (err?.status === 401) {
+          clearAuthSession()
+          if (!cancelled) setUser(null)
+        }
+      } finally {
+        if (!cancelled) setHydrating(false)
+      }
+    }
+    hydrate()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const login = useCallback(
-    ({ email, accountType }) => {
-      const normalizedEmail = email.trim().toLowerCase()
-
-      if (isAdminEmail(normalizedEmail)) {
-        return persistUser({
-          email: normalizedEmail,
-          name: 'Flunexia Admin',
-          role: ROLES.ADMIN,
-        })
-      }
-
-      if (accountType !== ROLES.ORGANIZER && accountType !== ROLES.PROVIDER) {
-        throw new Error('Please select Organizer or Supplier.')
-      }
-
-      const registered = findRegisteredUser(normalizedEmail)
-      if (!registered) {
-        throw new Error('No account found for this email. Please register first.')
-      }
-
-      if (registered.role !== accountType) {
-        throw new Error(`This email is registered as ${registered.role === ROLES.ORGANIZER ? 'Organizer' : 'Supplier'}.`)
-      }
-
-      return persistUser({
-        email: normalizedEmail,
-        name: registered.name,
-        role: registered.role,
-        organizationType: registered.organizationType,
-        providerType: registered.providerType,
-      })
+    async ({ email, password }) => {
+      setError(null)
+      const payload = { email: email.trim().toLowerCase(), password }
+      const result = await api.auth.login(payload)
+      return applySession(result)
     },
-    [persistUser],
+    [applySession],
   )
 
   const register = useCallback(
-    ({ email, accountType, name, organizationType, providerType }) => {
-      const normalizedEmail = email.trim().toLowerCase()
-
-      if (isAdminEmail(normalizedEmail)) {
-        throw new Error('Admin accounts cannot be created through public registration.')
+    async ({ email, password, accountType, name, organizationType, providerType }) => {
+      setError(null)
+      const payload = {
+        email: email.trim().toLowerCase(),
+        password,
+        accountType,
+        name: name?.trim() || undefined,
       }
-      if (accountType !== ROLES.ORGANIZER && accountType !== ROLES.PROVIDER) {
-        throw new Error('Please select Organizer or Supplier.')
-      }
-      if (findRegisteredUser(normalizedEmail)) {
-        throw new Error('An account with this email already exists. Please log in.')
-      }
-
-      const profile = registerUser({
-        email: normalizedEmail,
-        name: name?.trim() || normalizedEmail.split('@')[0],
-        role: accountType,
-        organizationType: accountType === ROLES.ORGANIZER ? organizationType : undefined,
-        providerType: accountType === ROLES.PROVIDER ? providerType : undefined,
-      })
-
-      return persistUser({
-        email: profile.email,
-        name: profile.name,
-        role: profile.role,
-        organizationType: profile.organizationType,
-        providerType: profile.providerType,
-      })
+      if (accountType === ROLES.ORGANIZER) payload.organizationType = organizationType
+      if (accountType === ROLES.PROVIDER) payload.providerType = providerType
+      const result = await api.auth.register(payload)
+      return applySession(result)
     },
-    [persistUser],
+    [applySession],
   )
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await api.auth.logout()
+    } catch {
+      // ignore — stateless logout
+    }
     clearAuthSession()
     setUser(null)
   }, [])
 
+  const refresh = useCallback(async () => {
+    try {
+      const result = await api.auth.me()
+      if (result?.user) {
+        saveCachedUser(result.user)
+        setUser(result.user)
+      }
+      return result?.user
+    } catch (err) {
+      if (err?.status === 401) {
+        clearAuthSession()
+        setUser(null)
+      }
+      throw err
+    }
+  }, [])
+
+  const updateProfile = useCallback(async (payload) => {
+    const result = await api.users.updateProfile(payload)
+    if (result?.user) {
+      saveCachedUser(result.user)
+      setUser(result.user)
+    }
+    return result?.user
+  }, [])
+
+  const updatePassword = useCallback((payload) => api.users.updatePassword(payload), [])
+
   const value = useMemo(
     () => ({
       user,
+      hydrating,
+      error,
       isAuthenticated: Boolean(user),
       isAdmin: user?.role === ROLES.ADMIN,
       isOrganizer: user?.role === ROLES.ORGANIZER,
@@ -109,13 +144,18 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      refresh,
+      updateProfile,
+      updatePassword,
+      clearError: () => setError(null),
     }),
-    [user, login, register, logout],
+    [user, hydrating, error, login, register, logout, refresh, updateProfile, updatePassword],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) {

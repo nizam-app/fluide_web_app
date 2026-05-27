@@ -1,14 +1,96 @@
+import { useEffect, useState } from 'react'
 import { Box, Button, Grid, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { PortalLayout } from '../components/templates/PortalLayout'
 import { useAuth } from '../context/AuthContext'
 import { ORGANIZATION_TYPES, PROVIDER_TYPES } from '../data/mockData'
 import { getRoleLabel } from '../lib/roles'
-import { fluideInputStyles, stitchGreenButton } from '../theme/fluide-theme'
+import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
 export function ProfilePage() {
-  const { user, isOrganizer, isProvider, isAdmin } = useAuth()
+  const { user, isOrganizer, isProvider, isAdmin, updateProfile, updatePassword } = useAuth()
   const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
+
+  const [profile, setProfile] = useState({
+    name: user?.name || '',
+    organizationType: user?.organizationType || 'Municipality',
+    providerType: user?.providerType || 'Transport',
+  })
+  const [profileStatus, setProfileStatus] = useState({ type: null, message: '' })
+  const [profileBusy, setProfileBusy] = useState(false)
+
+  const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirm: '' })
+  const [passwordStatus, setPasswordStatus] = useState({ type: null, message: '' })
+  const [passwordBusy, setPasswordBusy] = useState(false)
+
+  useEffect(() => {
+    const handle = Promise.resolve().then(() =>
+      setProfile({
+        name: user?.name || '',
+        organizationType: user?.organizationType || 'Municipality',
+        providerType: user?.providerType || 'Transport',
+      }),
+    )
+    return () => {
+      handle.catch(() => {})
+    }
+  }, [user])
+
+  const updateProfileField = (field) => (event) =>
+    setProfile((prev) => ({ ...prev, [field]: event.target.value }))
+  const updatePasswordField = (field) => (event) =>
+    setPassword((prev) => ({ ...prev, [field]: event.target.value }))
+
+  const handleProfileSubmit = async (event) => {
+    event.preventDefault()
+    setProfileStatus({ type: null, message: '' })
+    if (!profile.name.trim()) {
+      setProfileStatus({ type: 'error', message: 'Name is required.' })
+      return
+    }
+    setProfileBusy(true)
+    try {
+      const payload = { name: profile.name.trim() }
+      if (isOrganizer) payload.organizationType = profile.organizationType
+      if (isProvider) payload.providerType = profile.providerType
+      await updateProfile(payload)
+      setProfileStatus({ type: 'success', message: 'Profile updated.' })
+    } catch (err) {
+      setProfileStatus({ type: 'error', message: err?.message || 'Could not update your profile.' })
+    } finally {
+      setProfileBusy(false)
+    }
+  }
+
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault()
+    setPasswordStatus({ type: null, message: '' })
+    if (!password.currentPassword || !password.newPassword) {
+      setPasswordStatus({ type: 'error', message: 'Current and new passwords are required.' })
+      return
+    }
+    if (password.newPassword.length < 6) {
+      setPasswordStatus({ type: 'error', message: 'New password must be at least 6 characters.' })
+      return
+    }
+    if (password.newPassword !== password.confirm) {
+      setPasswordStatus({ type: 'error', message: 'New password and confirmation do not match.' })
+      return
+    }
+    setPasswordBusy(true)
+    try {
+      await updatePassword({
+        currentPassword: password.currentPassword,
+        newPassword: password.newPassword,
+      })
+      setPasswordStatus({ type: 'success', message: 'Password updated.' })
+      setPassword({ currentPassword: '', newPassword: '', confirm: '' })
+    } catch (err) {
+      setPasswordStatus({ type: 'error', message: err?.message || 'Could not change your password.' })
+    } finally {
+      setPasswordBusy(false)
+    }
+  }
 
   return (
     <PortalLayout>
@@ -22,25 +104,29 @@ export function ProfilePage() {
           {isProvider && 'Your supplier account for transport, activities, catering, hotels, and services.'}
           {isAdmin && 'Internal admin account settings.'}
         </Text>
-        <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant">
-          <Stack gap="5" as="form">
+
+        <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" mb="6">
+          <Text textStyle="headlineSm" mb="4">
+            Account details
+          </Text>
+          <Stack gap="5" as="form" onSubmit={handleProfileSubmit}>
             <Box>
               <Text textStyle="labelMd" mb="2">
                 Name
               </Text>
-              <Input defaultValue={user?.name ?? ''} css={fluideInputStyles} />
+              <Input value={profile.name} onChange={updateProfileField('name')} css={fluideInputStyles} />
             </Box>
             <Box>
               <Text textStyle="labelMd" mb="2">
                 Email
               </Text>
-              <Input defaultValue={user?.email ?? ''} readOnly css={fluideInputStyles} opacity={0.85} />
+              <Input value={user?.email ?? ''} readOnly css={fluideInputStyles} opacity={0.85} />
             </Box>
             <Box>
               <Text textStyle="labelMd" mb="2">
                 Account type
               </Text>
-              <Input defaultValue={getRoleLabel(user?.role)} readOnly css={fluideInputStyles} opacity={0.85} />
+              <Input value={getRoleLabel(user?.role)} readOnly css={fluideInputStyles} opacity={0.85} />
             </Box>
             {isOrganizer && (
               <Box>
@@ -48,7 +134,11 @@ export function ProfilePage() {
                   Organization type
                 </Text>
                 <NativeSelect.Root>
-                  <NativeSelect.Field css={fluideInputStyles} defaultValue={user?.organizationType ?? 'Municipality'}>
+                  <NativeSelect.Field
+                    css={fluideInputStyles}
+                    value={profile.organizationType}
+                    onChange={updateProfileField('organizationType')}
+                  >
                     {ORGANIZATION_TYPES.map((t) => (
                       <option key={t}>{t}</option>
                     ))}
@@ -62,7 +152,11 @@ export function ProfilePage() {
                   Supplier type
                 </Text>
                 <NativeSelect.Root>
-                  <NativeSelect.Field css={fluideInputStyles} defaultValue={user?.providerType ?? 'Transport'}>
+                  <NativeSelect.Field
+                    css={fluideInputStyles}
+                    value={profile.providerType}
+                    onChange={updateProfileField('providerType')}
+                  >
                     {PROVIDER_TYPES.map((t) => (
                       <option key={t}>{t}</option>
                     ))}
@@ -70,8 +164,72 @@ export function ProfilePage() {
                 </NativeSelect.Root>
               </Box>
             )}
-            <Button w="fit-content" {...stitchGreenButton} px="8">
-              Save Changes
+            {profileStatus.message && (
+              <Text textStyle="bodySm" color={profileStatus.type === 'success' ? 'primary' : 'error'}>
+                {profileStatus.message}
+              </Text>
+            )}
+            <Button type="submit" w="fit-content" {...stitchGreenButton} px="8" loading={profileBusy} disabled={profileBusy}>
+              Save changes
+            </Button>
+          </Stack>
+        </Box>
+
+        <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant">
+          <Text textStyle="headlineSm" mb="4">
+            Change password
+          </Text>
+          <Stack gap="5" as="form" onSubmit={handlePasswordSubmit}>
+            <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="5">
+              <Box>
+                <Text textStyle="labelMd" mb="2">
+                  Current password
+                </Text>
+                <Input
+                  type="password"
+                  value={password.currentPassword}
+                  onChange={updatePasswordField('currentPassword')}
+                  css={fluideInputStyles}
+                />
+              </Box>
+              <Box />
+              <Box>
+                <Text textStyle="labelMd" mb="2">
+                  New password
+                </Text>
+                <Input
+                  type="password"
+                  value={password.newPassword}
+                  onChange={updatePasswordField('newPassword')}
+                  css={fluideInputStyles}
+                />
+              </Box>
+              <Box>
+                <Text textStyle="labelMd" mb="2">
+                  Confirm new password
+                </Text>
+                <Input
+                  type="password"
+                  value={password.confirm}
+                  onChange={updatePasswordField('confirm')}
+                  css={fluideInputStyles}
+                />
+              </Box>
+            </Grid>
+            {passwordStatus.message && (
+              <Text textStyle="bodySm" color={passwordStatus.type === 'success' ? 'primary' : 'error'}>
+                {passwordStatus.message}
+              </Text>
+            )}
+            <Button
+              type="submit"
+              w="fit-content"
+              {...stitchBlackButton}
+              px="8"
+              loading={passwordBusy}
+              disabled={passwordBusy}
+            >
+              Update password
             </Button>
           </Stack>
         </Box>

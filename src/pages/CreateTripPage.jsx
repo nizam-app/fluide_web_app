@@ -1,11 +1,16 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Button, Flex, Grid, Image, Input, NativeSelect, Stack, Text, Textarea } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { PortalLayout } from '../components/templates/PortalLayout'
-import { NEED_TYPE_OPTIONS, trips } from '../data/mockData'
+import { NEED_TYPE_OPTIONS } from '../data/mockData'
+import api from '../lib/api'
 import { textWithBrand } from '../lib/textWithBrand'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
+
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+const ACCEPTED_MIME = 'image/jpeg,image/png,image/webp,image/gif'
 
 function FormField({ label, children }) {
   return (
@@ -20,6 +25,111 @@ function FormField({ label, children }) {
 
 export function CreateTripPage() {
   const navigate = useNavigate()
+  const fileInputRef = useRef(null)
+  const [form, setForm] = useState({
+    title: '',
+    location: '',
+    startDate: '',
+    endDate: '',
+    participants: '',
+    needType: NEED_TYPE_OPTIONS[0],
+    description: '',
+    accessibility: '',
+  })
+  const [imageFile, setImageFile] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [pendingTripId, setPendingTripId] = useState(null)
+
+  const update = (field) => (event) => setForm((prev) => ({ ...prev, [field]: event.target.value }))
+
+  const imagePreview = useMemo(
+    () => (imageFile ? URL.createObjectURL(imageFile) : ''),
+    [imageFile],
+  )
+  useEffect(() => {
+    if (!imagePreview) return undefined
+    return () => URL.revokeObjectURL(imagePreview)
+  }, [imagePreview])
+
+  const handleFile = (event) => {
+    setError('')
+    const file = event.target.files?.[0]
+    if (!file) {
+      setImageFile(null)
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      setError('Please pick an image file (JPG, PNG, WebP, or GIF).')
+      return
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError('Image is too large. Max size is 5 MB.')
+      return
+    }
+    setImageFile(file)
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setError('')
+
+    const participants = Number(form.participants)
+    if (!Number.isInteger(participants) || participants < 1) {
+      setError('Please provide a valid number of participants.')
+      return
+    }
+    if (!form.title.trim() || !form.location.trim() || !form.startDate || !form.description.trim()) {
+      setError('Title, location, start date, and description are required.')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      let tripId = pendingTripId
+      if (!tripId) {
+        const payload = {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          location: form.location.trim(),
+          startDate: form.startDate,
+          participants,
+          needTypes: [form.needType],
+          status: 'published',
+        }
+        if (form.endDate) payload.endDate = form.endDate
+        if (form.accessibility.trim()) payload.accessibility = form.accessibility.trim()
+
+        const result = await api.trips.create(payload)
+        tripId = result?.trip?._id || result?.trip?.id
+        setPendingTripId(tripId)
+      }
+
+      if (tripId && imageFile) {
+        try {
+          await api.trips.uploadImage(tripId, imageFile)
+        } catch (uploadErr) {
+          const isConfigError = uploadErr?.status === 503
+          setError(
+            isConfigError
+              ? 'The trip was created, but image upload is not configured on the server (missing CLOUDINARY_* env vars or backend not restarted). Retry once the server is ready, or continue without an image.'
+              : `Trip created, but image upload failed: ${uploadErr?.message || 'unknown error'}. Retry or continue without an image.`,
+          )
+          return
+        }
+      }
+
+      navigate(tripId ? `/trips/${tripId}` : '/trips')
+    } catch (err) {
+      setError(err?.message || 'Could not create the trip.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleContinueWithoutImage = () => {
+    if (pendingTripId) navigate(`/trips/${pendingTripId}`)
+  }
 
   return (
     <PortalLayout>
@@ -36,25 +146,55 @@ export function CreateTripPage() {
 
         <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap="8">
           <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" shadow="level1">
-            <Stack gap="5" as="form" onSubmit={(e) => { e.preventDefault(); navigate('/trips') }}>
+            <Stack gap="5" as="form" onSubmit={handleSubmit}>
               <FormField label="Trip Title">
-                <Input placeholder="e.g. Summer Youth Camp Transport" css={fluideInputStyles} />
+                <Input
+                  placeholder="e.g. Summer Youth Camp Transport"
+                  value={form.title}
+                  onChange={update('title')}
+                  css={fluideInputStyles}
+                />
               </FormField>
-              <Grid templateColumns="1fr 1fr" gap="4">
-                <FormField label="Date">
-                  <Input type="date" css={fluideInputStyles} />
+              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
+                <FormField label="Start date">
+                  <Input type="date" value={form.startDate} onChange={update('startDate')} css={fluideInputStyles} />
                 </FormField>
-                <FormField label="Location">
-                  <Input placeholder="City, Region" css={fluideInputStyles} />
+                <FormField label="End date (optional)">
+                  <Input type="date" value={form.endDate} onChange={update('endDate')} css={fluideInputStyles} />
                 </FormField>
               </Grid>
-              <Grid templateColumns="1fr 1fr" gap="4">
-                <FormField label="Number of Participants">
-                  <Input type="number" placeholder="24" css={fluideInputStyles} />
+              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
+                <FormField label="Location">
+                  <Input
+                    placeholder="City, Region"
+                    value={form.location}
+                    onChange={update('location')}
+                    css={fluideInputStyles}
+                  />
                 </FormField>
-                <FormField label="Need Type">
+                <FormField label="Accessibility (optional)">
+                  <Input
+                    placeholder="e.g. High, ramp access"
+                    value={form.accessibility}
+                    onChange={update('accessibility')}
+                    css={fluideInputStyles}
+                  />
+                </FormField>
+              </Grid>
+              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
+                <FormField label="Number of Participants">
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="24"
+                    value={form.participants}
+                    onChange={update('participants')}
+                    css={fluideInputStyles}
+                  />
+                </FormField>
+                <FormField label="Primary Need Type">
                   <NativeSelect.Root>
-                    <NativeSelect.Field css={fluideInputStyles}>
+                    <NativeSelect.Field css={fluideInputStyles} value={form.needType} onChange={update('needType')}>
                       {NEED_TYPE_OPTIONS.map((o) => (
                         <option key={o}>{o}</option>
                       ))}
@@ -63,11 +203,39 @@ export function CreateTripPage() {
                 </FormField>
               </Grid>
               <FormField label="Description">
-                <Textarea rows={4} placeholder="Describe requirements for providers..." borderRadius="fluide" borderColor="outlineVariant" bg="surfaceContainerLow" />
+                <Textarea
+                  rows={4}
+                  placeholder="Describe requirements for providers..."
+                  value={form.description}
+                  onChange={update('description')}
+                  borderRadius="fluide"
+                  borderColor="outlineVariant"
+                  bg="surfaceContainerLow"
+                />
               </FormField>
-              <Flex justify="flex-end">
-                <Button {...stitchBlackButton} px="10" py="3" type="submit">
-                  Publish Request
+
+              {error && (
+                <Box
+                  bg="errorContainer"
+                  borderRadius="fluide"
+                  borderWidth="1px"
+                  borderColor="error"
+                  p="3"
+                >
+                  <Text textStyle="bodySm" color="error">
+                    {error}
+                  </Text>
+                </Box>
+              )}
+
+              <Flex justify="flex-end" gap="3" flexWrap="wrap">
+                {pendingTripId && (
+                  <Button variant="outline" borderRadius="pill" onClick={handleContinueWithoutImage}>
+                    Continue without image
+                  </Button>
+                )}
+                <Button {...stitchBlackButton} px="10" py="3" type="submit" loading={submitting} disabled={submitting}>
+                  {pendingTripId ? 'Retry image upload' : 'Publish Request'}
                 </Button>
               </Flex>
             </Stack>
@@ -94,8 +262,80 @@ export function CreateTripPage() {
                 ))}
               </Stack>
             </Box>
-            <Box borderRadius="fluide3xl" overflow="hidden" position="relative" h="48">
-              <Image src={trips[0].image} alt="Community" w="full" h="full" objectFit="cover" />
+
+            <Box
+              bg="surface"
+              borderRadius="fluide3xl"
+              borderWidth="1px"
+              borderColor="outlineVariant"
+              p="5"
+            >
+              <Text textStyle="labelMd" mb="2">
+                Cover image (optional)
+              </Text>
+              <Text textStyle="bodySm" color="onSurfaceVariant" mb="4">
+                JPG, PNG, WebP, or GIF — up to 5 MB. Stored on Cloudinary.
+              </Text>
+
+              <Box
+                borderRadius="fluide3xl"
+                overflow="hidden"
+                position="relative"
+                h="40"
+                bg="surfaceContainer"
+                mb="3"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                {imagePreview ? (
+                  <Image src={imagePreview} alt="Selected cover" w="full" h="full" objectFit="cover" />
+                ) : (
+                  <Flex direction="column" align="center" gap="1" color="onSurfaceVariant">
+                    <MaterialIcon name="image" size={32} />
+                    <Text textStyle="bodySm">No image selected</Text>
+                  </Flex>
+                )}
+              </Box>
+
+              <Input
+                type="file"
+                ref={fileInputRef}
+                accept={ACCEPTED_MIME}
+                onChange={handleFile}
+                display="none"
+              />
+              <Flex gap="2" flexWrap="wrap">
+                <Button
+                  type="button"
+                  variant="outline"
+                  borderRadius="pill"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <MaterialIcon name="upload" size={16} />
+                  {imageFile ? 'Change image' : 'Choose image'}
+                </Button>
+                {imageFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    color="onSurfaceVariant"
+                    onClick={() => {
+                      setImageFile(null)
+                      if (fileInputRef.current) fileInputRef.current.value = ''
+                    }}
+                  >
+                    Remove
+                  </Button>
+                )}
+              </Flex>
+              {imageFile && (
+                <Text mt="2" textStyle="bodySm" color="onSurfaceVariant" lineClamp={1}>
+                  {imageFile.name} ({Math.round(imageFile.size / 1024)} KB)
+                </Text>
+              )}
             </Box>
           </Stack>
         </Grid>
