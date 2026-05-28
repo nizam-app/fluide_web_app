@@ -3,7 +3,7 @@ export const HOME_HERO = {
   en: {
     titleBefore: 'Save time on ',
     titleHighlight: 'group trip coordination',
-    introBefore: 'With ',
+    introBefore: 'With',
     introAfter:
       ', centralize transport, activities, and services in one place. Fewer emails, less complexity — more visibility and control.',
     ctaCreate: 'Create a trip',
@@ -13,12 +13,80 @@ export const HOME_HERO = {
   fr: {
     titleBefore: 'Gagnez du temps sur ',
     titleHighlight: 'la coordination des voyages de groupe',
-    introBefore: 'Avec ',
+    introBefore: 'Avec',
     introAfter:
       ', centralisez les transports, les activités et les services en un seul endroit. Moins d’e-mails, moins de complexité : plus de visibilité et de contrôle.',
     ctaCreate: 'Créer un voyage',
     ctaDemo: 'Demander une démo',
     services: { transport: 'Transport', activities: 'Activités', services: 'Services' },
+  },
+}
+
+/** Install app banner — brand split for translate-safe spacing */
+export const INSTALL_APP = {
+  en: {
+    badge: 'Mobile app',
+    titleBefore: 'Use',
+    titleAfter: ' on your phone',
+    description: 'Install the app in seconds — coordinate trips from anywhere.',
+    installCta: 'Install app',
+    installingCta: 'Installing…',
+    openPhoneCta: 'Open on phone',
+    orScan: 'or scan the QR code →',
+    scanLabel: 'Scan to install',
+    scanHint: 'Point your camera at the code',
+    perks: [
+      { icon: 'bolt', label: 'One-tap access from your home screen' },
+      { icon: 'sync', label: 'Always on the latest version' },
+    ],
+    iosTitle: 'iPhone / iPad',
+    iosStep1: 'Tap Share in Safari',
+    iosStep2: 'Choose Add to Home Screen',
+  },
+  fr: {
+    badge: 'Application mobile',
+    titleBefore: 'Utilisez',
+    titleAfter: ' sur votre téléphone',
+    description:
+      'Installez l’application en quelques secondes — coordonnez vos voyages où que vous soyez.',
+    installCta: 'Installer l’application',
+    installingCta: 'Installation…',
+    openPhoneCta: 'Ouvrir sur téléphone',
+    orScan: 'ou scannez le code QR →',
+    scanLabel: 'Scanner pour installer',
+    scanHint: 'Pointez votre appareil photo vers le code',
+    perks: [
+      { icon: 'bolt', label: 'Accès en un geste depuis l’écran d’accueil' },
+      { icon: 'sync', label: 'Toujours sur la dernière version' },
+    ],
+    iosTitle: 'iPhone / iPad',
+    iosStep1: 'Appuyez sur Partager dans Safari',
+    iosStep2: 'Choisissez Sur l’écran d’accueil',
+  },
+}
+
+export const FOOTER = {
+  en: {
+    tagline: 'Des sorties, du lien, du sens.',
+    copyrightBefore: '© 2024',
+    copyrightAfter: '. All rights reserved.',
+    links: [
+      { label: 'About Us', href: '#' },
+      { label: 'Terms of Service', href: '#' },
+      { label: 'Privacy Policy', href: '#' },
+      { label: 'Impact Report', href: '#' },
+    ],
+  },
+  fr: {
+    tagline: 'Des sorties, du lien, du sens.',
+    copyrightBefore: '© 2024',
+    copyrightAfter: '. Tous droits réservés.',
+    links: [
+      { label: 'À propos de nous', href: '#' },
+      { label: "Conditions d'utilisation", href: '#' },
+      { label: 'Politique de confidentialité', href: '#' },
+      { label: "Rapport d'impact", href: '#' },
+    ],
   },
 }
 

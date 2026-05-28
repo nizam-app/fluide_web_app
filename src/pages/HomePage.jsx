@@ -2,6 +2,7 @@ import { Box, Button, Flex, Grid, Image, SimpleGrid, Stack, Text } from '@chakra
 import { Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getHomePath, ROLES } from '../lib/roles'
+import { BrandInlineText } from '../components/atoms/BrandInlineText'
 import { BrandName } from '../components/atoms/BrandName'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { InstallAppBanner } from '../components/organisms/InstallAppBanner'
@@ -61,9 +62,7 @@ export function HomePage() {
               mb="6"
               lineHeight="1.65"
             >
-              {hero.introBefore}
-              <BrandName />
-              {hero.introAfter}
+              <BrandInlineText before={hero.introBefore} after={hero.introAfter} />
             </Text>
 
             <Stack gap="3" mb="6" direction="column" w="full" maxW={{ lg: '100%' }}>

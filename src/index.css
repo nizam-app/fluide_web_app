@@ -18,6 +18,12 @@ body {
   translate: no;
 }
 
+/* Space around brand when browser translate skips the notranslate node */
+.brand-lock--inline {
+  margin-inline: 0.32em;
+  vertical-align: baseline;
+}
+
 .material-symbols-outlined {
   translate: no;
 }

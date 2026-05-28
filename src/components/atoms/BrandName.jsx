@@ -8,6 +8,7 @@ export function BrandName({
   children = 'Flunexia',
   as = 'span',
   uppercase = false,
+  inline = false,
   ...props
 }) {
   const label = uppercase ? String(children).toUpperCase() : children
@@ -17,8 +18,8 @@ export function BrandName({
       as={as}
       translate="no"
       lang="zxx"
-      className="notranslate brand-lock"
-      display="inline"
+      className={`notranslate brand-lock${inline ? ' brand-lock--inline' : ''}`}
+      display={inline ? 'inline-block' : 'inline'}
       fontWeight="inherit"
       fontSize="inherit"
       lineHeight="inherit"

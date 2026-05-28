@@ -1,5 +1,6 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
+import { BrandInlineText } from '../atoms/BrandInlineText'
 import { BrandName } from '../atoms/BrandName'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 
@@ -29,8 +30,8 @@ export function AuthBrandingPanel() {
       <Text textStyle="bodySm" color="whiteAlpha.700" lineHeight="1.6" maxW="xs">
         Save time on group outings — one place for transport, activities, and services.
       </Text>
-      <Text textStyle="bodySm" color="whiteAlpha.500">
-        © 2024 <BrandName />
+      <Text textStyle="bodySm" color="whiteAlpha.500" as="span">
+        <BrandInlineText before="© 2024" after="" />
       </Text>
     </Box>
   )

@@ -1,16 +1,14 @@
 import { Box, Flex, HStack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { BrandName } from '../atoms/BrandName'
+import { BrandInlineText } from '../atoms/BrandInlineText'
 import { FluideLogo } from '../atoms/FluideLogo'
-
-const footerLinks = [
-  { label: 'About Us', href: '#' },
-  { label: 'Terms of Service', href: '#' },
-  { label: 'Privacy Policy', href: '#' },
-  { label: 'Impact Report', href: '#' },
-]
+import { FOOTER } from '../../content/homeMarketing'
+import { useLocale } from '../../context/LocaleContext'
 
 export function MarketingFooter({ compact = false }) {
+  const { locale } = useLocale()
+  const copy = FOOTER[locale]
+
   return (
     <Box as="footer" w="full" py="8" borderTopWidth="1px" borderColor="outlineVariant" bg="surface" mt="auto">
       <Flex
@@ -26,15 +24,15 @@ export function MarketingFooter({ compact = false }) {
           <FluideLogo to="/" />
           {!compact && (
             <Text textStyle="bodySm" color="onSurfaceVariant" display={{ base: 'none', sm: 'block' }}>
-              Des sorties, du lien, du sens.
+              {copy.tagline}
             </Text>
           )}
-          <Text textStyle="bodySm" color="onSurfaceVariant">
-            © 2024 <BrandName />. All rights reserved.
+          <Text textStyle="bodySm" color="onSurfaceVariant" as="span" display="inline">
+            <BrandInlineText before={copy.copyrightBefore} after={copy.copyrightAfter} />
           </Text>
         </HStack>
         <HStack as="nav" gap="6" flexWrap="wrap" justify="center">
-          {footerLinks.map((link) => (
+          {copy.links.map((link) => (
             <RouterLink key={link.label} to={link.href}>
               <Text textStyle="bodySm" color="onSurfaceVariant" textDecoration="underline" _hover={{ color: 'primary' }}>
                 {link.label}

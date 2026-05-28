@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Box, Button, Flex, Grid, Image, Text } from '@chakra-ui/react'
 import QRCode from 'qrcode'
-import { BrandName } from '../atoms/BrandName'
+import { BrandInlineText } from '../atoms/BrandInlineText'
 import { MaterialIcon } from '../atoms/MaterialIcon'
+import { INSTALL_APP } from '../../content/homeMarketing'
+import { useLocale } from '../../context/LocaleContext'
 import { usePwaInstall } from '../../hooks/usePwaInstall'
 
 const sectionPx = { base: 'marginMobile', md: 'marginDesktop' }
-
-const perks = [
-  { icon: 'bolt', label: 'One-tap access from your home screen' },
-  { icon: 'sync', label: 'Always on the latest version' },
-]
 
 function PhoneQrMockup({ qrDataUrl }) {
   return (
@@ -64,6 +61,8 @@ function PhoneQrMockup({ qrDataUrl }) {
 }
 
 export function InstallAppBanner() {
+  const { locale } = useLocale()
+  const copy = INSTALL_APP[locale]
   const { canPromptInstall, install, isInstalled, isIos, showBanner } = usePwaInstall()
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [installing, setInstalling] = useState(false)
@@ -156,7 +155,7 @@ export function InstallAppBanner() {
             >
               <MaterialIcon name="smartphone" size={16} color="accentMint" />
               <Text fontSize="xs" fontWeight="700" letterSpacing="0.06em" textTransform="uppercase">
-                Mobile app
+                {copy.badge}
               </Text>
             </Flex>
 
@@ -168,11 +167,11 @@ export function InstallAppBanner() {
               letterSpacing="-0.02em"
               mb="3"
             >
-              Use <BrandName /> on your phone
+              <BrandInlineText before={copy.titleBefore} after={copy.titleAfter} />
             </Text>
 
             <Text fontSize={{ base: 'md', md: 'lg' }} color="whiteAlpha.850" lineHeight="1.6" mb="6" maxW="28rem">
-              Install the app in seconds — coordinate trips from anywhere.
+              {copy.description}
             </Text>
 
             <Flex direction={{ base: 'column', sm: 'row' }} gap="3" mb="6" align={{ sm: 'center' }}>
@@ -192,7 +191,7 @@ export function InstallAppBanner() {
                 >
                   <MaterialIcon name="install_mobile" size={22} color="primary" />
                   <Box as="span" ml="2">
-                    {installing ? 'Installing…' : 'Install app'}
+                    {installing ? copy.installingCta : copy.installCta}
                   </Box>
                 </Button>
               ) : (
@@ -211,12 +210,12 @@ export function InstallAppBanner() {
                 >
                   <MaterialIcon name="open_in_new" size={20} color="primary" />
                   <Box as="span" ml="2">
-                    Open on phone
+                    {copy.openPhoneCta}
                   </Box>
                 </Button>
               )}
               <Text fontSize="sm" color="whiteAlpha.700" textAlign={{ base: 'center', sm: 'left' }}>
-                or scan the QR code →
+                {copy.orScan}
               </Text>
             </Flex>
 
@@ -230,7 +229,7 @@ export function InstallAppBanner() {
                 borderColor="whiteAlpha.200"
               >
                 <Text fontSize="sm" fontWeight="600" mb="2" color="whiteAlpha.900">
-                  iPhone / iPad
+                  {copy.iosTitle}
                 </Text>
                 <Flex gap="3" align="flex-start">
                   <Flex
@@ -247,7 +246,7 @@ export function InstallAppBanner() {
                     1
                   </Flex>
                   <Text fontSize="sm" color="whiteAlpha.850" lineHeight="1.5">
-                    Tap <strong>Share</strong> in Safari
+                    {copy.iosStep1}
                   </Text>
                 </Flex>
                 <Flex gap="3" align="flex-start" mt="2">
@@ -265,14 +264,14 @@ export function InstallAppBanner() {
                     2
                   </Flex>
                   <Text fontSize="sm" color="whiteAlpha.850" lineHeight="1.5">
-                    Choose <strong>Add to Home Screen</strong>
+                    {copy.iosStep2}
                   </Text>
                 </Flex>
               </Box>
             )}
 
             <Flex direction="column" gap="2.5">
-              {perks.map((item) => (
+              {copy.perks.map((item) => (
                 <Flex key={item.label} align="center" gap="3">
                   <Flex
                     w="8"
@@ -303,11 +302,11 @@ export function InstallAppBanner() {
               textAlign="center"
               mb="4"
             >
-              Scan to install
+              {copy.scanLabel}
             </Text>
             <PhoneQrMockup qrDataUrl={qrDataUrl} />
             <Text fontSize="sm" color="whiteAlpha.750" textAlign="center" mt="4" lineHeight="1.45">
-              Point your camera at the code
+              {copy.scanHint}
             </Text>
           </Box>
         </Grid>
