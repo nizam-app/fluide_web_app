@@ -18,10 +18,13 @@ body {
   translate: no;
 }
 
-/* No horizontal margins — spacing comes from copy strings only */
 .brand-lock--inline {
   margin: 0;
   vertical-align: baseline;
+}
+
+.brand-lock--chunk {
+  white-space: normal;
 }
 
 .material-symbols-outlined {

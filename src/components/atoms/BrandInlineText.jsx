@@ -2,48 +2,49 @@ import { Fragment } from 'react'
 import { Box } from '@chakra-ui/react'
 import { BrandName } from './BrandName'
 
-const PUNCT_AFTER = /^([.,;:!?])(.*)$/s
+/** Punctuation + any spaces after it stay locked to the brand (e.g. ", "). */
+const PUNCT_AFTER = /^([.,;:!?])(\s*)(.*)$/s
 
 /**
- * Keeps "Flunexia," or "Flunexia." in one notranslate chunk so Chrome Translate
- * cannot glue the next word (e.g. "FlunexiaCentralisez").
+ * Locked chunk: leading space + Flunexia + suffix (e.g. ", ").
+ * Survives Chrome Translate so you get "Avec Flunexia, centralisez" not "AvecFlunexia,Centralisez".
  */
-export function BrandLockWithPunct({ punct }) {
+export function BrandLockChunk({ suffix = '' }) {
   return (
     <Box
       as="span"
       translate="no"
       lang="zxx"
-      className="notranslate brand-lock brand-lock--inline brand-lock--attach-after"
-      display="inline-block"
-      whiteSpace="nowrap"
+      className="notranslate brand-lock brand-lock--chunk"
+      display="inline"
     >
+      {' '}
       <BrandName inline attachAfter />
-      {punct}
+      {suffix}
     </Box>
   )
 }
 
 export function splitAfterPunctuation(after) {
-  if (!after) return { punct: '', rest: '' }
+  if (!after) return { suffix: null, rest: '' }
   const match = after.match(PUNCT_AFTER)
-  if (!match) return { punct: '', rest: after }
-  return { punct: match[1], rest: match[2] }
+  if (!match) return { suffix: null, rest: after }
+  return {
+    suffix: match[1] + match[2],
+    rest: match[3],
+  }
 }
 
 export function BrandInlineText({ before, after }) {
-  const { punct, rest } = splitAfterPunctuation(after)
+  const { suffix, rest } = splitAfterPunctuation(after)
+  const trimmedBefore = before?.replace(/\s+$/, '') ?? ''
 
   return (
     <>
       <Box as="span" translate="yes">
-        {before}
+        {trimmedBefore}
       </Box>
-      {punct ? (
-        <BrandLockWithPunct punct={punct} />
-      ) : (
-        <BrandName inline />
-      )}
+      <BrandLockChunk suffix={suffix ?? ''} />
       {rest ? (
         <Box as="span" translate="yes">
           {rest}
@@ -53,18 +54,15 @@ export function BrandInlineText({ before, after }) {
   )
 }
 
-/** For textWithBrand: render brand + leading punctuation from the next segment */
 export function renderBrandWithFollowingText(part, index, parts) {
   const next = parts[index + 1] ?? ''
-  const { punct, rest } = splitAfterPunctuation(next)
+  const { suffix, rest } = splitAfterPunctuation(next)
 
-  if (punct) {
+  if (suffix !== null) {
     return (
       <Fragment key={`brand-${index}`}>
-        <BrandLockWithPunct punct={punct} />
-        {rest ? (
-          <span translate="yes">{rest}</span>
-        ) : null}
+        <BrandLockChunk suffix={suffix} />
+        {rest ? <span translate="yes">{rest}</span> : null}
       </Fragment>
     )
   }
