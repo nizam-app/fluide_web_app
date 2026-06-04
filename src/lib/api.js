@@ -113,7 +113,22 @@ const api = {
   trips: {
     list: (query) => request('GET', '/trips', { query }),
     get: (id) => request('GET', `/trips/${id}`),
-    create: (payload) => request('POST', '/trips', { body: payload }),
+    create: (payload, file) => {
+      if (file) {
+        const formData = new FormData()
+        for (const [key, value] of Object.entries(payload)) {
+          if (value === undefined || value === null || value === '') continue
+          if (Array.isArray(value) || (typeof value === 'object' && !(value instanceof File))) {
+            formData.append(key, JSON.stringify(value))
+          } else {
+            formData.append(key, String(value))
+          }
+        }
+        formData.append('image', file)
+        return request('POST', '/trips', { formData })
+      }
+      return request('POST', '/trips', { body: payload })
+    },
     update: (id, payload) => request('PATCH', `/trips/${id}`, { body: payload }),
     delete: (id) => request('DELETE', `/trips/${id}`),
     uploadImage: (id, file) => {

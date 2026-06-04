@@ -18,10 +18,15 @@ body {
   translate: no;
 }
 
-/* Space around brand when browser translate skips the notranslate node */
+/* Space before brand only — keeps comma/period glued: "Flunexia," not "Flunexia ," */
 .brand-lock--inline {
-  margin-inline: 0.32em;
+  margin-left: 0.25em;
+  margin-right: 0.25em;
   vertical-align: baseline;
+}
+
+.brand-lock--attach-after {
+  margin-right: 0;
 }
 
 .material-symbols-outlined {

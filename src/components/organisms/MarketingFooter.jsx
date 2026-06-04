@@ -20,17 +20,17 @@ export function MarketingFooter({ compact = false }) {
         align="center"
         gap="4"
       >
-        <HStack gap="4" flexWrap="wrap" justify={{ base: 'center', md: 'flex-start' }}>
+        <Flex direction="column" gap="3" align={{ base: 'center', md: 'flex-start' }}>
           <FluideLogo to="/" />
           {!compact && (
             <Text textStyle="bodySm" color="onSurfaceVariant" display={{ base: 'none', sm: 'block' }}>
               {copy.tagline}
             </Text>
           )}
-          <Text textStyle="bodySm" color="onSurfaceVariant" as="span" display="inline">
+          <Text textStyle="bodySm" color="onSurfaceVariant" as="span" display="block">
             <BrandInlineText before={copy.copyrightBefore} after={copy.copyrightAfter} />
           </Text>
-        </HStack>
+        </Flex>
         <HStack as="nav" gap="6" flexWrap="wrap" justify="center">
           {copy.links.map((link) => (
             <RouterLink key={link.label} to={link.href}>

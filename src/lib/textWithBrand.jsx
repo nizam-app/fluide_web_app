@@ -11,13 +11,15 @@ export function textWithBrand(text) {
     if (!part) return null
 
     if (part.toLowerCase() === 'flunexia') {
-      return <BrandName key={`brand-${index}`} inline />
+      const next = parts[index + 1] ?? ''
+      const attachAfter = /^[.,;:!?]/.test(next)
+      return <BrandName key={`brand-${index}`} inline attachAfter={attachAfter} />
     }
 
+    let segment = part
     const prevIsBrand = index > 0 && parts[index - 1]?.toLowerCase() === 'flunexia'
     const nextIsBrand = index < parts.length - 1 && parts[index + 1]?.toLowerCase() === 'flunexia'
 
-    let segment = part
     if (nextIsBrand) segment = segment.replace(/\s+$/, '')
     if (prevIsBrand) segment = segment.replace(/^\s+/, '')
 

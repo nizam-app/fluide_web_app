@@ -35,6 +35,8 @@ export function CreateTripPage() {
     needType: NEED_TYPE_OPTIONS[0],
     description: '',
     accessibility: '',
+    budgetEstimate: '',
+    budgetCurrency: 'EUR',
   })
   const [imageFile, setImageFile] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -99,24 +101,15 @@ export function CreateTripPage() {
         }
         if (form.endDate) payload.endDate = form.endDate
         if (form.accessibility.trim()) payload.accessibility = form.accessibility.trim()
+        const budget = Number(form.budgetEstimate)
+        if (form.budgetEstimate !== '' && Number.isFinite(budget) && budget >= 0) {
+          payload.budgetEstimate = budget
+          payload.budgetCurrency = form.budgetCurrency || 'EUR'
+        }
 
-        const result = await api.trips.create(payload)
+        const result = await api.trips.create(payload, imageFile || undefined)
         tripId = result?.trip?._id || result?.trip?.id
         setPendingTripId(tripId)
-      }
-
-      if (tripId && imageFile) {
-        try {
-          await api.trips.uploadImage(tripId, imageFile)
-        } catch (uploadErr) {
-          const isConfigError = uploadErr?.status === 503
-          setError(
-            isConfigError
-              ? 'The trip was created, but image upload is not configured on the server (missing CLOUDINARY_* env vars or backend not restarted). Retry once the server is ready, or continue without an image.'
-              : `Trip created, but image upload failed: ${uploadErr?.message || 'unknown error'}. Retry or continue without an image.`,
-          )
-          return
-        }
       }
 
       navigate(tripId ? `/trips/${tripId}` : '/trips')
@@ -179,6 +172,34 @@ export function CreateTripPage() {
                     onChange={update('accessibility')}
                     css={fluideInputStyles}
                   />
+                </FormField>
+              </Grid>
+              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
+                <FormField label="Budget Estimate">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. 2500"
+                    value={form.budgetEstimate}
+                    onChange={update('budgetEstimate')}
+                    css={fluideInputStyles}
+                  />
+                </FormField>
+                <FormField label="Currency">
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      css={fluideInputStyles}
+                      value={form.budgetCurrency}
+                      onChange={update('budgetCurrency')}
+                    >
+                      {['EUR', 'USD', 'GBP', 'CHF'].map((code) => (
+                        <option key={code} value={code}>
+                          {code}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
                 </FormField>
               </Grid>
               <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">

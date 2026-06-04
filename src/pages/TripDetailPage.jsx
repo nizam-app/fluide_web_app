@@ -570,6 +570,13 @@ export function TripDetailPage() {
                   {[
                     { label: 'Participants', value: trip.participants },
                     { label: 'Need types', value: (trip.needTypes || []).join(', ') || '—', green: true },
+                    {
+                      label: 'Budget estimate',
+                      value:
+                        trip.budgetEstimate != null
+                          ? formatPrice(trip.budgetEstimate, trip.budgetCurrency || 'EUR')
+                          : '—',
+                    },
                     { label: 'Accessibility', value: trip.accessibility || '—' },
                     { label: 'Status', value: trip.status },
                   ].map((d) => (
