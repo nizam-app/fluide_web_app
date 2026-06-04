@@ -1,4 +1,8 @@
 import { BrandName } from '../components/atoms/BrandName'
+import {
+  renderBrandWithFollowingText,
+  shouldSkipSegmentAfterBrand,
+} from '../components/atoms/BrandInlineText'
 
 /** Splits copy and wraps every "Flunexia" mention so machine translators skip the brand */
 export function textWithBrand(text) {
@@ -9,11 +13,10 @@ export function textWithBrand(text) {
 
   return parts.map((part, index) => {
     if (!part) return null
+    if (shouldSkipSegmentAfterBrand(part, index, parts)) return null
 
     if (part.toLowerCase() === 'flunexia') {
-      const next = parts[index + 1] ?? ''
-      const attachAfter = /^[.,;:!?]/.test(next)
-      return <BrandName key={`brand-${index}`} inline attachAfter={attachAfter} />
+      return renderBrandWithFollowingText(part, index, parts)
     }
 
     let segment = part

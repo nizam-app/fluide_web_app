@@ -3,7 +3,7 @@ export const HOME_HERO = {
   en: {
     titleBefore: 'Save time on ',
     titleHighlight: 'group trip coordination',
-    introBefore: 'With',
+    introBefore: 'With ',
     introAfter:
       ', centralize transport, activities, and services in one place. Fewer emails, less complexity — more visibility and control.',
     ctaCreate: 'Create a trip',
@@ -13,7 +13,7 @@ export const HOME_HERO = {
   fr: {
     titleBefore: 'Gagnez du temps sur ',
     titleHighlight: 'la coordination des voyages de groupe',
-    introBefore: 'Avec',
+    introBefore: 'Avec ',
     introAfter:
       ', centralisez les transports, les activités et les services en un seul endroit. Moins d’e-mails, moins de complexité : plus de visibilité et de contrôle.',
     ctaCreate: 'Créer un voyage',
@@ -26,7 +26,7 @@ export const HOME_HERO = {
 export const INSTALL_APP = {
   en: {
     badge: 'Mobile app',
-    titleBefore: 'Use',
+    titleBefore: 'Use ',
     titleAfter: ' on your phone',
     description: 'Install the app in seconds — coordinate trips from anywhere.',
     installCta: 'Install app',
@@ -45,7 +45,7 @@ export const INSTALL_APP = {
   },
   fr: {
     badge: 'Application mobile',
-    titleBefore: 'Utilisez',
+    titleBefore: 'Utilisez ',
     titleAfter: ' sur votre téléphone',
     description:
       'Installez l’application en quelques secondes — coordonnez vos voyages où que vous soyez.',
@@ -68,7 +68,7 @@ export const INSTALL_APP = {
 export const FOOTER = {
   en: {
     tagline: 'Des sorties, du lien, du sens.',
-    copyrightBefore: '© 2024',
+    copyrightBefore: '© 2024 ',
     copyrightAfter: '. All rights reserved.',
     links: [
       { label: 'About Us', href: '#' },
@@ -79,7 +79,7 @@ export const FOOTER = {
   },
   fr: {
     tagline: 'Des sorties, du lien, du sens.',
-    copyrightBefore: '© 2024',
+    copyrightBefore: '© 2024 ',
     copyrightAfter: '. Tous droits réservés.',
     links: [
       { label: 'À propos de nous', href: '#' },
