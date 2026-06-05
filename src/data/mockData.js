@@ -58,11 +58,17 @@ export const adminNavItems = [
   { label: 'Profile', icon: 'settings', href: '/profile' },
 ]
 
-export const NEED_TYPE_OPTIONS = ['Transport', 'Activity', 'Restaurant', 'Hotel', 'Other Service']
+export const NEED_TYPE_OPTIONS = [
+  'Transport',
+  'Accommodation',
+  'Food & Catering',
+  'Guide & Tour',
+  'Equipment',
+]
 
 export const ORGANIZATION_TYPES = ['Municipality', 'Association', 'School', 'Local Institution']
 
-export const PROVIDER_TYPES = ['Transport', 'Activity', 'Restaurant', 'Hotel', 'Other Service']
+export const PROVIDER_TYPES = [...NEED_TYPE_OPTIONS]
 
 export function getNavItemsForRole(role) {
   if (role === 'admin') return adminNavItems
@@ -124,7 +130,7 @@ export const trips = [
     title: 'Senior Community Lunch',
     location: 'City Center',
     dates: 'Oct 15, 2024',
-    needType: 'Restaurant',
+    needType: 'Food & Catering',
     participants: 18,
     status: 'in_progress',
     image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80',
@@ -137,7 +143,7 @@ export const trips = [
     title: 'School Nature Visit',
     location: 'Green Valley Park',
     dates: 'Oct 20, 2024',
-    needType: 'Activity',
+    needType: 'Guide & Tour',
     participants: 32,
     status: 'completed',
     image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80',
@@ -150,7 +156,7 @@ export const trips = [
     title: 'Internal Workshop',
     location: 'HQ Building',
     dates: 'Oct 25, 2024',
-    needType: 'Other Service',
+    needType: 'Equipment',
     participants: 12,
     status: 'scheduled',
     image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80',
@@ -196,9 +202,9 @@ export const recentTripsDashboard = [
 
 export const serviceRequests = [
   { id: '1', trip: 'Museum Day Trip', organizer: "St. Jude's Primary", orgType: 'School', provider: 'GreenBus', needType: 'Transport', needIcon: 'directions_bus', date: 'Oct 12, 2024', status: 'pending', image: trips[0].image, participants: 24 },
-  { id: '2', trip: 'Senior Community Lunch', organizer: 'Golden Age Club', orgType: 'Association', provider: 'City Catering Co.', needType: 'Restaurant', needIcon: 'restaurant', date: 'Oct 15, 2024', status: 'accepted', image: trips[1].image, participants: 18 },
-  { id: '3', trip: 'School Nature Visit', organizer: 'Green Valley High', orgType: 'School', provider: 'EcoTransit', needType: 'Activity', needIcon: 'hiking', date: 'Oct 20, 2024', status: 'completed', image: trips[2].image, participants: 32 },
-  { id: '4', trip: 'Internal Workshop', organizer: 'HR Department', orgType: 'Local Institution', provider: 'Metro Facilities', needType: 'Other Service', needIcon: 'business', date: 'Oct 25, 2024', status: 'rejected', image: trips[3].image, participants: 12 },
+  { id: '2', trip: 'Senior Community Lunch', organizer: 'Golden Age Club', orgType: 'Association', provider: 'City Catering Co.', needType: 'Food & Catering', needIcon: 'restaurant', date: 'Oct 15, 2024', status: 'accepted', image: trips[1].image, participants: 18 },
+  { id: '3', trip: 'School Nature Visit', organizer: 'Green Valley High', orgType: 'School', provider: 'EcoTransit', needType: 'Guide & Tour', needIcon: 'hiking', date: 'Oct 20, 2024', status: 'completed', image: trips[2].image, participants: 32 },
+  { id: '4', trip: 'Internal Workshop', organizer: 'HR Department', orgType: 'Local Institution', provider: 'Metro Facilities', needType: 'Equipment', needIcon: 'backpack', date: 'Oct 25, 2024', status: 'rejected', image: trips[3].image, participants: 12 },
 ]
 
 export const adminUsers = [

@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
-import { Box, Button, Flex, Grid, HStack, Image, Spinner, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, HStack, Spinner, Stack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { StatCard } from '../components/molecules/StatCard'
 import { StatusBadge } from '../components/molecules/StatusBadge'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useAuth } from '../context/AuthContext'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
-import { formatDateShort, getNeedTypeIcon, getTripImage } from '../lib/format'
+import { TripCover } from '../components/molecules/TripCover'
+import { formatDateShort, getNeedTypeIcon } from '../lib/format'
 import { stitchGreenButton } from '../theme/fluide-theme'
 
 function countBy(items, predicate) {
@@ -18,14 +18,23 @@ function countBy(items, predicate) {
 
 export function ProviderDashboardPage() {
   const { user } = useAuth()
-  const fetcher = useCallback(
-    () =>
-      Promise.all([api.requests.list(), api.offers.list()]).then(([reqResult, offerResult]) => ({
-        requests: reqResult.requests || [],
-        offers: offerResult.offers || [],
-      })),
-    [],
-  )
+  const fetcher = useCallback(async () => {
+    const [reqResult, offerResult, tripsResult] = await Promise.all([
+      api.requests.list(),
+      api.offers.list(),
+      api.trips.list(),
+    ])
+    const tripsById = Object.fromEntries(
+      (tripsResult.trips || []).map((trip) => [String(trip._id || trip.id), trip]),
+    )
+    const requests = (reqResult.requests || []).map((req) => {
+      const tripId = String(req.trip?._id || req.trip?.id || req.trip || '')
+      const fullTrip = tripsById[tripId]
+      if (!fullTrip) return req
+      return { ...req, trip: { ...fullTrip, ...(typeof req.trip === 'object' ? req.trip : {}) } }
+    })
+    return { requests, offers: offerResult.offers || [] }
+  }, [])
   const { data, loading, error } = useApiResource(fetcher)
   const requests = data?.requests || []
   const offers = data?.offers || []
@@ -70,7 +79,6 @@ export function ProviderDashboardPage() {
   ]
 
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="provider" />
         <Flex justify="space-between" align="center" mb="8" flexWrap="wrap" gap="4">
@@ -143,13 +151,13 @@ export function ProviderDashboardPage() {
                     align={{ base: 'stretch', md: 'center' }}
                     direction={{ base: 'column', md: 'row' }}
                   >
-                    <Image
-                      src={getTripImage(req.trip)}
-                      alt=""
+                    <TripCover
+                      trip={req.trip}
+                      alt={req.trip?.title || 'Trip'}
                       w="20"
                       h="20"
                       borderRadius="xl"
-                      objectFit="cover"
+                      flexShrink={0}
                     />
                     <Box flex="1">
                       <Text textStyle="headlineSm" mb="1">
@@ -196,6 +204,5 @@ export function ProviderDashboardPage() {
           </>
         )}
       </Box>
-    </PortalLayout>
   )
 }

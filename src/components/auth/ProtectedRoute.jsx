@@ -1,5 +1,5 @@
 import { Flex, Spinner, Text } from '@chakra-ui/react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { canAccessPath, getHomePath } from '../../lib/roles'
 
@@ -34,5 +34,5 @@ export function ProtectedRoute({ children, role, roles }) {
     return <Navigate to={getHomePath(user.role)} replace />
   }
 
-  return children
+  return children ?? <Outlet />
 }

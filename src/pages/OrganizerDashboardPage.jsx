@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
-import { Box, Button, Flex, Grid, HStack, Image, Spinner, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, HStack, Spinner, Stack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { StatCard } from '../components/molecules/StatCard'
 import { StatusBadge } from '../components/molecules/StatusBadge'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useAuth } from '../context/AuthContext'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
-import { formatDateShort, getTripImage, initialsFromName } from '../lib/format'
+import { TripCover } from '../components/molecules/TripCover'
+import { formatDateShort, initialsFromName } from '../lib/format'
 import { stitchBlackButton } from '../theme/fluide-theme'
 
 function countBy(items, predicate) {
@@ -71,7 +71,6 @@ export function OrganizerDashboardPage() {
   const recentRequests = requests.slice(0, 5)
 
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="organizer" />
         <Flex justify="space-between" align="center" mb="8" flexWrap="wrap" gap="4">
@@ -127,12 +126,11 @@ export function OrganizerDashboardPage() {
                         borderColor="outlineVariant"
                         overflow="hidden"
                       >
-                        <Image
-                          src={getTripImage(trip)}
-                          alt=""
+                        <TripCover
+                          trip={trip}
+                          alt={trip.title}
                           w="24"
                           h="24"
-                          objectFit="cover"
                           display={{ base: 'none', sm: 'block' }}
                         />
                         <Flex flex="1" p="4" justify="space-between" align="center" gap="3" flexWrap="wrap">
@@ -210,6 +208,5 @@ export function OrganizerDashboardPage() {
           </>
         )}
       </Box>
-    </PortalLayout>
   )
 }

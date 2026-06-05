@@ -1,11 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Box, Button, Flex, Grid, Image, Input, NativeSelect, Stack, Text, Textarea } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, Image, Input, Stack, Text, Textarea } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
+import { BookingModePicker } from '../components/molecules/BookingModePicker'
+import { CurrencyPicker } from '../components/molecules/CurrencyPicker'
+import { ItineraryBuilder } from '../components/molecules/ItineraryBuilder'
+import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { NEED_TYPE_OPTIONS } from '../data/mockData'
 import api from '../lib/api'
+import {
+  BOOKING_MODES,
+  createLeg,
+  getFilledLegs,
+  serializeLegsForApi,
+} from '../lib/itinerary'
+import { toApiNeedTypes } from '../lib/needTypes'
 import { textWithBrand } from '../lib/textWithBrand'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
@@ -32,18 +42,32 @@ export function CreateTripPage() {
     startDate: '',
     endDate: '',
     participants: '',
-    needType: NEED_TYPE_OPTIONS[0],
+    needTypes: [NEED_TYPE_OPTIONS[0]],
+    bookingMode: BOOKING_MODES.MULTI,
     description: '',
     accessibility: '',
     budgetEstimate: '',
     budgetCurrency: 'EUR',
   })
+  const [itinerary, setItinerary] = useState([createLeg('transfer'), createLeg('stay'), createLeg('transfer')])
   const [imageFile, setImageFile] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [pendingTripId, setPendingTripId] = useState(null)
 
   const update = (field) => (event) => setForm((prev) => ({ ...prev, [field]: event.target.value }))
+
+  const handleBookingModeChange = (bookingMode) => {
+    setForm((prev) => {
+      const next = { ...prev, bookingMode }
+      if (bookingMode === BOOKING_MODES.BUNDLED) {
+        const bundledTypes = ['Transport', 'Accommodation']
+        const merged = [...new Set([...prev.needTypes, ...bundledTypes])]
+        next.needTypes = merged.filter((t) => NEED_TYPE_OPTIONS.includes(t))
+      }
+      return next
+    })
+  }
 
   const imagePreview = useMemo(
     () => (imageFile ? URL.createObjectURL(imageFile) : ''),
@@ -81,24 +105,37 @@ export function CreateTripPage() {
       setError('Please provide a valid number of participants.')
       return
     }
-    if (!form.title.trim() || !form.location.trim() || !form.startDate || !form.description.trim()) {
-      setError('Title, location, start date, and description are required.')
+    if (!form.title.trim() || !form.location.trim() || !form.startDate) {
+      setError('Title, location, and start date are required.')
+      return
+    }
+    const filledItinerary = getFilledLegs(itinerary)
+    if (!form.description.trim() && filledItinerary.length === 0) {
+      setError('Add a short trip summary or at least one itinerary step.')
+      return
+    }
+    if (!form.needTypes.length) {
+      setError('Select at least one need type for this trip.')
       return
     }
 
     setSubmitting(true)
+    let itineraryWarning = ''
     try {
       let tripId = pendingTripId
       if (!tripId) {
         const payload = {
           title: form.title.trim(),
-          description: form.description.trim(),
+          description: form.description.trim() || form.title.trim(),
           location: form.location.trim(),
           startDate: form.startDate,
           participants,
-          needTypes: [form.needType],
+          needTypes: toApiNeedTypes(form.needTypes),
+          bookingMode: form.bookingMode,
           status: 'published',
         }
+        const apiItinerary = serializeLegsForApi(itinerary)
+        if (apiItinerary.length) payload.itinerary = apiItinerary
         if (form.endDate) payload.endDate = form.endDate
         if (form.accessibility.trim()) payload.accessibility = form.accessibility.trim()
         const budget = Number(form.budgetEstimate)
@@ -107,12 +144,40 @@ export function CreateTripPage() {
           payload.budgetCurrency = form.budgetCurrency || 'EUR'
         }
 
-        const result = await api.trips.create(payload, imageFile || undefined)
+        let result
+        try {
+          result = await api.trips.create(payload)
+        } catch (createErr) {
+          const msg = String(createErr?.message || '').toLowerCase()
+          const maybeUnknownFields =
+            createErr?.status === 400 &&
+            (msg.includes('itinerary') || msg.includes('bookingmode') || msg.includes('booking'))
+          if (!maybeUnknownFields) throw createErr
+          const { itinerary: _i, bookingMode: _b, ...fallbackPayload } = payload
+          result = await api.trips.create(fallbackPayload)
+          itineraryWarning =
+            'Trip saved, but the server does not store itinerary yet — ask your admin to update the API.'
+        }
         tripId = result?.trip?._id || result?.trip?.id
         setPendingTripId(tripId)
       }
 
-      navigate(tripId ? `/trips/${tripId}` : '/trips')
+      if (tripId && imageFile) {
+        try {
+          await api.trips.uploadImage(tripId, imageFile)
+        } catch (uploadErr) {
+          const isConfigError = uploadErr?.status === 503
+          setError(
+            isConfigError
+              ? 'The trip was created, but image upload is not configured on the server (missing CLOUDINARY_* env vars). Retry once the server is ready, or continue without an image.'
+              : `Trip created, but image upload failed: ${uploadErr?.message || 'unknown error'}. Retry or continue without an image.`,
+          )
+          return
+        }
+      }
+
+      if (itineraryWarning) setError(itineraryWarning)
+      navigate(tripId ? `/trips/${tripId}` : '/trips', { replace: true })
     } catch (err) {
       setError(err?.message || 'Could not create the trip.')
     } finally {
@@ -125,7 +190,6 @@ export function CreateTripPage() {
   }
 
   return (
-    <PortalLayout>
       <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py="10">
         <RolePageHeader role="organizer" />
         <Box mb="10">
@@ -174,7 +238,7 @@ export function CreateTripPage() {
                   />
                 </FormField>
               </Grid>
-              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
+              <Grid templateColumns={{ base: '1fr', sm: '1.4fr 1fr' }} gap="4" alignItems="end">
                 <FormField label="Budget Estimate">
                   <Input
                     type="number"
@@ -187,46 +251,33 @@ export function CreateTripPage() {
                   />
                 </FormField>
                 <FormField label="Currency">
-                  <NativeSelect.Root>
-                    <NativeSelect.Field
-                      css={fluideInputStyles}
-                      value={form.budgetCurrency}
-                      onChange={update('budgetCurrency')}
-                    >
-                      {['EUR', 'USD', 'GBP', 'CHF'].map((code) => (
-                        <option key={code} value={code}>
-                          {code}
-                        </option>
-                      ))}
-                    </NativeSelect.Field>
-                  </NativeSelect.Root>
-                </FormField>
-              </Grid>
-              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
-                <FormField label="Number of Participants">
-                  <Input
-                    type="number"
-                    min="1"
-                    placeholder="24"
-                    value={form.participants}
-                    onChange={update('participants')}
-                    css={fluideInputStyles}
+                  <CurrencyPicker
+                    value={form.budgetCurrency}
+                    onChange={(code) => setForm((prev) => ({ ...prev, budgetCurrency: code }))}
                   />
                 </FormField>
-                <FormField label="Primary Need Type">
-                  <NativeSelect.Root>
-                    <NativeSelect.Field css={fluideInputStyles} value={form.needType} onChange={update('needType')}>
-                      {NEED_TYPE_OPTIONS.map((o) => (
-                        <option key={o}>{o}</option>
-                      ))}
-                    </NativeSelect.Field>
-                  </NativeSelect.Root>
-                </FormField>
               </Grid>
-              <FormField label="Description">
+              <FormField label="Number of Participants">
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="3"
+                  value={form.participants}
+                  onChange={update('participants')}
+                  css={fluideInputStyles}
+                  maxW={{ sm: '16rem' }}
+                />
+              </FormField>
+              <BookingModePicker value={form.bookingMode} onChange={handleBookingModeChange} />
+              <NeedTypePicker
+                value={form.needTypes}
+                onChange={(needTypes) => setForm((prev) => ({ ...prev, needTypes }))}
+              />
+              <ItineraryBuilder value={itinerary} onChange={setItinerary} />
+              <FormField label="Trip summary (optional)">
                 <Textarea
-                  rows={4}
-                  placeholder="Describe requirements for providers..."
+                  rows={3}
+                  placeholder="Short overview — e.g. Family group stay in Marseille, hotel + transfers included. Use the itinerary above for dates and locations."
                   value={form.description}
                   onChange={update('description')}
                   borderRadius="fluide"
@@ -271,7 +322,13 @@ export function CreateTripPage() {
                 </Text>
               </Flex>
               <Stack gap="3">
-                {['Submit your trip details', 'Providers send offers', 'Accept the best match'].map((step, i) => (
+                {[
+                  'Add each transfer and stay in the itinerary',
+                  form.bookingMode === BOOKING_MODES.BUNDLED
+                    ? 'One provider can handle the full package'
+                    : 'Providers send separate offers per service',
+                  'Accept the best match',
+                ].map((step, i) => (
                   <Flex key={step} gap="3" align="flex-start">
                     <Text color="primary" fontWeight="700">
                       {i + 1}.
@@ -361,6 +418,5 @@ export function CreateTripPage() {
           </Stack>
         </Grid>
       </Box>
-    </PortalLayout>
   )
 }

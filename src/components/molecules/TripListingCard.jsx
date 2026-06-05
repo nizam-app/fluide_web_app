@@ -1,6 +1,7 @@
-import { Box, Button, Flex, HStack, Image, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, HStack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { MaterialIcon } from '../atoms/MaterialIcon'
+import { TripCover } from './TripCover'
 import { StatusBadge } from './StatusBadge'
 
 export function TripListingCard({ trip, wide = false }) {
@@ -14,7 +15,13 @@ export function TripListingCard({ trip, wide = false }) {
         flexShrink={0}
         overflow="hidden"
       >
-        <Image src={trip.image} alt={trip.title} w="full" h="full" objectFit="cover" minH={wide ? '220px' : '192px'} />
+        <TripCover
+          trip={{ _id: trip.id, title: trip.title, location: trip.location, image: trip.image }}
+          alt={trip.title}
+          w="full"
+          h="full"
+          minH={wide ? '220px' : '192px'}
+        />
         <Box position="absolute" top="4" left="4">
           <StatusBadge status={trip.status} />
         </Box>

@@ -1,21 +1,29 @@
-import { useEffect, useState } from 'react'
-import { Box, Button, Grid, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
+import { useEffect, useRef, useState } from 'react'
+import { Box, Button, Flex, Grid, Image, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
+import { useNavigate } from 'react-router-dom'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useAuth } from '../context/AuthContext'
+import api from '../lib/api'
 import { ORGANIZATION_TYPES, PROVIDER_TYPES } from '../data/mockData'
 import { getRoleLabel } from '../lib/roles'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
 export function ProfilePage() {
-  const { user, isOrganizer, isProvider, isAdmin, updateProfile, updatePassword } = useAuth()
+  const navigate = useNavigate()
+  const fileInputRef = useRef(null)
+  const { user, isOrganizer, isProvider, isAdmin, updateProfile, updatePassword, logout, refresh } = useAuth()
   const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
 
   const [profile, setProfile] = useState({
     name: user?.name || '',
+    email: user?.email || '',
     organizationType: user?.organizationType || 'Municipality',
     providerType: user?.providerType || 'Transport',
   })
+  const [avatarBusy, setAvatarBusy] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteBusy, setDeleteBusy] = useState(false)
+  const [deleteStatus, setDeleteStatus] = useState({ type: null, message: '' })
   const [profileStatus, setProfileStatus] = useState({ type: null, message: '' })
   const [profileBusy, setProfileBusy] = useState(false)
 
@@ -27,6 +35,7 @@ export function ProfilePage() {
     const handle = Promise.resolve().then(() =>
       setProfile({
         name: user?.name || '',
+        email: user?.email || '',
         organizationType: user?.organizationType || 'Municipality',
         providerType: user?.providerType || 'Transport',
       }),
@@ -51,6 +60,9 @@ export function ProfilePage() {
     setProfileBusy(true)
     try {
       const payload = { name: profile.name.trim() }
+      if (profile.email.trim() && profile.email.trim() !== user?.email) {
+        payload.email = profile.email.trim()
+      }
       if (isOrganizer) payload.organizationType = profile.organizationType
       if (isProvider) payload.providerType = profile.providerType
       await updateProfile(payload)
@@ -92,8 +104,49 @@ export function ProfilePage() {
     }
   }
 
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setAvatarBusy(true)
+    setProfileStatus({ type: null, message: '' })
+    try {
+      await api.users.uploadAvatar(file)
+      await refresh()
+      setProfileStatus({ type: 'success', message: 'Profile photo updated.' })
+    } catch (err) {
+      const message =
+        err?.status === 404
+          ? 'Photo upload is not available on this API yet. Use a local backend or redeploy the server with the latest code.'
+          : err?.status === 503
+            ? 'Photo upload is not configured on the server (Cloudinary credentials missing).'
+            : err?.message || 'Could not upload photo.'
+      setProfileStatus({ type: 'error', message })
+    } finally {
+      setAvatarBusy(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      setDeleteStatus({ type: 'error', message: 'Enter your password to delete the account.' })
+      return
+    }
+    if (!window.confirm('Delete your account permanently? This cannot be undone.')) return
+    setDeleteBusy(true)
+    setDeleteStatus({ type: null, message: '' })
+    try {
+      await api.users.deleteAccount(deletePassword)
+      await logout()
+      navigate('/', { replace: true })
+    } catch (err) {
+      setDeleteStatus({ type: 'error', message: err?.message || 'Could not delete account.' })
+    } finally {
+      setDeleteBusy(false)
+    }
+  }
+
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }} maxW="4xl">
         {!isAdmin && <RolePageHeader role={headerRole} />}
         <Text textStyle="headlineMd" mb="1">
@@ -110,6 +163,40 @@ export function ProfilePage() {
             Account details
           </Text>
           <Stack gap="5" as="form" onSubmit={handleProfileSubmit}>
+            <Flex align="center" gap="4">
+              <Box
+                w="20"
+                h="20"
+                borderRadius="full"
+                overflow="hidden"
+                bg="surfaceContainer"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                {user?.avatar ? (
+                  <Image src={user.avatar} alt="" w="full" h="full" objectFit="cover" />
+                ) : (
+                  <Text textStyle="headlineSm" color="onSurfaceVariant">
+                    {(user?.name || '?').slice(0, 1)}
+                  </Text>
+                )}
+              </Box>
+              <Box>
+                <Input type="file" accept="image/*" ref={fileInputRef} display="none" onChange={handleAvatarChange} />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  borderRadius="pill"
+                  onClick={() => fileInputRef.current?.click()}
+                  loading={avatarBusy}
+                  disabled={avatarBusy}
+                >
+                  Change photo
+                </Button>
+              </Box>
+            </Flex>
             <Box>
               <Text textStyle="labelMd" mb="2">
                 Name
@@ -120,7 +207,13 @@ export function ProfilePage() {
               <Text textStyle="labelMd" mb="2">
                 Email
               </Text>
-              <Input value={user?.email ?? ''} readOnly css={fluideInputStyles} opacity={0.85} />
+              <Input
+                type="email"
+                value={profile.email}
+                onChange={updateProfileField('email')}
+                css={fluideInputStyles}
+                readOnly={isAdmin}
+              />
             </Box>
             <Box>
               <Text textStyle="labelMd" mb="2">
@@ -233,7 +326,43 @@ export function ProfilePage() {
             </Button>
           </Stack>
         </Box>
+
+        {!isAdmin && (
+          <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" mt="6">
+            <Text textStyle="headlineSm" mb="2" color="error">
+              Delete account
+            </Text>
+            <Text textStyle="bodySm" color="onSurfaceVariant" mb="4">
+              Permanently remove your account and associated trips or offers.
+            </Text>
+            <Stack gap="3" maxW="md">
+              <Input
+                type="password"
+                placeholder="Confirm with your password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                css={fluideInputStyles}
+              />
+              {deleteStatus.message && (
+                <Text textStyle="bodySm" color="error">
+                  {deleteStatus.message}
+                </Text>
+              )}
+              <Button
+                variant="outline"
+                color="error"
+                borderColor="error"
+                borderRadius="pill"
+                w="fit-content"
+                onClick={handleDeleteAccount}
+                loading={deleteBusy}
+                disabled={deleteBusy}
+              >
+                Delete account
+              </Button>
+            </Stack>
+          </Box>
+        )}
       </Box>
-    </PortalLayout>
   )
 }

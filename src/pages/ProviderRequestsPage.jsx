@@ -4,7 +4,6 @@ import { Link as RouterLink } from 'react-router-dom'
 import { FilterChip } from '../components/molecules/FilterChip'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { StatusBadge } from '../components/molecules/StatusBadge'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
 import { formatDateShort } from '../lib/format'
@@ -38,7 +37,6 @@ export function ProviderRequestsPage() {
   }
 
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="provider" />
         <Text textStyle="headlineMd" mb="2">
@@ -132,6 +130,5 @@ export function ProviderRequestsPage() {
           </Box>
         )}
       </Box>
-    </PortalLayout>
   )
 }

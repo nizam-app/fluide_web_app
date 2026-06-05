@@ -1,16 +1,27 @@
 import { Box, Button, Flex, Stack } from '@chakra-ui/react'
-import { Link as RouterLink, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { getNavItemsForRole } from '../../data/mockData'
 import { ROLES } from '../../lib/roles'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 
-function NavLink({ item, active, onNavigate }) {
-  const isHash = item.href.includes('#')
-  const to = isHash ? item.href.replace(/#.*$/, '') : item.href
+function SidebarNavItem({ item, active, onNavigate }) {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+
+  const handleClick = (event) => {
+    onNavigate?.()
+    if (item.href.includes('#')) return
+    if (pathname === item.href) {
+      event.preventDefault()
+      return
+    }
+    event.preventDefault()
+    navigate(item.href)
+  }
 
   return (
-    <RouterLink to={item.href} onClick={onNavigate}>
+    <Link to={item.href} onClick={handleClick} style={{ textDecoration: 'none' }}>
       <Flex
         align="center"
         gap="3"
@@ -26,7 +37,7 @@ function NavLink({ item, active, onNavigate }) {
         <MaterialIcon name={item.icon} filled={active} size={22} />
         {item.label}
       </Flex>
-    </RouterLink>
+    </Link>
   )
 }
 
@@ -36,7 +47,8 @@ function useNavActive(pathname, hash) {
     if (href === '/dashboard') return pathname === '/dashboard'
     if (href === '/admin') return pathname === '/admin' && !hash
     if (href === '/create-trip') return pathname === '/create-trip'
-    if (href === '/trips') return pathname === '/trips'
+    if (href === '/trips') return pathname === '/trips' || pathname.startsWith('/trips/')
+    if (href === '/requests') return pathname === '/requests'
     if (href.startsWith('/admin/')) return pathname === href
     return pathname === href
   }
@@ -51,7 +63,7 @@ export function PortalSidebar({ mobileOpen, onClose }) {
   const content = (
     <Stack gap="1" flex="1">
       {navItems.map((item) => (
-        <NavLink key={`${item.href}-${item.label}`} item={item} active={isActive(item.href)} onNavigate={onClose} />
+        <SidebarNavItem key={`${item.href}-${item.label}`} item={item} active={isActive(item.href)} onNavigate={onClose} />
       ))}
     </Stack>
   )

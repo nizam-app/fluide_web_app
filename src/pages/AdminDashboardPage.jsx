@@ -5,7 +5,6 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { StatCard } from '../components/molecules/StatCard'
 import { StatusBadge } from '../components/molecules/StatusBadge'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
 import { formatDateShort } from '../lib/format'
@@ -102,7 +101,6 @@ export function AdminDashboardPage() {
   const recentRequests = requests.slice(0, 5)
 
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="admin" />
         <Flex justify="space-between" align="center" mb="10" flexWrap="wrap" gap="4">
@@ -360,6 +358,5 @@ export function AdminDashboardPage() {
           </>
         )}
       </Box>
-    </PortalLayout>
   )
 }

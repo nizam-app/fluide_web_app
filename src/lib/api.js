@@ -1,4 +1,20 @@
 import { clearAuthSession, loadToken } from './authStorage'
+import {
+  normalizeRequest,
+  normalizeTrip,
+  toApiNeedType,
+  toApiNeedTypes,
+} from './needTypes'
+
+function mapTripPayload(payload) {
+  if (!payload?.needTypes) return payload
+  return { ...payload, needTypes: toApiNeedTypes(payload.needTypes) }
+}
+
+function mapRequestPayload(payload) {
+  if (!payload?.needType) return payload
+  return { ...payload, needType: toApiNeedType(payload.needType) }
+}
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '')
 
@@ -39,7 +55,7 @@ function buildUrl(path, query) {
   return url.toString()
 }
 
-async function request(method, path, { body, query, token: overrideToken, headers, formData } = {}) {
+async function request(method, path, { body, query, token: overrideToken, headers, formData, timeoutMs = 30000 } = {}) {
   const token = overrideToken !== undefined ? overrideToken : loadToken()
   const finalHeaders = { ...(headers || {}) }
   let payload
@@ -55,15 +71,27 @@ async function request(method, path, { body, query, token: overrideToken, header
     finalHeaders.Authorization = `Bearer ${token}`
   }
 
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs)
+
   let response
   try {
     response = await fetch(buildUrl(path, query), {
       method,
       headers: finalHeaders,
       body: payload,
+      signal: controller.signal,
     })
   } catch (cause) {
+    if (cause?.name === 'AbortError') {
+      throw new ApiError('Request timed out — the server took too long to respond. Try again.', {
+        status: 0,
+        body: { cause: 'timeout' },
+      })
+    }
     throw new ApiError('Network error — cannot reach the Flunexia API.', { status: 0, body: { cause: cause?.message } })
+  } finally {
+    window.clearTimeout(timeoutId)
   }
 
   const text = await response.text()
@@ -108,15 +136,34 @@ const api = {
     me: () => request('GET', '/users/me'),
     updateProfile: (payload) => request('PATCH', '/users/me', { body: payload }),
     updatePassword: (payload) => request('PATCH', '/users/me/password', { body: payload }),
+    uploadAvatar: (file) => {
+      const formData = new FormData()
+      formData.append('image', file)
+      return request('POST', '/users/me/avatar', { formData })
+    },
+    deleteAccount: (password) => request('DELETE', '/users/me', { body: { password } }),
   },
 
   trips: {
-    list: (query) => request('GET', '/trips', { query }),
-    get: (id) => request('GET', `/trips/${id}`),
+    list: async (query) => {
+      const result = await request('GET', '/trips', { query })
+      if (result?.trips) {
+        result.trips = result.trips.map(normalizeTrip)
+      }
+      return result
+    },
+    get: async (id) => {
+      const result = await request('GET', `/trips/${id}`)
+      if (result?.trip) {
+        result.trip = normalizeTrip(result.trip)
+      }
+      return result
+    },
     create: (payload, file) => {
+      const body = mapTripPayload(payload)
       if (file) {
         const formData = new FormData()
-        for (const [key, value] of Object.entries(payload)) {
+        for (const [key, value] of Object.entries(body)) {
           if (value === undefined || value === null || value === '') continue
           if (Array.isArray(value) || (typeof value === 'object' && !(value instanceof File))) {
             formData.append(key, JSON.stringify(value))
@@ -127,21 +174,35 @@ const api = {
         formData.append('image', file)
         return request('POST', '/trips', { formData })
       }
-      return request('POST', '/trips', { body: payload })
+      return request('POST', '/trips', { body })
     },
-    update: (id, payload) => request('PATCH', `/trips/${id}`, { body: payload }),
+    update: (id, payload) => request('PATCH', `/trips/${id}`, { body: mapTripPayload(payload) }),
     delete: (id) => request('DELETE', `/trips/${id}`),
     uploadImage: (id, file) => {
       const formData = new FormData()
       formData.append('image', file)
       return request('POST', `/trips/${id}/image`, { formData })
     },
+    duplicate: (id) => request('POST', `/trips/${id}/duplicate`),
+    recommendedProviders: (id) => request('GET', `/trips/${id}/recommended-providers`),
   },
 
   requests: {
-    list: (query) => request('GET', '/requests', { query }),
-    get: (id) => request('GET', `/requests/${id}`),
-    create: (payload) => request('POST', '/requests', { body: payload }),
+    list: async (query) => {
+      const result = await request('GET', '/requests', { query })
+      if (result?.requests) {
+        result.requests = result.requests.map(normalizeRequest)
+      }
+      return result
+    },
+    get: async (id) => {
+      const result = await request('GET', `/requests/${id}`)
+      if (result?.request) {
+        result.request = normalizeRequest(result.request)
+      }
+      return result
+    },
+    create: (payload) => request('POST', '/requests', { body: mapRequestPayload(payload) }),
     updateStatus: (id, status) => request('PATCH', `/requests/${id}/status`, { body: { status } }),
     listOffers: (requestId) => request('GET', `/requests/${requestId}/offers`),
     createOffer: (requestId, payload) =>
@@ -160,8 +221,20 @@ const api = {
     createUser: (payload) => request('POST', '/admin/users', { body: payload }),
     updateUserStatus: (id, status) =>
       request('PATCH', `/admin/users/${id}/status`, { body: { status } }),
-    listTrips: (query) => request('GET', '/admin/trips', { query }),
-    listRequests: (query) => request('GET', '/admin/requests', { query }),
+    listTrips: async (query) => {
+      const result = await request('GET', '/admin/trips', { query })
+      if (result?.trips) {
+        result.trips = result.trips.map(normalizeTrip)
+      }
+      return result
+    },
+    listRequests: async (query) => {
+      const result = await request('GET', '/admin/requests', { query })
+      if (result?.requests) {
+        result.requests = result.requests.map(normalizeRequest)
+      }
+      return result
+    },
     listOffers: (query) => request('GET', '/admin/offers', { query }),
   },
 

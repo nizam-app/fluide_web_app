@@ -3,7 +3,6 @@ import { Box, Flex, Spinner, Table, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { StatusBadge } from '../components/molecules/StatusBadge'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
 import { formatDateShort } from '../lib/format'
@@ -14,7 +13,6 @@ export function AdminTripsPage() {
   const trips = data?.trips || []
 
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="admin" />
         <Text textStyle="headlineMd" mb="2">
@@ -77,6 +75,5 @@ export function AdminTripsPage() {
           </Box>
         )}
       </Box>
-    </PortalLayout>
   )
 }

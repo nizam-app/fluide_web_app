@@ -1,5 +1,11 @@
+import { fromApiNeedTypes } from './needTypes'
+
 const NEED_TYPE_ICONS = {
   Transport: 'directions_bus',
+  Accommodation: 'hotel',
+  'Food & Catering': 'restaurant',
+  'Guide & Tour': 'hiking',
+  Equipment: 'backpack',
   Activity: 'hiking',
   Restaurant: 'restaurant',
   Hotel: 'hotel',
@@ -60,12 +66,30 @@ export function initialsFromName(name = '') {
     .join('')
 }
 
+function getApiOrigin() {
+  return (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '')
+}
+
+/** Resolve a trip cover URL from API fields. Returns null when no image is set. */
+export function resolveTripImageUrl(trip) {
+  if (!trip || typeof trip === 'string') return null
+  const raw = trip.image ?? trip.coverImage ?? trip.imageUrl ?? trip.photo
+  if (!raw) return null
+  if (typeof raw === 'object' && raw.url) {
+    return String(raw.url)
+  }
+  const value = String(raw).trim()
+  if (!value) return null
+  if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) {
+    return value
+  }
+  const apiOrigin = getApiOrigin()
+  return `${apiOrigin}${value.startsWith('/') ? value : `/${value}`}`
+}
+
+/** @deprecated Prefer TripCover component — returns URL or null (no stock fallback). */
 export function getTripImage(trip) {
-  if (!trip?.image) return 'https://images.unsplash.com/photo-1564399579883-451a5d44ec08?w=600&q=80'
-  if (trip.image.startsWith('http')) return trip.image
-  // local upload URL — prefix the API origin
-  const apiOrigin = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '')
-  return `${apiOrigin}${trip.image.startsWith('/') ? trip.image : `/${trip.image}`}`
+  return resolveTripImageUrl(trip)
 }
 
 export function getOrganizationLabel(user) {
@@ -88,8 +112,20 @@ export function tripToCard(trip) {
   if (!trip) return null
   const id = trip._id || trip.id
   const tags = []
+  if (trip.category) tags.push({ icon: 'category', label: trip.category })
   if (trip.location) tags.push({ icon: 'location_city', label: trip.location })
-  if (typeof trip.participants === 'number') tags.push({ icon: 'group', label: `${trip.participants} Participants` })
+  if (typeof trip.joinedCount === 'number' && typeof trip.participants === 'number') {
+    tags.push({ icon: 'group', label: `${trip.joinedCount}/${trip.participants} Joined` })
+  } else if (typeof trip.participants === 'number') {
+    tags.push({ icon: 'group', label: `${trip.participants} Participants` })
+  }
+  if (trip.entryFee != null) {
+    tags.push({
+      icon: 'payments',
+      label: trip.entryFee > 0 ? formatPrice(trip.entryFee, trip.entryFeeCurrency || 'EUR') : 'Free',
+    })
+  }
+  if (trip.tripNote) tags.push({ icon: 'info', label: trip.tripNote })
   if (trip.accessibility) tags.push({ icon: 'accessible', label: trip.accessibility })
 
   const organizerInitial = initialsFromName(trip.organizer?.name || '').slice(0, 1)
@@ -97,12 +133,13 @@ export function tripToCard(trip) {
   return {
     id,
     title: trip.title,
+    location: trip.location,
     status: trip.status,
-    image: getTripImage(trip),
+    image: resolveTripImageUrl(trip),
     dates: formatDateRange(trip.startDate, trip.endDate),
     description: trip.description,
     tags,
     organizers: organizerInitial ? [organizerInitial] : [],
-    needTypes: trip.needTypes || [],
+    needTypes: fromApiNeedTypes(trip.needTypes),
   }
 }

@@ -12,9 +12,9 @@ import {
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { TripListingCard } from '../components/molecules/TripListingCard'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
+import { toApiNeedType } from '../lib/needTypes'
 import { tripToCard } from '../lib/format'
 import { NEED_TYPE_OPTIONS } from '../data/mockData'
 
@@ -32,7 +32,7 @@ export function ProviderTripsPage() {
     () =>
       api.trips.list({
         q: filters.q || undefined,
-        needType: filters.needType || undefined,
+        needType: filters.needType ? toApiNeedType(filters.needType) : undefined,
         status: filters.status || undefined,
       }),
     [filters.q, filters.needType, filters.status],
@@ -43,7 +43,6 @@ export function ProviderTripsPage() {
   const update = (field) => (event) => setFilters((prev) => ({ ...prev, [field]: event.target.value }))
 
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="provider" />
         <Box mb="8">
@@ -139,6 +138,5 @@ export function ProviderTripsPage() {
           </SimpleGrid>
         )}
       </Box>
-    </PortalLayout>
   )
 }

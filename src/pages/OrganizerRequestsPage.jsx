@@ -5,7 +5,6 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { FilterChip } from '../components/molecules/FilterChip'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { StatusBadge } from '../components/molecules/StatusBadge'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
 import { formatDateShort } from '../lib/format'
@@ -40,7 +39,6 @@ export function OrganizerRequestsPage() {
   }
 
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="organizer" />
         <Flex justify="space-between" align="flex-end" mb="6" flexWrap="wrap" gap="4">
@@ -152,6 +150,5 @@ export function OrganizerRequestsPage() {
           </Box>
         )}
       </Box>
-    </PortalLayout>
   )
 }

@@ -14,10 +14,10 @@ import { Link as RouterLink } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { TripListingCard } from '../components/molecules/TripListingCard'
-import { PortalLayout } from '../components/templates/PortalLayout'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
 import { tripToCard } from '../lib/format'
+import { toApiNeedType } from '../lib/needTypes'
 import { NEED_TYPE_OPTIONS } from '../data/mockData'
 import { stitchGreenButton } from '../theme/fluide-theme'
 
@@ -37,7 +37,7 @@ export function OrganizerTripsPage() {
     () =>
       api.trips.list({
         q: filters.q || undefined,
-        needType: filters.needType || undefined,
+        needType: filters.needType ? toApiNeedType(filters.needType) : undefined,
         status: filters.status || undefined,
       }),
     [filters.q, filters.needType, filters.status],
@@ -49,7 +49,6 @@ export function OrganizerTripsPage() {
   const update = (field) => (event) => setFilters((prev) => ({ ...prev, [field]: event.target.value }))
 
   return (
-    <PortalLayout>
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="organizer" />
         <Flex justify="space-between" align="flex-end" mb="8" flexWrap="wrap" gap="4">
@@ -159,6 +158,5 @@ export function OrganizerTripsPage() {
           </SimpleGrid>
         )}
       </Box>
-    </PortalLayout>
   )
 }
