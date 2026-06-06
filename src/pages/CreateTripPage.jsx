@@ -17,15 +17,15 @@ import {
 } from '../lib/itinerary'
 import { toApiNeedTypes } from '../lib/needTypes'
 import { textWithBrand } from '../lib/textWithBrand'
-import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
+import { fluideCompactInputStyles, fluideDateInputStyles, fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 const ACCEPTED_MIME = 'image/jpeg,image/png,image/webp,image/gif'
 
-function FormField({ label, children }) {
+function FormField({ label, children, compact = false }) {
   return (
     <Box>
-      <Text textStyle="labelMd" color="onSurfaceVariant" mb="2">
+      <Text textStyle={compact ? 'labelSm' : 'labelMd'} color="onSurfaceVariant" mb={compact ? '1' : '2'}>
         {label}
       </Text>
       {children}
@@ -203,7 +203,7 @@ export function CreateTripPage() {
 
         <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap="8">
           <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" shadow="level1">
-            <Stack gap="5" as="form" onSubmit={handleSubmit}>
+            <Stack gap="4" as="form" onSubmit={handleSubmit}>
               <FormField label="Trip Title">
                 <Input
                   placeholder="e.g. Summer Youth Camp Transport"
@@ -212,14 +212,60 @@ export function CreateTripPage() {
                   css={fluideInputStyles}
                 />
               </FormField>
-              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
-                <FormField label="Start date">
-                  <Input type="date" value={form.startDate} onChange={update('startDate')} css={fluideInputStyles} />
+
+              <Grid
+                templateColumns={{
+                  base: '1fr 1fr',
+                  md: 'minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.85fr) minmax(0, 0.75fr)',
+                }}
+                gap="3"
+                alignItems="end"
+              >
+                <FormField label="Start date" compact>
+                  <Input
+                    type="date"
+                    value={form.startDate}
+                    onChange={update('startDate')}
+                    css={fluideDateInputStyles}
+                  />
                 </FormField>
-                <FormField label="End date (optional)">
-                  <Input type="date" value={form.endDate} onChange={update('endDate')} css={fluideInputStyles} />
+                <FormField label="End date (optional)" compact>
+                  <Input
+                    type="date"
+                    value={form.endDate}
+                    onChange={update('endDate')}
+                    css={fluideDateInputStyles}
+                  />
+                </FormField>
+                <FormField label="Budget estimate" compact>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="2500"
+                    value={form.budgetEstimate}
+                    onChange={update('budgetEstimate')}
+                    css={fluideCompactInputStyles}
+                  />
+                </FormField>
+                <FormField label="Currency" compact>
+                  <CurrencyPicker
+                    value={form.budgetCurrency}
+                    onChange={(code) => setForm((prev) => ({ ...prev, budgetCurrency: code }))}
+                  />
+                </FormField>
+                <FormField label="Participants" compact>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="24"
+                    value={form.participants}
+                    onChange={update('participants')}
+                    css={fluideCompactInputStyles}
+                  />
                 </FormField>
               </Grid>
+
               <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
                 <FormField label="Location">
                   <Input
@@ -238,36 +284,6 @@ export function CreateTripPage() {
                   />
                 </FormField>
               </Grid>
-              <Grid templateColumns={{ base: '1fr', sm: '1.4fr 1fr' }} gap="4" alignItems="end">
-                <FormField label="Budget Estimate">
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="e.g. 2500"
-                    value={form.budgetEstimate}
-                    onChange={update('budgetEstimate')}
-                    css={fluideInputStyles}
-                  />
-                </FormField>
-                <FormField label="Currency">
-                  <CurrencyPicker
-                    value={form.budgetCurrency}
-                    onChange={(code) => setForm((prev) => ({ ...prev, budgetCurrency: code }))}
-                  />
-                </FormField>
-              </Grid>
-              <FormField label="Number of Participants">
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="3"
-                  value={form.participants}
-                  onChange={update('participants')}
-                  css={fluideInputStyles}
-                  maxW={{ sm: '16rem' }}
-                />
-              </FormField>
               <BookingModePicker value={form.bookingMode} onChange={handleBookingModeChange} />
               <NeedTypePicker
                 value={form.needTypes}
@@ -314,33 +330,6 @@ export function CreateTripPage() {
           </Box>
 
           <Stack gap="4">
-            <Box bg="infoBg" borderRadius="fluide3xl" p="6">
-              <Flex align="center" gap="2" mb="4">
-                <MaterialIcon name="info" color="infoFg" />
-                <Text textStyle="labelMd" color="infoFg">
-                  How it works
-                </Text>
-              </Flex>
-              <Stack gap="3">
-                {[
-                  'Add each transfer and stay in the itinerary',
-                  form.bookingMode === BOOKING_MODES.BUNDLED
-                    ? 'One provider can handle the full package'
-                    : 'Providers send separate offers per service',
-                  'Accept the best match',
-                ].map((step, i) => (
-                  <Flex key={step} gap="3" align="flex-start">
-                    <Text color="primary" fontWeight="700">
-                      {i + 1}.
-                    </Text>
-                    <Text textStyle="bodySm" color="onSurface">
-                      {step}
-                    </Text>
-                  </Flex>
-                ))}
-              </Stack>
-            </Box>
-
             <Box
               bg="surface"
               borderRadius="fluide3xl"

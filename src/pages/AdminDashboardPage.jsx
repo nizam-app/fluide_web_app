@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Button, Flex, Grid, HStack, Spinner, Stack, Table, Text } from '@chakra-ui/react'
 import { useLocation } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
+import { AdminCompactStats } from '../components/molecules/AdminCompactStats'
+import { AdminQuickAction } from '../components/molecules/AdminQuickAction'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
-import { StatCard } from '../components/molecules/StatCard'
 import { StatusBadge } from '../components/molecules/StatusBadge'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
@@ -56,44 +57,35 @@ export function AdminDashboardPage() {
     }
   }
 
-  const statCards = stats
-    ? [
-        {
-          label: 'Total Users',
-          value: stats.users,
-          trend: `${stats.organizers} organizers • ${stats.providers} suppliers`,
-          icon: 'group',
-          iconBg: 'infoBg',
-          iconColor: 'infoFg',
-        },
-        {
-          label: 'Total Trips',
-          value: stats.trips,
-          trend: `${stats.tripsByStatus?.published || 0} published`,
-          trendUp: true,
-          icon: 'map',
-          iconBg: 'secondaryContainer',
-          iconColor: 'onSecondaryContainer',
-        },
-        {
-          label: 'Total Requests',
-          value: stats.requests,
-          trend: `${stats.pendingRequests || 0} pending`,
-          urgent: (stats.pendingRequests || 0) > 0,
-          icon: 'forum',
-          iconBg: 'infoBg',
-          iconColor: 'infoFg',
-        },
-        {
-          label: 'Active Providers',
-          value: stats.providers,
-          trend: `${stats.submittedOffers || 0} live offers`,
-          icon: 'storefront',
-          iconBg: 'surfaceContainer',
-          iconColor: 'onSurfaceVariant',
-        },
-      ]
-    : []
+  const compactStats = useMemo(
+    () =>
+      stats
+        ? [
+            {
+              label: 'Users',
+              value: stats.users,
+              hint: `${stats.organizers} organizers · ${stats.providers} suppliers`,
+            },
+            {
+              label: 'Trips',
+              value: stats.trips,
+              hint: `${stats.tripsByStatus?.published || 0} published`,
+            },
+            {
+              label: 'Suppliers',
+              value: stats.providers,
+              hint: `${stats.submittedOffers || 0} open offers`,
+            },
+          ]
+        : [],
+    [stats],
+  )
+
+  const pendingCount = stats?.pendingRequests || 0
+
+  const scrollToUsers = () => {
+    document.getElementById('users')?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const tripsQueue = trips
     .filter((t) => t.status === 'published' || t.status === 'scheduled' || t.status === 'in_progress')
@@ -103,13 +95,25 @@ export function AdminDashboardPage() {
   return (
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role="admin" />
-        <Flex justify="space-between" align="center" mb="10" flexWrap="wrap" gap="4">
-          <Text textStyle="headlineMd">Platform overview</Text>
-          <HStack gap="3">
-            <Button variant="ghost" aria-label="Refresh" onClick={reload}>
-              <MaterialIcon name="refresh" />
-            </Button>
-          </HStack>
+        <Flex justify="space-between" align="flex-end" mb="8" flexWrap="wrap" gap="4">
+          <Box>
+            <Text textStyle="headlineSm" fontWeight="600">
+              Platform overview
+            </Text>
+            <Text textStyle="bodySm" color="onSurfaceVariant" mt="1" maxW="xl">
+              Summary metrics and shortcuts for daily administration.
+            </Text>
+          </Box>
+          <Button
+            variant="outline"
+            size="sm"
+            borderRadius="lg"
+            borderColor="outlineVariant"
+            onClick={reload}
+          >
+            <MaterialIcon name="refresh" size={18} />
+            Refresh
+          </Button>
         </Flex>
 
         {loading ? (
@@ -122,31 +126,91 @@ export function AdminDashboardPage() {
           </Text>
         ) : (
           <>
-            <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', xl: 'repeat(4, 1fr)' }} gap="6" mb="10">
-              {statCards.map((s) => (
-                <StatCard key={s.label} {...s} />
-              ))}
-            </Grid>
+            <Flex direction={{ base: 'column', xl: 'row' }} gap="5" mb="10" align="stretch">
+              <Box w={{ base: 'full', xl: '320px' }} flexShrink={0}>
+                <AdminCompactStats title="At a glance" items={compactStats} />
+              </Box>
+              <Grid
+                flex="1"
+                templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', xl: 'repeat(3, 1fr)' }}
+                gap="3"
+                alignContent="stretch"
+              >
+                <AdminQuickAction
+                  icon="group"
+                  label="Manage users"
+                  description="Roles, access, and account status"
+                  badge={stats?.users}
+                  onClick={scrollToUsers}
+                />
+                <AdminQuickAction
+                  icon="map"
+                  label="All trips"
+                  description="Published and scheduled outings"
+                  badge={stats?.trips}
+                  to="/admin/trips"
+                  accent="secondary"
+                />
+                <AdminQuickAction
+                  icon="forum"
+                  label="All requests"
+                  description="Booking requests platform-wide"
+                  badge={stats?.requests}
+                  to="/admin/requests"
+                />
+                <AdminQuickAction
+                  icon="pending_actions"
+                  label="Pending"
+                  description="Awaiting supplier response"
+                  badge={pendingCount || undefined}
+                  to="/admin/requests"
+                  accent={pendingCount > 0 ? 'error' : 'primary'}
+                />
+                <AdminQuickAction
+                  icon="storefront"
+                  label="Suppliers"
+                  description="Transport, catering, activity providers"
+                  badge={stats?.providers}
+                  onClick={scrollToUsers}
+                  accent="secondary"
+                />
+                <AdminQuickAction
+                  icon="manage_accounts"
+                  label="Profile"
+                  description="Account and security settings"
+                  to="/profile"
+                />
+              </Grid>
+            </Flex>
 
             <Box
               id="users"
               scrollMarginTop="24"
               bg="surface"
-              borderRadius="fluide3xl"
+              borderRadius="xl"
               borderWidth="1px"
               borderColor="outlineVariant"
               overflow="hidden"
               mb="8"
-              shadow="level1"
             >
-              <Flex justify="space-between" align="center" p="6" borderBottomWidth="1px" borderColor="outlineVariant">
+              <Flex
+                justify="space-between"
+                align="center"
+                px="6"
+                py="4"
+                borderBottomWidth="1px"
+                borderColor="outlineVariant"
+                bg="surfaceContainerLow"
+              >
                 <Box>
-                  <Text textStyle="headlineSm">User management</Text>
-                  <Text textStyle="bodySm" color="onSurfaceVariant">
-                    Manage platform participants and permissions
+                  <Text textStyle="labelMd" fontWeight="600">
+                    User management
+                  </Text>
+                  <Text textStyle="bodySm" color="onSurfaceVariant" mt="0.5">
+                    Platform participants and permissions
                   </Text>
                 </Box>
-                <Text textStyle="labelMd" color="onSurfaceVariant">
+                <Text textStyle="bodySm" color="onSurfaceVariant" fontWeight="500">
                   {users.length} users
                 </Text>
               </Flex>
@@ -232,10 +296,25 @@ export function AdminDashboardPage() {
               </Box>
             </Box>
 
-            <Box bg="surface" borderRadius="fluide3xl" borderWidth="1px" borderColor="outlineVariant" overflow="hidden" mb="8">
-              <Box px="6" py="4" borderBottomWidth="1px" borderColor="outlineVariant">
-                <Text textStyle="headlineSm">Recent requests</Text>
-              </Box>
+            <Box
+              bg="surface"
+              borderRadius="xl"
+              borderWidth="1px"
+              borderColor="outlineVariant"
+              overflow="hidden"
+              mb="8"
+            >
+              <Flex
+                px="6"
+                py="4"
+                borderBottomWidth="1px"
+                borderColor="outlineVariant"
+                bg="surfaceContainerLow"
+              >
+                <Text textStyle="labelMd" fontWeight="600">
+                  Recent requests
+                </Text>
+              </Flex>
               <Box overflow="auto">
                 <Table.Root>
                   <Table.Header bg="surfaceContainerLow">
@@ -275,13 +354,25 @@ export function AdminDashboardPage() {
               </Box>
             </Box>
 
-            <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap="6">
-              <Box bg="surface" borderRadius="fluide3xl" borderWidth="1px" borderColor="outlineVariant" overflow="hidden">
-                <Box bg="infoBg" px="6" py="4" borderBottomWidth="1px" borderColor="outlineVariant">
-                  <Text textStyle="labelMd" color="infoFg">
+            <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap="5">
+              <Box
+                bg="surface"
+                borderRadius="xl"
+                borderWidth="1px"
+                borderColor="outlineVariant"
+                overflow="hidden"
+              >
+                <Flex
+                  px="6"
+                  py="4"
+                  borderBottomWidth="1px"
+                  borderColor="outlineVariant"
+                  bg="surfaceContainerLow"
+                >
+                  <Text textStyle="labelMd" fontWeight="600">
                     Trips queue
                   </Text>
-                </Box>
+                </Flex>
                 <Stack gap="0">
                   {tripsQueue.length === 0 && (
                     <Box p="6">
@@ -317,12 +408,24 @@ export function AdminDashboardPage() {
                 </Stack>
               </Box>
 
-              <Box bg="surface" borderRadius="fluide3xl" borderWidth="1px" borderColor="outlineVariant" overflow="hidden">
-                <Box bg="infoBg" px="6" py="4" borderBottomWidth="1px" borderColor="outlineVariant">
-                  <Text textStyle="labelMd" color="infoFg">
+              <Box
+                bg="surface"
+                borderRadius="xl"
+                borderWidth="1px"
+                borderColor="outlineVariant"
+                overflow="hidden"
+              >
+                <Flex
+                  px="6"
+                  py="4"
+                  borderBottomWidth="1px"
+                  borderColor="outlineVariant"
+                  bg="surfaceContainerLow"
+                >
+                  <Text textStyle="labelMd" fontWeight="600">
                     Activity stream
                   </Text>
-                </Box>
+                </Flex>
                 <Stack gap="0">
                   {recentRequests.length === 0 && (
                     <Box p="6">

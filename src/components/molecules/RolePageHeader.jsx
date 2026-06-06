@@ -28,19 +28,19 @@ const themes = {
 export function RolePageHeader({ role }) {
   const t = themes[role] ?? themes.organizer
   return (
-    <Box bg={t.bg} color={t.color} borderRadius="fluide3xl" p={{ base: 6, md: 8 }} mb="8">
+    <Box bg={t.bg} color={t.color} borderRadius="xl" p={{ base: 6, md: 7 }} mb="8">
       <Flex align="flex-start" gap="4">
-        <Flex w="14" h="14" borderRadius="xl" bg="whiteAlpha.200" align="center" justify="center" flexShrink={0}>
-          <MaterialIcon name={t.icon} size={32} color={t.color} filled />
+        <Flex w="12" h="12" borderRadius="lg" bg="whiteAlpha.200" align="center" justify="center" flexShrink={0}>
+          <MaterialIcon name={t.icon} size={28} color={t.color} filled />
         </Flex>
         <Box>
-          <Text textStyle="labelSm" opacity={0.85} mb="1" textTransform="uppercase" letterSpacing="wider">
+          <Text textStyle="labelSm" opacity={0.8} mb="1">
             {role === 'provider' ? 'Supplier' : role} workspace
           </Text>
-          <Text textStyle="headlineLg" mb="2">
+          <Text textStyle="headlineMd" mb="1.5" fontWeight="600">
             {t.title}
           </Text>
-          <Text textStyle="bodyMd" opacity={0.9} maxW="2xl">
+          <Text textStyle="bodySm" opacity={0.88} maxW="2xl">
             {t.subtitle}
           </Text>
         </Box>

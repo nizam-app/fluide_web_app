@@ -25,16 +25,18 @@ function SidebarNavItem({ item, active, onNavigate }) {
       <Flex
         align="center"
         gap="3"
-        px="4"
-        py="3"
-        borderRadius="fluide"
-        bg={active ? 'accentMint' : 'transparent'}
+        px="3"
+        py="2.5"
+        borderRadius="lg"
+        borderLeftWidth="3px"
+        borderLeftColor={active ? 'primary' : 'transparent'}
+        bg={active ? 'surface' : 'transparent'}
         color={active ? 'primary' : 'onSurfaceVariant'}
         textStyle="labelMd"
-        fontWeight={active ? '700' : '600'}
-        _hover={{ bg: active ? 'accentMint' : 'surfaceContainer' }}
+        fontWeight={active ? '600' : '500'}
+        _hover={{ bg: 'surface', color: 'onSurface' }}
       >
-        <MaterialIcon name={item.icon} filled={active} size={22} />
+        <MaterialIcon name={item.icon} filled={active} size={20} />
         {item.label}
       </Flex>
     </Link>

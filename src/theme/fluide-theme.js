@@ -120,6 +120,24 @@ export const fluideInputStyles = {
   _focus: { borderColor: 'primary', boxShadow: '0 0 0 3px color-mix(in srgb, var(--chakra-colors-primary) 15%, transparent)' },
 }
 
+/** Smaller fields for dates, budget, counts — buyer compact create-trip layout */
+export const fluideCompactInputStyles = {
+  ...fluideInputStyles,
+  fontSize: '14px',
+  px: '3',
+  py: '2',
+  minH: '2.25rem',
+}
+
+export const fluideDateInputStyles = {
+  ...fluideCompactInputStyles,
+  '&::-webkit-calendar-picker-indicator': {
+    opacity: 0.35,
+    cursor: 'pointer',
+    marginLeft: '0.25rem',
+  },
+}
+
 export const stitchBlackButton = {
   bg: 'brandBlack',
   color: 'white',
