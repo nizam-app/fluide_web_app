@@ -997,13 +997,13 @@ export function TripDetailPage() {
                 )}
                 {trip.description ? (
                   <Box>
-                    <Text textStyle="headlineSm" mb="3">
+                <Text textStyle="headlineSm" mb="3">
                       About this trip
-                    </Text>
+                </Text>
                     <Text textStyle="bodyMd" color="onSurfaceVariant" whiteSpace="pre-wrap" lineHeight="1.7">
-                      {trip.description}
-                    </Text>
-                  </Box>
+                  {trip.description}
+                      </Text>
+                    </Box>
                 ) : null}
               </Box>
             </Box>
@@ -1094,8 +1094,8 @@ export function TripDetailPage() {
                     <Text textStyle="bodySm" color="onSurfaceVariant">
                       No service requests yet for this trip.
                   </Text>
-                </Box>
-                )}
+            </Box>
+            )}
                 {isOrganizer && String(trip.organizer?._id || trip.organizer) === String(user?._id) && (
                   <OrganizerNewRequestForm
                     tripId={trip._id}
