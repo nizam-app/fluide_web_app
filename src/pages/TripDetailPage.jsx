@@ -12,9 +12,14 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
-import { Link as RouterLink, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { ItineraryTimeline } from '../components/molecules/ItineraryTimeline'
+import { TripSnapshotSidebar } from '../components/molecules/TripSnapshotSidebar'
+import { FavoriteProviderButton } from '../components/molecules/FavoriteProviderButton'
+import { RequestHistoryPanel } from '../components/molecules/RequestHistoryPanel'
+import { RequestMessagesPanel } from '../components/molecules/RequestMessagesPanel'
+import { buildRequestSummaryRows, RequestSummaryModal } from '../components/molecules/RequestSummaryModal'
 import { TripCover } from '../components/molecules/TripCover'
 import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
@@ -24,11 +29,10 @@ import { NEED_TYPE_OPTIONS } from '../data/mockData'
 import api from '../lib/api'
 import { BOOKING_MODES, bundledRequestMessage } from '../lib/itinerary'
 import { normalizeRequest, normalizeTrip, toApiNeedType } from '../lib/needTypes'
+import { getRequestDisplayStatus } from '../lib/requestStatus'
 import {
-  formatDateRange,
   formatPrice,
   getNeedTypeIcon,
-  initialsFromName,
 } from '../lib/format'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
@@ -37,6 +41,7 @@ function useTripDetail(id) {
   const [requests, setRequests] = useState([])
   const [offersByRequest, setOffersByRequest] = useState({})
   const [recommendedProviders, setRecommendedProviders] = useState([])
+  const [favoriteProviderIds, setFavoriteProviderIds] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const activeRef = useRef(true)
@@ -46,10 +51,11 @@ function useTripDetail(id) {
     setLoading(true)
     setError(null)
     try {
-      const [tripResult, requestsResult, providersResult] = await Promise.all([
+      const [tripResult, requestsResult, providersResult, favoritesResult] = await Promise.all([
         api.trips.get(id),
         api.requests.list({ trip: id }),
         api.trips.recommendedProviders(id).catch(() => ({ providers: [] })),
+        api.favorites.list().catch(() => ({ providers: [] })),
       ])
       if (!activeRef.current) return
       setTrip(normalizeTrip(tripResult.trip))
@@ -66,6 +72,7 @@ function useTripDetail(id) {
       })
       setOffersByRequest(map)
       setRecommendedProviders(providersResult.providers || [])
+      setFavoriteProviderIds((favoritesResult.providers || []).map((p) => String(p._id)))
     } catch (err) {
       if (activeRef.current) setError(err)
     } finally {
@@ -82,7 +89,7 @@ function useTripDetail(id) {
     }
   }, [load])
 
-  return { trip, requests, offersByRequest, recommendedProviders, loading, error, reload: load }
+  return { trip, requests, offersByRequest, recommendedProviders, favoriteProviderIds, loading, error, reload: load }
 }
 
 function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdraw, busy }) {
@@ -195,6 +202,33 @@ function ChangeCoverButton({ tripId, onChanged }) {
         </Text>
       )}
     </>
+  )
+}
+
+function TripBackLink({ to, label }) {
+  return (
+    <Flex
+      as="button"
+      type="button"
+      onClick={() => {
+        // Client router can leave trip detail mounted while the URL is already /trips.
+        window.location.assign(to)
+      }}
+      align="center"
+      gap="1"
+      textStyle="labelMd"
+      color="onSurfaceVariant"
+      mb="6"
+      w="fit-content"
+      cursor="pointer"
+      bg="transparent"
+      border="none"
+      p="0"
+      _hover={{ color: 'primary' }}
+    >
+      <MaterialIcon name="arrow_back" size={18} />
+      {label}
+    </Flex>
   )
 }
 
@@ -333,6 +367,8 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [showSummary, setShowSummary] = useState(false)
+  const [pendingAction, setPendingAction] = useState(null)
 
   useEffect(() => {
     setSelectedTypes((prev) => {
@@ -348,8 +384,14 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       setError('The package request for this trip is already open.')
       return
     }
+    setPendingAction({ mode: 'bundled' })
+    setShowSummary(true)
+  }
+
+  const executeBundledSubmit = async () => {
     setSubmitting(true)
     try {
+      const allowedTypes = tripNeedTypes.length > 0 ? tripNeedTypes : NEED_TYPE_OPTIONS
       const primaryType = allowedTypes.includes('Accommodation') ? 'Accommodation' : allowedTypes[0]
       await api.requests.create({
         trip: tripId,
@@ -357,6 +399,8 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
         message: [bundledRequestMessage(trip), message.trim()].filter(Boolean).join('\n\n'),
       })
       setMessage('')
+      setShowSummary(false)
+      setPendingAction(null)
       await onCreated()
     } catch (err) {
       setError(err?.message || 'Could not create the package request.')
@@ -383,11 +427,17 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       return
     }
 
+    setPendingAction({ mode: 'multi', types: [...selectedTypes] })
+    setShowSummary(true)
+  }
+
+  const executeMultiSubmit = async () => {
+    const types = pendingAction?.types || selectedTypes
     setSubmitting(true)
     try {
       const trimmedMessage = message.trim() || undefined
       const results = await Promise.allSettled(
-        selectedTypes.map((type) =>
+        types.map((type) =>
           api.requests.create({
             trip: tripId,
             needType: toApiNeedType(type),
@@ -408,6 +458,8 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       } else {
         setMessage('')
       }
+      setShowSummary(false)
+      setPendingAction(null)
       await onCreated()
     } catch (err) {
       setError(err?.message || 'Could not create the service request.')
@@ -468,6 +520,23 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
             {error}
           </Text>
         )}
+        <RequestSummaryModal
+          open={showSummary}
+          title="Confirm package request"
+          trip={trip}
+          rows={buildRequestSummaryRows({
+            needTypes: tripNeedTypes,
+            message: message.trim() || undefined,
+            statusLabel: 'Pending',
+          })}
+          confirmLabel="Confirm request"
+          loading={submitting}
+          onCancel={() => {
+            setShowSummary(false)
+            setPendingAction(null)
+          }}
+          onConfirm={executeBundledSubmit}
+        />
       </Box>
     )
   }
@@ -538,6 +607,23 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
           {error}
         </Text>
       )}
+      <RequestSummaryModal
+        open={showSummary}
+        title="Confirm service requests"
+        trip={trip}
+        rows={buildRequestSummaryRows({
+          needTypes: pendingAction?.types || selectedTypes,
+          message: message.trim() || undefined,
+          statusLabel: 'Pending',
+        })}
+        confirmLabel="Confirm requests"
+        loading={submitting}
+        onCancel={() => {
+          setShowSummary(false)
+          setPendingAction(null)
+        }}
+        onConfirm={executeMultiSubmit}
+      />
     </Box>
   )
 }
@@ -632,13 +718,21 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
   )
 }
 
-function RequestSection({ request, offers, role, currentUserId, onChange }) {
+function RequestSection({ request, offers, role, currentUserId, trip, onChange }) {
   const [busyOfferId, setBusyOfferId] = useState(null)
+  const [pendingAcceptOffer, setPendingAcceptOffer] = useState(null)
+  const displayStatus = getRequestDisplayStatus(request)
 
   const accept = async (offer) => {
-    setBusyOfferId(offer._id)
+    setPendingAcceptOffer(offer)
+  }
+
+  const confirmAccept = async () => {
+    if (!pendingAcceptOffer) return
+    setBusyOfferId(pendingAcceptOffer._id)
     try {
-      await api.offers.updateStatus(offer._id, 'accepted')
+      await api.offers.updateStatus(pendingAcceptOffer._id, 'accepted')
+      setPendingAcceptOffer(null)
       await onChange()
     } catch (err) {
       window.alert(err?.message || 'Could not accept the offer.')
@@ -678,6 +772,26 @@ function RequestSection({ request, offers, role, currentUserId, onChange }) {
     [offers, role, currentUserId],
   )
 
+  const isAssignedProvider =
+    role === 'provider' &&
+    request.provider &&
+    String(request.provider._id || request.provider) === String(currentUserId)
+
+  const providerHasActiveOffer =
+    role === 'provider' &&
+    offers.some(
+      (o) =>
+        String(o.provider?._id || o.provider) === String(currentUserId) &&
+        ['submitted', 'accepted'].includes(o.status),
+    )
+
+  const canPostMessages =
+    role === 'admin' ||
+    (role === 'organizer' && request.status !== 'cancelled') ||
+    (role === 'provider' &&
+      request.status !== 'cancelled' &&
+      (isAssignedProvider || providerHasActiveOffer))
+
   return (
     <Box
       bg="surface"
@@ -699,43 +813,76 @@ function RequestSection({ request, offers, role, currentUserId, onChange }) {
             </Text>
           </Box>
         </HStack>
-        <StatusBadge status={request.status} />
+        <StatusBadge status={displayStatus} />
       </Flex>
 
+      <RequestHistoryPanel requestId={request._id} />
+
       {offers.length > 0 && (
-        <Stack gap="3" mb={role === 'provider' && !providerAlreadyOffered && request.status === 'pending' ? '6' : '0'}>
-          {offers.map((offer) => (
-            <OfferRow
-              key={offer._id}
-              offer={offer}
-              busy={busyOfferId === offer._id}
-              canManage={role === 'organizer' && request.status === 'pending'}
-              canWithdraw={
-                role === 'provider' &&
-                String(offer.provider?._id || offer.provider) === String(currentUserId) &&
-                request.status === 'pending'
-              }
-              onAccept={accept}
-              onReject={reject}
-              onWithdraw={withdraw}
-            />
-          ))}
-        </Stack>
+        <Box mt="4" pt="4" borderTopWidth="1px" borderColor="outlineVariant">
+          <Text textStyle="labelMd" mb="3" fontWeight="600">
+            Offers
+          </Text>
+          <Stack gap="3">
+            {offers.map((offer) => (
+              <OfferRow
+                key={offer._id}
+                offer={offer}
+                busy={busyOfferId === offer._id}
+                canManage={role === 'organizer' && request.status === 'pending'}
+                canWithdraw={
+                  role === 'provider' &&
+                  String(offer.provider?._id || offer.provider) === String(currentUserId) &&
+                  request.status === 'pending'
+                }
+                onAccept={accept}
+                onReject={reject}
+                onWithdraw={withdraw}
+              />
+            ))}
+          </Stack>
+        </Box>
       )}
 
+      <RequestMessagesPanel
+        requestId={request._id}
+        messages={request.messages || []}
+        canPost={canPostMessages}
+        currentUserId={currentUserId}
+        onPosted={onChange}
+      />
+
       {role === 'provider' && request.status === 'pending' && !providerAlreadyOffered && (
-        <ProviderOfferForm requestId={request._id} onSubmitted={onChange} />
+        <Box mt="6">
+          <ProviderOfferForm requestId={request._id} onSubmitted={onChange} />
+        </Box>
       )}
       {role === 'provider' && providerAlreadyOffered && (
-        <Text textStyle="bodySm" color="onSurfaceVariant" mt="2">
+        <Text textStyle="bodySm" color="onSurfaceVariant" mt="4">
           You have already submitted an offer for this request.
         </Text>
       )}
       {offers.length === 0 && role !== 'provider' && (
-        <Text textStyle="bodySm" color="onSurfaceVariant">
+        <Text textStyle="bodySm" color="onSurfaceVariant" mt="4">
           No offers yet for this request.
         </Text>
       )}
+
+      <RequestSummaryModal
+        open={Boolean(pendingAcceptOffer)}
+        title="Confirm accepted offer"
+        trip={trip}
+        rows={buildRequestSummaryRows({
+          needTypes: [request.needType],
+          message: request.message,
+          offer: pendingAcceptOffer,
+          statusLabel: 'Confirmed',
+        })}
+        confirmLabel="Accept offer"
+        loading={busyOfferId === pendingAcceptOffer?._id}
+        onCancel={() => setPendingAcceptOffer(null)}
+        onConfirm={confirmAccept}
+      />
     </Box>
   )
 }
@@ -743,7 +890,7 @@ function RequestSection({ request, offers, role, currentUserId, onChange }) {
 export function TripDetailPage() {
   const { isOrganizer, isProvider, isAdmin, user } = useAuth()
   const { id } = useParams()
-  const { trip, requests, offersByRequest, recommendedProviders, loading, error, reload } =
+  const { trip, requests, offersByRequest, recommendedProviders, favoriteProviderIds, loading, error, reload } =
     useTripDetail(id)
 
   const role = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
@@ -764,9 +911,9 @@ export function TripDetailPage() {
           <Text textStyle="bodyMd" color="error" mb="4">
             {error?.message || 'Trip not found.'}
           </Text>
-          <RouterLink to={backTo}>
-            <Button {...stitchGreenButton}>{backLabel}</Button>
-          </RouterLink>
+          <Button {...stitchGreenButton} onClick={() => window.location.assign(backTo)}>
+            {backLabel}
+          </Button>
         </Box>
     )
   }
@@ -782,20 +929,7 @@ export function TripDetailPage() {
   return (
       <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
         <RolePageHeader role={role} />
-        <RouterLink to={backTo}>
-          <Flex
-            align="center"
-            gap="1"
-            textStyle="labelMd"
-            color="onSurfaceVariant"
-            mb="6"
-            w="fit-content"
-            _hover={{ color: 'primary' }}
-          >
-            <MaterialIcon name="arrow_back" size={18} />
-            {backLabel}
-          </Flex>
-        </RouterLink>
+        <TripBackLink to={backTo} label={backLabel} />
 
         <Flex justify="space-between" align="flex-start" mb="8" flexWrap="wrap" gap="4">
           <Box>
@@ -824,11 +958,11 @@ export function TripDetailPage() {
             <Text textStyle="headlineLg">{trip.title}</Text>
           </Box>
           <Flex direction="column" align={{ base: 'stretch', sm: 'flex-end' }} gap="2">
-            {isAdmin && (
+          {isAdmin && (
               <Text textStyle="bodySm" color="onSurfaceVariant" textAlign={{ base: 'left', sm: 'right' }}>
                 Platform admin view
-              </Text>
-            )}
+            </Text>
+          )}
             {canDeleteTrip && (
               <DeleteTripButton
                 tripId={trip._id}
@@ -846,16 +980,6 @@ export function TripDetailPage() {
             <Box bg="surface" borderRadius="fluide3xl" overflow="hidden" borderWidth="1px" borderColor="outlineVariant">
               <Box position="relative" h="56">
                 <TripCover trip={trip} alt={trip.title} w="full" h="full" />
-                <HStack position="absolute" bottom="4" left="4" gap="2">
-                  <Flex align="center" gap="1" bg="surface" px="3" py="1" borderRadius="pill" textStyle="labelSm">
-                    <MaterialIcon name="calendar_today" size={14} />
-                    {formatDateRange(trip.startDate, trip.endDate)}
-                  </Flex>
-                  <Flex align="center" gap="1" bg="surface" px="3" py="1" borderRadius="pill" textStyle="labelSm">
-                    <MaterialIcon name="location_on" size={14} />
-                    {trip.location}
-                  </Flex>
-                </HStack>
                 {isOrganizer && String(trip.organizer?._id || trip.organizer) === String(user?._id) && (
                   <Box position="absolute" top="4" right="4">
                     <ChangeCoverButton tripId={trip._id} onChanged={reload} />
@@ -864,73 +988,23 @@ export function TripDetailPage() {
               </Box>
               <Box p="6">
                 {(trip.itinerary || []).length > 0 && (
-                  <Box mb="6">
+                  <Box mb={trip.description ? '8' : '0'}>
                     <Text textStyle="headlineSm" mb="4">
                       Itinerary
                     </Text>
                     <ItineraryTimeline itinerary={trip.itinerary} />
                   </Box>
                 )}
-                {trip.description && (
-                  <>
+                {trip.description ? (
+                  <Box>
                     <Text textStyle="headlineSm" mb="3">
-                      Trip summary
+                      About this trip
                     </Text>
-                    <Text
-                      textStyle="bodyMd"
-                      color="onSurfaceVariant"
-                      mb="6"
-                      whiteSpace="pre-wrap"
-                      lineHeight="1.7"
-                    >
+                    <Text textStyle="bodyMd" color="onSurfaceVariant" whiteSpace="pre-wrap" lineHeight="1.7">
                       {trip.description}
                     </Text>
-                  </>
-                )}
-                <Grid templateColumns={{ base: '1fr 1fr', sm: 'repeat(2, 1fr)' }} gap="3">
-                  {[
-                    { label: 'Participants', value: trip.participants },
-                    {
-                      label: 'Joined',
-                      value:
-                        trip.joinedCount != null
-                          ? `${trip.joinedCount} / ${trip.participants}`
-                          : trip.participants,
-                    },
-                    { label: 'Category', value: trip.category || '—' },
-                    { label: 'Need types', value: (trip.needTypes || []).join(', ') || '—', green: true },
-                    {
-                      label: 'Entry fee',
-                      value:
-                        trip.entryFee != null
-                          ? formatPrice(trip.entryFee, trip.entryFeeCurrency || 'EUR')
-                          : 'Free',
-                    },
-                    { label: 'Note', value: trip.tripNote || '—' },
-                    {
-                      label: 'Booking type',
-                      value: trip.bookingMode === BOOKING_MODES.BUNDLED ? 'Full package' : 'Multiple providers',
-                    },
-                    {
-                      label: 'Budget estimate',
-                      value:
-                        trip.budgetEstimate != null
-                          ? formatPrice(trip.budgetEstimate, trip.budgetCurrency || 'EUR')
-                          : '—',
-                    },
-                    { label: 'Accessibility', value: trip.accessibility || '—' },
-                    { label: 'Status', value: trip.status },
-                  ].map((d) => (
-                    <Box key={d.label} bg="infoBg" p="4" borderRadius="fluide">
-                      <Text textStyle="labelSm" color="onSurfaceVariant" mb="1">
-                        {d.label}
-                      </Text>
-                      <Text textStyle="labelMd" color={d.green ? 'primary' : 'onSurface'} fontWeight="700">
-                        {d.value}
-                      </Text>
-                    </Box>
-                  ))}
-                </Grid>
+                  </Box>
+                ) : null}
               </Box>
             </Box>
 
@@ -983,13 +1057,19 @@ export function TripDetailPage() {
                           {provider.rating != null ? ` · ${provider.rating} ★` : ''}
                         </Text>
                       </Box>
+                      {isOrganizer && (
+                        <FavoriteProviderButton
+                          providerId={provider._id}
+                          initialFavorite={favoriteProviderIds.includes(String(provider._id))}
+                        />
+                      )}
                     </Flex>
                   ))}
                 </Stack>
               </Box>
             )}
 
-            <Box>
+                <Box>
               <Flex align="center" gap="3" mb="4">
                 <Text textStyle="headlineSm">Service requests</Text>
                 <Box bg="infoBg" color="infoFg" px="3" py="1" borderRadius="pill" textStyle="labelSm" fontWeight="600">
@@ -1005,6 +1085,7 @@ export function TripDetailPage() {
                     offers={offersByRequest[req._id] || []}
                     role={role}
                     currentUserId={user?._id}
+                    trip={trip}
                     onChange={reload}
                   />
                 ))}
@@ -1012,8 +1093,8 @@ export function TripDetailPage() {
                   <Box bg="surface" p="6" borderRadius="fluide3xl" borderWidth="1px" borderColor="outlineVariant">
                     <Text textStyle="bodySm" color="onSurfaceVariant">
                       No service requests yet for this trip.
-                    </Text>
-                  </Box>
+                  </Text>
+                </Box>
                 )}
                 {isOrganizer && String(trip.organizer?._id || trip.organizer) === String(user?._id) && (
                   <OrganizerNewRequestForm
@@ -1029,43 +1110,7 @@ export function TripDetailPage() {
             </Box>
           </Stack>
 
-          <Stack gap="4">
-            <Box
-              bg="surface"
-              borderRadius="fluide3xl"
-              p="6"
-              borderWidth="1px"
-              borderColor="outlineVariant"
-              textAlign="center"
-            >
-              <Flex
-                w="16"
-                h="16"
-                borderRadius="full"
-                bg="primaryContainer"
-                mx="auto"
-                mb="3"
-                align="center"
-                justify="center"
-                textStyle="headlineMd"
-                color="primary"
-                fontWeight="700"
-              >
-                {initialsFromName(trip.organizer?.name) || '—'}
-              </Flex>
-              <Text textStyle="labelMd">{trip.organizer?.name || 'Organizer'}</Text>
-              <Text textStyle="bodySm" color="onSurfaceVariant" mb="3">
-                {trip.organizer?.organizationType || ''}
-              </Text>
-            </Box>
-
-            <Box bg="surface" borderRadius="fluide3xl" p="6" borderWidth="1px" borderColor="outlineVariant">
-              <Text textStyle="labelMd" mb="4">
-                Quick view
-              </Text>
-              <ItineraryTimeline itinerary={trip.itinerary} compact />
-            </Box>
-          </Stack>
+          <TripSnapshotSidebar trip={trip} requests={requests} totalOffers={totalOffers} />
         </Grid>
       </Box>
   )

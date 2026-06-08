@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Flex, Image, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import { resolveTripImageUrl } from '../../lib/format'
+import api from '../../lib/api'
 
 const PLACEHOLDER_GRADIENTS = [
   'linear-gradient(135deg, #2D6A4F 0%, #40916C 100%)',
@@ -54,10 +55,20 @@ function TripCoverPlaceholder({ trip, alt = '', boxProps }) {
 
 /** Trip cover image with API URL resolution, load error fallback, and location placeholder. */
 export function TripCover({ trip, alt = '', ...boxProps }) {
-  const src = resolveTripImageUrl(trip)
-  const [failed, setFailed] = useState(false)
+  const storedSrc = resolveTripImageUrl(trip)
+  const proxySrc = useMemo(
+    () => (trip?.location ? api.utils.destinationImageProxyUrl(trip.location) : ''),
+    [trip?.location],
+  )
+  const [src, setSrc] = useState('')
+  const [usePlaceholder, setUsePlaceholder] = useState(false)
 
-  if (!src || failed) {
+  useEffect(() => {
+    setUsePlaceholder(false)
+    setSrc(storedSrc || proxySrc || '')
+  }, [storedSrc, proxySrc, trip?._id, trip?.image])
+
+  if (usePlaceholder || !src) {
     return <TripCoverPlaceholder trip={trip} alt={alt} boxProps={boxProps} />
   }
 
@@ -66,7 +77,13 @@ export function TripCover({ trip, alt = '', ...boxProps }) {
       src={src}
       alt={alt || trip?.title || 'Trip cover'}
       objectFit="cover"
-      onError={() => setFailed(true)}
+      onError={() => {
+        if (proxySrc && src !== proxySrc) {
+          setSrc(proxySrc)
+          return
+        }
+        setUsePlaceholder(true)
+      }}
       {...boxProps}
     />
   )

@@ -19,6 +19,26 @@ export function ProfilePage() {
     email: user?.email || '',
     organizationType: user?.organizationType || 'Municipality',
     providerType: user?.providerType || 'Transport',
+    contactPerson: user?.contactPerson || '',
+    companyDescription: user?.companyDescription || '',
+    companyName: user?.companyName || '',
+    siret: user?.siret || '',
+    iban: user?.iban || '',
+    bic: user?.bic || '',
+    billingAddress: {
+      line1: user?.billingAddress?.line1 || '',
+      line2: user?.billingAddress?.line2 || '',
+      city: user?.billingAddress?.city || '',
+      postalCode: user?.billingAddress?.postalCode || '',
+      country: user?.billingAddress?.country || 'France',
+    },
+    billing: {
+      chorusProReady: user?.billing?.chorusProReady || false,
+      chorusServiceCode: user?.billing?.chorusServiceCode || '',
+      legalEntityId: user?.billing?.legalEntityId || '',
+      paymentTerms: user?.billing?.paymentTerms || '',
+      notes: user?.billing?.notes || '',
+    },
   })
   const [avatarBusy, setAvatarBusy] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
@@ -38,6 +58,26 @@ export function ProfilePage() {
         email: user?.email || '',
         organizationType: user?.organizationType || 'Municipality',
         providerType: user?.providerType || 'Transport',
+        contactPerson: user?.contactPerson || '',
+        companyDescription: user?.companyDescription || '',
+        companyName: user?.companyName || '',
+        siret: user?.siret || '',
+        iban: user?.iban || '',
+        bic: user?.bic || '',
+        billingAddress: {
+          line1: user?.billingAddress?.line1 || '',
+          line2: user?.billingAddress?.line2 || '',
+          city: user?.billingAddress?.city || '',
+          postalCode: user?.billingAddress?.postalCode || '',
+          country: user?.billingAddress?.country || 'France',
+        },
+        billing: {
+          chorusProReady: user?.billing?.chorusProReady || false,
+          chorusServiceCode: user?.billing?.chorusServiceCode || '',
+          legalEntityId: user?.billing?.legalEntityId || '',
+          paymentTerms: user?.billing?.paymentTerms || '',
+          notes: user?.billing?.notes || '',
+        },
       }),
     )
     return () => {
@@ -47,11 +87,21 @@ export function ProfilePage() {
 
   const updateProfileField = (field) => (event) =>
     setProfile((prev) => ({ ...prev, [field]: event.target.value }))
+  const updateNestedField = (section, field) => (event) =>
+    setProfile((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], [field]: event.target.value },
+    }))
+  const updateBillingFlag = (field) => (event) =>
+    setProfile((prev) => ({
+      ...prev,
+      billing: { ...prev.billing, [field]: event.target.checked },
+    }))
   const updatePasswordField = (field) => (event) =>
     setPassword((prev) => ({ ...prev, [field]: event.target.value }))
 
   const handleProfileSubmit = async (event) => {
-    event.preventDefault()
+    event?.preventDefault()
     setProfileStatus({ type: null, message: '' })
     if (!profile.name.trim()) {
       setProfileStatus({ type: 'error', message: 'Name is required.' })
@@ -64,7 +114,17 @@ export function ProfilePage() {
         payload.email = profile.email.trim()
       }
       if (isOrganizer) payload.organizationType = profile.organizationType
-      if (isProvider) payload.providerType = profile.providerType
+      if (isProvider) {
+        payload.providerType = profile.providerType
+        payload.contactPerson = profile.contactPerson.trim() || undefined
+        payload.companyDescription = profile.companyDescription.trim() || undefined
+        payload.companyName = profile.companyName.trim() || undefined
+        payload.siret = profile.siret.trim() || undefined
+        payload.iban = profile.iban.trim() || undefined
+        payload.bic = profile.bic.trim() || undefined
+        payload.billingAddress = profile.billingAddress
+        payload.billing = profile.billing
+      }
       await updateProfile(payload)
       setProfileStatus({ type: 'success', message: 'Profile updated.' })
     } catch (err) {
@@ -240,22 +300,30 @@ export function ProfilePage() {
               </Box>
             )}
             {isProvider && (
-              <Box>
-                <Text textStyle="labelMd" mb="2">
-                  Supplier type
-                </Text>
-                <NativeSelect.Root>
-                  <NativeSelect.Field
-                    css={fluideInputStyles}
-                    value={profile.providerType}
-                    onChange={updateProfileField('providerType')}
-                  >
-                    {PROVIDER_TYPES.map((t) => (
-                      <option key={t}>{t}</option>
-                    ))}
-                  </NativeSelect.Field>
-                </NativeSelect.Root>
-              </Box>
+              <>
+                <Box>
+                  <Text textStyle="labelMd" mb="2">
+                    Supplier type
+                  </Text>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      css={fluideInputStyles}
+                      value={profile.providerType}
+                      onChange={updateProfileField('providerType')}
+                    >
+                      {PROVIDER_TYPES.map((t) => (
+                        <option key={t}>{t}</option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
+                </Box>
+                <Box>
+                  <Text textStyle="labelMd" mb="2">
+                    Contact person
+                  </Text>
+                  <Input value={profile.contactPerson} onChange={updateProfileField('contactPerson')} css={fluideInputStyles} />
+                </Box>
+              </>
             )}
             {profileStatus.message && (
               <Text textStyle="bodySm" color={profileStatus.type === 'success' ? 'primary' : 'error'}>
@@ -267,6 +335,63 @@ export function ProfilePage() {
             </Button>
           </Stack>
         </Box>
+
+        {isProvider && (
+          <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" mb="6">
+            <Text textStyle="headlineSm" mb="1">
+              Administrative information
+            </Text>
+            <Text textStyle="bodySm" color="onSurfaceVariant" mb="5">
+              Legal and billing details used for invoices and public-sector compatibility.
+            </Text>
+            <Stack gap="4">
+              <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="4">
+                <Box>
+                  <Text textStyle="labelMd" mb="2">Company name</Text>
+                  <Input value={profile.companyName} onChange={updateProfileField('companyName')} css={fluideInputStyles} />
+                </Box>
+                <Box>
+                  <Text textStyle="labelMd" mb="2">SIRET</Text>
+                  <Input value={profile.siret} onChange={updateProfileField('siret')} css={fluideInputStyles} />
+                </Box>
+                <Box>
+                  <Text textStyle="labelMd" mb="2">IBAN / RIB</Text>
+                  <Input value={profile.iban} onChange={updateProfileField('iban')} css={fluideInputStyles} />
+                </Box>
+                <Box>
+                  <Text textStyle="labelMd" mb="2">BIC</Text>
+                  <Input value={profile.bic} onChange={updateProfileField('bic')} css={fluideInputStyles} />
+                </Box>
+              </Grid>
+              <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="4">
+                <Box>
+                  <Text textStyle="labelMd" mb="2">Billing address</Text>
+                  <Input placeholder="Street" value={profile.billingAddress.line1} onChange={updateNestedField('billingAddress', 'line1')} css={fluideInputStyles} mb="2" />
+                  <Input placeholder="Additional line" value={profile.billingAddress.line2} onChange={updateNestedField('billingAddress', 'line2')} css={fluideInputStyles} mb="2" />
+                  <Grid templateColumns="1fr 1fr" gap="2">
+                    <Input placeholder="Postal code" value={profile.billingAddress.postalCode} onChange={updateNestedField('billingAddress', 'postalCode')} css={fluideInputStyles} />
+                    <Input placeholder="City" value={profile.billingAddress.city} onChange={updateNestedField('billingAddress', 'city')} css={fluideInputStyles} />
+                  </Grid>
+                  <Input mt="2" placeholder="Country" value={profile.billingAddress.country} onChange={updateNestedField('billingAddress', 'country')} css={fluideInputStyles} />
+                </Box>
+                <Box>
+                  <Text textStyle="labelMd" mb="2">Billing / Chorus Pro</Text>
+                  <Flex align="center" gap="2" mb="3">
+                    <Input type="checkbox" checked={profile.billing.chorusProReady} onChange={updateBillingFlag('chorusProReady')} />
+                    <Text textStyle="bodySm">Ready for Chorus Pro integration</Text>
+                  </Flex>
+                  <Input placeholder="Chorus service code" value={profile.billing.chorusServiceCode} onChange={updateNestedField('billing', 'chorusServiceCode')} css={fluideInputStyles} mb="2" />
+                  <Input placeholder="Legal entity ID" value={profile.billing.legalEntityId} onChange={updateNestedField('billing', 'legalEntityId')} css={fluideInputStyles} mb="2" />
+                  <Input placeholder="Payment terms" value={profile.billing.paymentTerms} onChange={updateNestedField('billing', 'paymentTerms')} css={fluideInputStyles} mb="2" />
+                  <Input placeholder="Billing notes" value={profile.billing.notes} onChange={updateNestedField('billing', 'notes')} css={fluideInputStyles} />
+                </Box>
+              </Grid>
+              <Button w="fit-content" {...stitchGreenButton} px="8" onClick={handleProfileSubmit} loading={profileBusy}>
+                Save billing details
+              </Button>
+            </Stack>
+          </Box>
+        )}
 
         <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant">
           <Text textStyle="headlineSm" mb="4">

@@ -12,11 +12,15 @@ function SidebarNavItem({ item, active, onNavigate }) {
   const handleClick = (event) => {
     onNavigate?.()
     if (item.href.includes('#')) return
-    if (pathname === item.href) {
-      event.preventDefault()
+    event.preventDefault()
+    if (item.href === '/trips' && pathname.startsWith('/trips/')) {
+      window.location.assign('/trips')
       return
     }
-    event.preventDefault()
+    if (pathname === item.href) {
+      if (item.href === '/trips') window.location.assign('/trips')
+      return
+    }
     navigate(item.href)
   }
 

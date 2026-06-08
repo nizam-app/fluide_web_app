@@ -40,6 +40,7 @@ export const organizerNavItems = [
   { label: 'Create Trip', icon: 'add_circle', href: '/create-trip' },
   { label: 'My Trips', icon: 'map', href: '/trips' },
   { label: 'Requests', icon: 'forum', href: '/requests' },
+  { label: 'Favorites', icon: 'favorite', href: '/favorites' },
   { label: 'Profile', icon: 'person', href: '/profile' },
 ]
 

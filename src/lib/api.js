@@ -203,7 +203,11 @@ const api = {
       return result
     },
     create: (payload) => request('POST', '/requests', { body: mapRequestPayload(payload) }),
+    update: (id, payload) => request('PATCH', `/requests/${id}`, { body: mapRequestPayload(payload) }),
+    delete: (id) => request('DELETE', `/requests/${id}`),
     updateStatus: (id, status) => request('PATCH', `/requests/${id}/status`, { body: { status } }),
+    addMessage: (id, body) => request('POST', `/requests/${id}/messages`, { body: { body } }),
+    history: (id) => request('GET', `/requests/${id}/history`),
     listOffers: (requestId) => request('GET', `/requests/${requestId}/offers`),
     createOffer: (requestId, payload) =>
       request('POST', `/requests/${requestId}/offers`, { body: payload }),
@@ -236,12 +240,30 @@ const api = {
       return result
     },
     listOffers: (query) => request('GET', '/admin/offers', { query }),
+    updateRequest: (id, payload) => request('PATCH', `/requests/${id}`, { body: payload }),
+    deleteRequest: (id) => request('DELETE', `/requests/${id}`),
   },
 
   contact: {
     submit: (payload) => request('POST', '/contact', { body: payload }),
     list: (query) => request('GET', '/contact', { query }),
     updateStatus: (id, status) => request('PATCH', `/contact/${id}/status`, { body: { status } }),
+  },
+
+  utils: {
+    destinationImage: (q) => request('GET', '/utils/destination-image', { query: { q } }),
+    destinationImageProxyUrl: (q) => {
+      if (!q) return ''
+      const url = new URL(`${API_URL}/utils/destination-image/proxy`)
+      url.searchParams.set('q', String(q).trim())
+      return url.toString()
+    },
+  },
+
+  favorites: {
+    list: () => request('GET', '/favorites'),
+    add: (providerId) => request('POST', `/favorites/${providerId}`),
+    remove: (providerId) => request('DELETE', `/favorites/${providerId}`),
   },
 }
 

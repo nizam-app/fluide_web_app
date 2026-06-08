@@ -16,6 +16,8 @@ import {
   serializeLegsForApi,
 } from '../lib/itinerary'
 import { toApiNeedTypes } from '../lib/needTypes'
+import { formatPrice } from '../lib/format'
+import { computeCostPerParticipant } from '../lib/requestStatus'
 import { textWithBrand } from '../lib/textWithBrand'
 import { fluideCompactInputStyles, fluideDateInputStyles, fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
@@ -51,6 +53,9 @@ export function CreateTripPage() {
   })
   const [itinerary, setItinerary] = useState([createLeg('transfer'), createLeg('stay'), createLeg('transfer')])
   const [imageFile, setImageFile] = useState(null)
+  const [autoImageUrl, setAutoImageUrl] = useState('')
+  const [autoImageAttribution, setAutoImageAttribution] = useState('')
+  const [imageLookupBusy, setImageLookupBusy] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [pendingTripId, setPendingTripId] = useState(null)
@@ -70,13 +75,49 @@ export function CreateTripPage() {
   }
 
   const imagePreview = useMemo(
-    () => (imageFile ? URL.createObjectURL(imageFile) : ''),
-    [imageFile],
+    () =>
+      imageFile
+        ? URL.createObjectURL(imageFile)
+        : form.location.trim()
+          ? api.utils.destinationImageProxyUrl(form.location.trim())
+          : autoImageUrl || '',
+    [imageFile, form.location, autoImageUrl],
   )
   useEffect(() => {
-    if (!imagePreview) return undefined
+    if (!imagePreview || !imageFile) return undefined
     return () => URL.revokeObjectURL(imagePreview)
-  }, [imagePreview])
+  }, [imagePreview, imageFile])
+
+  const costPerParticipant = useMemo(
+    () => computeCostPerParticipant(form.budgetEstimate, form.participants),
+    [form.budgetEstimate, form.participants],
+  )
+
+  useEffect(() => {
+    const query = form.location.trim()
+    if (query.length < 3) {
+      setAutoImageUrl('')
+      setAutoImageAttribution('')
+      return undefined
+    }
+
+    const timer = window.setTimeout(async () => {
+      setImageLookupBusy(true)
+      try {
+        const result = await api.utils.destinationImage(query)
+        const url = result?.image?.url || result?.image?.thumbUrl || ''
+        setAutoImageUrl(url)
+        setAutoImageAttribution(result?.image?.attribution || '')
+      } catch {
+        setAutoImageUrl('')
+        setAutoImageAttribution('')
+      } finally {
+        setImageLookupBusy(false)
+      }
+    }, 500)
+
+    return () => window.clearTimeout(timer)
+  }, [form.location])
 
   const handleFile = (event) => {
     setError('')
@@ -266,6 +307,17 @@ export function CreateTripPage() {
                 </FormField>
               </Grid>
 
+              {costPerParticipant != null && (
+                <Box bg="infoBg" borderRadius="lg" px="4" py="3">
+                  <Text textStyle="labelSm" color="onSurfaceVariant">
+                    Cost per participant
+                  </Text>
+                  <Text textStyle="labelMd" fontWeight="700" color="primary">
+                    {formatPrice(costPerParticipant, form.budgetCurrency || 'EUR')}
+                  </Text>
+                </Box>
+              )}
+
               <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
                 <FormField label="Location">
                   <Input
@@ -338,10 +390,10 @@ export function CreateTripPage() {
               p="5"
             >
               <Text textStyle="labelMd" mb="2">
-                Cover image (optional)
+                Cover image
               </Text>
               <Text textStyle="bodySm" color="onSurfaceVariant" mb="4">
-                JPG, PNG, WebP, or GIF — up to 5 MB. Stored on Cloudinary.
+                A destination image is suggested automatically from your location. Upload your own to replace it.
               </Text>
 
               <Box
@@ -357,13 +409,24 @@ export function CreateTripPage() {
               >
                 {imagePreview ? (
                   <Image src={imagePreview} alt="Selected cover" w="full" h="full" objectFit="cover" />
+                ) : imageLookupBusy ? (
+                  <Flex direction="column" align="center" gap="1" color="onSurfaceVariant">
+                    <MaterialIcon name="travel_explore" size={32} />
+                    <Text textStyle="bodySm">Finding destination image…</Text>
+                  </Flex>
                 ) : (
                   <Flex direction="column" align="center" gap="1" color="onSurfaceVariant">
                     <MaterialIcon name="image" size={32} />
-                    <Text textStyle="bodySm">No image selected</Text>
+                    <Text textStyle="bodySm">Enter a location to preview an image</Text>
                   </Flex>
                 )}
               </Box>
+
+              {autoImageAttribution && !imageFile && (
+                <Text textStyle="bodySm" color="onSurfaceVariant" mb="2">
+                  {autoImageAttribution}
+                </Text>
+              )}
 
               <Input
                 type="file"
@@ -391,6 +454,8 @@ export function CreateTripPage() {
                     color="onSurfaceVariant"
                     onClick={() => {
                       setImageFile(null)
+                      setAutoImageUrl('')
+                      setAutoImageAttribution('')
                       if (fileInputRef.current) fileInputRef.current.value = ''
                     }}
                   >

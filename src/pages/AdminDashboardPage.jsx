@@ -345,7 +345,7 @@ export function AdminDashboardPage() {
                           {formatDateShort(r.trip?.startDate)}
                         </Table.Cell>
                         <Table.Cell py="4" px="5">
-                          <StatusBadge status={r.status} />
+                          <StatusBadge status={r.displayStatus || r.status} />
                         </Table.Cell>
                       </Table.Row>
                     ))}

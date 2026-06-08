@@ -8,6 +8,7 @@ import { StatusBadge } from '../components/molecules/StatusBadge'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
 import { formatDateShort } from '../lib/format'
+import { getRequestDisplayStatus } from '../lib/requestStatus'
 import { stitchGreenButton } from '../theme/fluide-theme'
 
 const FILTERS = [
@@ -101,7 +102,7 @@ export function OrganizerRequestsPage() {
                       {formatDateShort(row.trip?.startDate)}
                     </Table.Cell>
                     <Table.Cell py="4" px="5">
-                      <StatusBadge status={row.status} />
+                      <StatusBadge status={getRequestDisplayStatus(row)} />
                     </Table.Cell>
                     <Table.Cell py="4" px="5">
                       <HStack gap="2" flexWrap="wrap">

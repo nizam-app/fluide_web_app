@@ -9,6 +9,8 @@ const variants = {
   approved: { bg: 'secondaryContainer', color: 'onSecondaryContainer' },
   accepted: { bg: 'secondaryContainer', color: 'onSecondaryContainer' },
   pending: { bg: 'amberBg', color: 'amberFg' },
+  offers_received: { bg: 'infoBg', color: 'infoFg' },
+  under_negotiation: { bg: 'secondaryContainer', color: 'onSecondaryContainer' },
   new: { bg: 'errorContainer', color: 'error' },
   processed: { bg: 'infoBg', color: 'infoFg' },
   rejected: { bg: 'errorContainer', color: 'error' },
@@ -20,6 +22,10 @@ const labels = {
   scheduled: 'Scheduled',
   new: 'New',
   processed: 'Processed',
+  offers_received: 'Offers Received',
+  under_negotiation: 'Under Negotiation',
+  confirmed: 'Confirmed',
+  cancelled: 'Canceled',
 }
 
 export function StatusBadge({ status, label, ...props }) {
