@@ -41,13 +41,22 @@ export function ProviderProfilePage() {
     try {
       return await api.users.getProvider(id)
     } catch (err) {
+      if (err?.status !== 404) throw err
+
       const previewId = previewProvider?._id || previewProvider
-      if (err?.status === 404 && previewId && String(previewId) === String(id)) {
+      if (previewId && String(previewId) === String(id)) {
         return { provider: previewProvider }
       }
+
+      if (isOrganizer) {
+        const favorites = await api.favorites.list()
+        const provider = favorites.providers?.find((item) => String(item._id) === String(id))
+        if (provider) return { provider }
+      }
+
       throw err
     }
-  }, [id, previewProvider])
+  }, [id, isOrganizer, previewProvider])
   const { data, loading, error } = useApiResource(fetcher)
   const provider = data?.provider
 
