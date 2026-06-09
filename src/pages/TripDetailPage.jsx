@@ -35,6 +35,7 @@ import {
   getNeedTypeIcon,
 } from '../lib/format'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
+import { cacheProviderProfile } from './ProviderProfilePage'
 
 function useTripDetail(id) {
   const [trip, setTrip] = useState(null)
@@ -114,7 +115,11 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
       <Box flex="1" minW="220px">
         <Flex align="center" gap="2" mb="1">
           {providerId ? (
-            <RouterLink to={`/providers/${providerId}`} state={{ provider: offer.provider }}>
+            <RouterLink
+              to={`/providers/${providerId}`}
+              state={{ provider: offer.provider }}
+              onClick={() => cacheProviderProfile(offer.provider)}
+            >
               <Text textStyle="labelMd" color="primary" fontWeight="600" _hover={{ textDecoration: 'underline' }}>
                 {offer.provider?.name || 'Provider'}
               </Text>
@@ -1057,7 +1062,11 @@ export function TripDetailPage() {
                       </Flex>
                       <Box flex="1">
                         <Flex align="center" gap="2">
-                          <RouterLink to={`/providers/${provider._id}`} state={{ provider }}>
+                          <RouterLink
+                            to={`/providers/${provider._id}`}
+                            state={{ provider }}
+                            onClick={() => cacheProviderProfile(provider)}
+                          >
                             <Text textStyle="labelMd" color="primary" _hover={{ textDecoration: 'underline' }}>
                               {provider.name}
                             </Text>

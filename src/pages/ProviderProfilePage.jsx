@@ -10,13 +10,32 @@ import api from '../lib/api'
 import { formatProviderTypesLabel } from '../lib/providerTypes'
 import { stitchGreenButton } from '../theme/fluide-theme'
 
+function readCachedProvider(id) {
+  try {
+    const raw = sessionStorage.getItem(`provider:${id}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export function cacheProviderProfile(provider) {
+  const providerId = provider?._id || provider
+  if (!providerId) return
+  try {
+    sessionStorage.setItem(`provider:${providerId}`, JSON.stringify(provider))
+  } catch {
+    // Ignore quota or privacy mode errors.
+  }
+}
+
 export function ProviderProfilePage() {
   const { id } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
   const { isOrganizer, isAdmin, isProvider } = useAuth()
   const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
-  const previewProvider = location.state?.provider
+  const previewProvider = location.state?.provider || readCachedProvider(id)
 
   const fetcher = useCallback(async () => {
     try {
