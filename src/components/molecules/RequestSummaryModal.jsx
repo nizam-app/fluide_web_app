@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import {
   Box,
   Button,
@@ -10,11 +11,30 @@ import { getRequestDisplayLabel } from '../../lib/requestStatus'
 import { stitchBlackButton } from '../../theme/fluide-theme'
 
 export function RequestSummaryModal({ open, title, trip, rows, onConfirm, onCancel, confirmLabel = 'Confirm', loading }) {
-  if (!open) return null
+  if (!open || typeof document === 'undefined') return null
 
-  return (
-    <Box position="fixed" inset="0" zIndex={200} bg="blackAlpha.600" display="flex" alignItems="center" justifyContent="center" p="4">
-      <Box bg="surface" borderRadius="xl" borderWidth="1px" borderColor="outlineVariant" maxW="720px" w="full" overflow="hidden">
+  return createPortal(
+    <Box
+      position="fixed"
+      inset="0"
+      zIndex={200}
+      bg="blackAlpha.600"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      p="4"
+      onClick={loading ? undefined : onCancel}
+    >
+      <Box
+        bg="surface"
+        borderRadius="xl"
+        borderWidth="1px"
+        borderColor="outlineVariant"
+        maxW="720px"
+        w="full"
+        overflow="hidden"
+        onClick={(event) => event.stopPropagation()}
+      >
         <Box px="6" py="4" borderBottomWidth="1px" borderColor="outlineVariant" bg="surfaceContainerLow">
           <Text textStyle="headlineSm" fontWeight="600">
             {title}
@@ -73,12 +93,18 @@ export function RequestSummaryModal({ open, title, trip, rows, onConfirm, onCanc
           <Button variant="outline" borderRadius="lg" onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
-          <Button {...stitchBlackButton} borderRadius="lg" onClick={onConfirm} loading={loading}>
-            {confirmLabel}
+          <Button
+            {...stitchBlackButton}
+            borderRadius="lg"
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {loading ? 'Please wait…' : confirmLabel}
           </Button>
         </Flex>
       </Box>
-    </Box>
+    </Box>,
+    document.body,
   )
 }
 

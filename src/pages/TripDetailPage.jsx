@@ -46,10 +46,12 @@ function useTripDetail(id) {
   const [error, setError] = useState(null)
   const activeRef = useRef(true)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async ({ silent = false } = {}) => {
     if (!id) return
-    setLoading(true)
-    setError(null)
+    if (!silent) {
+      setLoading(true)
+      setError(null)
+    }
     try {
       const [tripResult, requestsResult, providersResult, favoritesResult] = await Promise.all([
         api.trips.get(id),
@@ -76,7 +78,7 @@ function useTripDetail(id) {
     } catch (err) {
       if (activeRef.current) setError(err)
     } finally {
-      if (activeRef.current) setLoading(false)
+      if (!silent && activeRef.current) setLoading(false)
     }
   }, [id])
 
@@ -732,8 +734,8 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange }
     setBusyOfferId(pendingAcceptOffer._id)
     try {
       await api.offers.updateStatus(pendingAcceptOffer._id, 'accepted')
-      setPendingAcceptOffer(null)
       await onChange()
+      setPendingAcceptOffer(null)
     } catch (err) {
       window.alert(err?.message || 'Could not accept the offer.')
     } finally {
@@ -982,7 +984,7 @@ export function TripDetailPage() {
                 <TripCover trip={trip} alt={trip.title} w="full" h="full" />
                 {isOrganizer && String(trip.organizer?._id || trip.organizer) === String(user?._id) && (
                   <Box position="absolute" top="4" right="4">
-                    <ChangeCoverButton tripId={trip._id} onChanged={reload} />
+                    <ChangeCoverButton tripId={trip._id} onChanged={() => reload({ silent: true })} />
                   </Box>
                 )}
               </Box>
@@ -1086,7 +1088,7 @@ export function TripDetailPage() {
                     role={role}
                     currentUserId={user?._id}
                     trip={trip}
-                    onChange={reload}
+                    onChange={() => reload({ silent: true })}
                   />
                 ))}
                 {requests.length === 0 && !isOrganizer && (
@@ -1103,7 +1105,7 @@ export function TripDetailPage() {
                     tripNeedTypes={trip.needTypes || []}
                     existingNeedTypes={requests.map((r) => r.needType)}
                     requestCount={requests.length}
-                    onCreated={reload}
+                    onCreated={() => reload({ silent: true })}
                   />
                 )}
               </Stack>
