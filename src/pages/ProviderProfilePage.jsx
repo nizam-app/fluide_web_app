@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Box, Button, Flex, Grid, Image, Spinner, Stack, Text } from '@chakra-ui/react'
-import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { FavoriteProviderButton } from '../components/molecules/FavoriteProviderButton'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
@@ -12,11 +12,23 @@ import { stitchGreenButton } from '../theme/fluide-theme'
 
 export function ProviderProfilePage() {
   const { id } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const { isOrganizer, isAdmin, isProvider } = useAuth()
   const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
+  const previewProvider = location.state?.provider
 
-  const fetcher = useCallback(() => api.users.getProvider(id), [id])
+  const fetcher = useCallback(async () => {
+    try {
+      return await api.users.getProvider(id)
+    } catch (err) {
+      const previewId = previewProvider?._id || previewProvider
+      if (err?.status === 404 && previewId && String(previewId) === String(id)) {
+        return { provider: previewProvider }
+      }
+      throw err
+    }
+  }, [id, previewProvider])
   const { data, loading, error } = useApiResource(fetcher)
   const provider = data?.provider
 
