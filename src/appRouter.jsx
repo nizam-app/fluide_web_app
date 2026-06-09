@@ -14,6 +14,7 @@ import { RoleRequestsPage } from './pages/RoleRequestsPage'
 import { TripsLayout } from './components/templates/TripsLayout'
 import { RoleTripsPage } from './pages/RoleTripsPage'
 import { TripDetailPage } from './pages/TripDetailPage'
+import { ProviderProfilePage } from './pages/ProviderProfilePage'
 
 export const appRouter = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -37,6 +38,7 @@ export const appRouter = createBrowserRouter([
       },
       { path: '/requests', element: <RoleRequestsPage /> },
       { path: '/favorites', element: <OrganizerFavoritesPage /> },
+      { path: '/providers/:id', element: <ProviderProfilePage /> },
       { path: '/profile', element: <ProfilePage /> },
       { path: '/admin', element: <AdminDashboardPage /> },
       { path: '/admin/trips', element: <AdminTripsPage /> },

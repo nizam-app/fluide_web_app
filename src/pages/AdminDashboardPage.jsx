@@ -9,12 +9,14 @@ import { StatusBadge } from '../components/molecules/StatusBadge'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
 import { formatDateShort } from '../lib/format'
+import { formatProviderTypesLabel } from '../lib/providerTypes'
 
 const typeColors = { admin: 'infoBg', provider: 'secondaryContainer', organizer: 'surfaceContainer' }
 
 export function AdminDashboardPage() {
   const { hash } = useLocation()
   const [busyUserId, setBusyUserId] = useState(null)
+  const [busyApproveId, setBusyApproveId] = useState(null)
 
   const fetcher = useCallback(
     () =>
@@ -54,6 +56,18 @@ export function AdminDashboardPage() {
       window.alert(err?.message || 'Could not update the user.')
     } finally {
       setBusyUserId(null)
+    }
+  }
+
+  const approveProviderServices = async (user) => {
+    setBusyApproveId(user._id)
+    try {
+      await api.admin.approveProviderServices(user._id)
+      await reload()
+    } catch (err) {
+      window.alert(err?.message || 'Could not approve supplier services.')
+    } finally {
+      setBusyApproveId(null)
     }
   }
 
@@ -218,7 +232,7 @@ export function AdminDashboardPage() {
                 <Table.Root minW="900px">
                   <Table.Header bg="surfaceContainerLow">
                     <Table.Row>
-                      {['Name', 'Email', 'Role', 'Status', 'Actions'].map((h) => (
+                      {['Name', 'Email', 'Role', 'Services', 'Status', 'Actions'].map((h) => (
                         <Table.ColumnHeader key={h} py="3" px="6" textStyle="labelSm" color="onSurfaceVariant">
                           {h}
                         </Table.ColumnHeader>
@@ -263,6 +277,9 @@ export function AdminDashboardPage() {
                             {u.role}
                           </Box>
                         </Table.Cell>
+                        <Table.Cell py="4" px="6" textStyle="bodySm" color="onSurfaceVariant" maxW="260px">
+                          {u.role === 'provider' ? formatProviderTypesLabel(u) : '—'}
+                        </Table.Cell>
                         <Table.Cell py="4" px="6">
                           <HStack gap="2">
                             <Box w="2" h="2" borderRadius="full" bg={u.status === 'active' ? 'primary' : 'outline'} />
@@ -272,21 +289,34 @@ export function AdminDashboardPage() {
                           </HStack>
                         </Table.Cell>
                         <Table.Cell py="4" px="6">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            borderRadius="pill"
-                            loading={busyUserId === u._id}
-                            onClick={() => toggleUserStatus(u)}
-                          >
-                            {u.status === 'active' ? 'Suspend' : 'Activate'}
-                          </Button>
+                          <HStack gap="2" flexWrap="wrap">
+                            {u.role === 'provider' && (u.pendingProviderTypes?.length || 0) > 0 && (
+                              <Button
+                                size="sm"
+                                colorPalette="green"
+                                borderRadius="pill"
+                                loading={busyApproveId === u._id}
+                                onClick={() => approveProviderServices(u)}
+                              >
+                                Approve services
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              borderRadius="pill"
+                              loading={busyUserId === u._id}
+                              onClick={() => toggleUserStatus(u)}
+                            >
+                              {u.status === 'active' ? 'Suspend' : 'Activate'}
+                            </Button>
+                          </HStack>
                         </Table.Cell>
                       </Table.Row>
                     ))}
                     {users.length === 0 && (
                       <Table.Row>
-                        <Table.Cell colSpan={5} py="10" textAlign="center" color="onSurfaceVariant">
+                        <Table.Cell colSpan={6} py="10" textAlign="center" color="onSurfaceVariant">
                           No users yet.
                         </Table.Cell>
                       </Table.Row>

@@ -12,7 +12,7 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
-import { useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { ItineraryTimeline } from '../components/molecules/ItineraryTimeline'
 import { TripSnapshotSidebar } from '../components/molecules/TripSnapshotSidebar'
@@ -95,6 +95,8 @@ function useTripDetail(id) {
 }
 
 function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdraw, busy }) {
+  const providerId = offer.provider?._id || offer.provider
+
   return (
     <Flex
       bg="surface"
@@ -111,7 +113,15 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
       </Flex>
       <Box flex="1" minW="220px">
         <Flex align="center" gap="2" mb="1">
-          <Text textStyle="labelMd">{offer.provider?.name || 'Provider'}</Text>
+          {providerId ? (
+            <RouterLink to={`/providers/${providerId}`}>
+              <Text textStyle="labelMd" color="primary" fontWeight="600" _hover={{ textDecoration: 'underline' }}>
+                {offer.provider?.name || 'Provider'}
+              </Text>
+            </RouterLink>
+          ) : (
+            <Text textStyle="labelMd">{offer.provider?.name || 'Provider'}</Text>
+          )}
           <StatusBadge status={offer.status} />
           {offer.tier === 'recommended' && (
             <Text textStyle="labelSm" color="primary" fontWeight="700">
@@ -1047,7 +1057,11 @@ export function TripDetailPage() {
                       </Flex>
                       <Box flex="1">
                         <Flex align="center" gap="2">
-                          <Text textStyle="labelMd">{provider.name}</Text>
+                          <RouterLink to={`/providers/${provider._id}`}>
+                            <Text textStyle="labelMd" color="primary" _hover={{ textDecoration: 'underline' }}>
+                              {provider.name}
+                            </Text>
+                          </RouterLink>
                           {provider.badge && (
                             <Text textStyle="labelSm" color="primary" fontWeight="700">
                               {provider.badge}

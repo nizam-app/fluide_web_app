@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
   )
 
   const register = useCallback(
-    async ({ email, password, accountType, name, organizationType, providerType }) => {
+    async ({ email, password, accountType, name, organizationType, providerType, providerTypes }) => {
       setError(null)
       const payload = {
         email: email.trim().toLowerCase(),
@@ -87,8 +87,12 @@ export function AuthProvider({ children }) {
         name: name?.trim() || undefined,
       }
       if (accountType === ROLES.ORGANIZER) payload.organizationType = organizationType
-      if (accountType === ROLES.PROVIDER) payload.providerType = providerType
+      if (accountType === ROLES.PROVIDER) {
+        if (providerTypes?.length) payload.providerTypes = providerTypes
+        else if (providerType) payload.providerType = providerType
+      }
       const result = await api.auth.register(payload)
+      if (result?.requiresApproval) return result
       return applySession(result)
     },
     [applySession],
@@ -127,7 +131,7 @@ export function AuthProvider({ children }) {
       saveCachedUser(result.user)
       setUser(result.user)
     }
-    return result?.user
+    return result
   }, [])
 
   const updatePassword = useCallback((payload) => api.users.updatePassword(payload), [])

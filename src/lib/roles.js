@@ -22,6 +22,7 @@ export function canAccessPath(role, path) {
     const adminPaths = ['/admin', '/admin/trips', '/admin/requests', '/profile']
     if (adminPaths.some((p) => path === p || path.startsWith(`${p}/`))) return true
     if (path.startsWith('/trips/') && path !== '/create-trip') return true
+    if (path.startsWith('/providers/')) return true
     return false
   }
 
@@ -31,6 +32,9 @@ export function canAccessPath(role, path) {
   if (path === '/trips') return role === ROLES.ORGANIZER || role === ROLES.PROVIDER
   if (path === '/requests') return role === ROLES.ORGANIZER || role === ROLES.PROVIDER
   if (path.startsWith('/trips/')) return role === ROLES.ORGANIZER || role === ROLES.PROVIDER
+  if (path.startsWith('/providers/')) {
+    return role === ROLES.ORGANIZER || role === ROLES.PROVIDER || role === ROLES.ADMIN
+  }
   if (path === '/dashboard' || path === '/profile') {
     return role === ROLES.ORGANIZER || role === ROLES.PROVIDER
   }

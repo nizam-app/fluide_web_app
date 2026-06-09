@@ -3,9 +3,10 @@ import { Box, Button, Collapsible, Flex, Grid, Input, Text } from '@chakra-ui/re
 import { Link as RouterLink, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AccountTypeCard } from '../components/molecules/AccountTypeCard'
 import { DemoCredentialsPanel } from '../components/molecules/DemoCredentialsPanel'
+import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { useAuth } from '../context/AuthContext'
-import { accountTypeOptions } from '../data/mockData'
+import { accountTypeOptions, PROVIDER_TYPES } from '../data/mockData'
 import { getHomePath, ROLES } from '../lib/roles'
 import { BrandName } from '../components/atoms/BrandName'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
@@ -39,7 +40,9 @@ export function AuthPage() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [accountType, setAccountType] = useState(ROLES.ORGANIZER)
+  const [providerTypes, setProviderTypes] = useState(['Transport'])
   const [error, setError] = useState('')
+  const [signupNotice, setSignupNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [showDemo, setShowDemo] = useState(false)
   const { login, register, isAuthenticated, user } = useAuth()
@@ -92,17 +95,29 @@ export function AuthPage() {
       setError('Password must be at least 6 characters.')
       return
     }
+    if (accountType === ROLES.PROVIDER && providerTypes.length === 0) {
+      setError('Select at least one supplier service.')
+      return
+    }
     setSubmitting(true)
     try {
-      const session = await register({
+      const result = await register({
         email,
         password,
         accountType,
         name: fullName,
         organizationType: accountType === ROLES.ORGANIZER ? 'Municipality' : undefined,
-        providerType: accountType === ROLES.PROVIDER ? 'Transport' : undefined,
+        providerTypes: accountType === ROLES.PROVIDER ? providerTypes : undefined,
       })
-      navigate(getHomePath(session.role), { replace: true })
+      if (result?.requiresApproval) {
+        setSignupNotice(
+          result.message ||
+            'Your supplier account is pending platform administrator approval. You can log in once it is approved.',
+        )
+        setTab('login')
+        return
+      }
+      navigate(getHomePath(result.role), { replace: true })
     } catch (err) {
       setError(err.message ?? 'Sign up failed.')
     } finally {
@@ -184,6 +199,13 @@ export function AuthPage() {
                     size="lg"
                   />
                 </Box>
+                {signupNotice && (
+                  <Box p="3" borderRadius="fluide" bg="secondaryContainer" borderWidth="1px" borderColor="outlineVariant">
+                    <Text textStyle="bodySm" color="onSecondaryContainer">
+                      {signupNotice}
+                    </Text>
+                  </Box>
+                )}
                 {error && (
                   <Text textStyle="bodySm" color="error">
                     {error}
@@ -267,6 +289,21 @@ export function AuthPage() {
                     size="lg"
                   />
                 </Box>
+                {accountType === ROLES.PROVIDER && (
+                  <Box>
+                    <NeedTypePicker
+                      label="Services you provide"
+                      options={PROVIDER_TYPES}
+                      value={providerTypes}
+                      onChange={setProviderTypes}
+                    />
+                    {providerTypes.length > 1 && (
+                      <Text textStyle="bodySm" color="onSurfaceVariant" mt="2">
+                        Multiple services require platform administrator approval before you can sign in.
+                      </Text>
+                    )}
+                  </Box>
+                )}
                 {error && (
                   <Text textStyle="bodySm" color="error">
                     {error}

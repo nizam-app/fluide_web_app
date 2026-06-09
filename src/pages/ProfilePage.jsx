@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { Box, Button, Flex, Grid, Image, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
+import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { useAuth } from '../context/AuthContext'
 import api from '../lib/api'
 import { ORGANIZATION_TYPES, PROVIDER_TYPES } from '../data/mockData'
+import { getSelectedProviderTypes, getApprovedProviderTypes, getPendingProviderTypes } from '../lib/providerTypes'
 import { getRoleLabel } from '../lib/roles'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
@@ -18,7 +20,7 @@ export function ProfilePage() {
     name: user?.name || '',
     email: user?.email || '',
     organizationType: user?.organizationType || 'Municipality',
-    providerType: user?.providerType || 'Transport',
+    providerTypes: getSelectedProviderTypes(user).length ? getSelectedProviderTypes(user) : ['Transport'],
     contactPerson: user?.contactPerson || '',
     companyDescription: user?.companyDescription || '',
     companyName: user?.companyName || '',
@@ -57,7 +59,7 @@ export function ProfilePage() {
         name: user?.name || '',
         email: user?.email || '',
         organizationType: user?.organizationType || 'Municipality',
-        providerType: user?.providerType || 'Transport',
+        providerTypes: getSelectedProviderTypes(user).length ? getSelectedProviderTypes(user) : ['Transport'],
         contactPerson: user?.contactPerson || '',
         companyDescription: user?.companyDescription || '',
         companyName: user?.companyName || '',
@@ -115,7 +117,7 @@ export function ProfilePage() {
       }
       if (isOrganizer) payload.organizationType = profile.organizationType
       if (isProvider) {
-        payload.providerType = profile.providerType
+        payload.providerTypes = profile.providerTypes
         payload.contactPerson = profile.contactPerson.trim() || undefined
         payload.companyDescription = profile.companyDescription.trim() || undefined
         payload.companyName = profile.companyName.trim() || undefined
@@ -125,8 +127,11 @@ export function ProfilePage() {
         payload.billingAddress = profile.billingAddress
         payload.billing = profile.billing
       }
-      await updateProfile(payload)
-      setProfileStatus({ type: 'success', message: 'Profile updated.' })
+      const result = await updateProfile(payload)
+      setProfileStatus({
+        type: 'success',
+        message: result?.message || 'Profile updated.',
+      })
     } catch (err) {
       setProfileStatus({ type: 'error', message: err?.message || 'Could not update your profile.' })
     } finally {
@@ -302,20 +307,28 @@ export function ProfilePage() {
             {isProvider && (
               <>
                 <Box>
-                  <Text textStyle="labelMd" mb="2">
-                    Supplier type
-                  </Text>
-                  <NativeSelect.Root>
-                    <NativeSelect.Field
-                      css={fluideInputStyles}
-                      value={profile.providerType}
-                      onChange={updateProfileField('providerType')}
-                    >
-                      {PROVIDER_TYPES.map((t) => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </NativeSelect.Field>
-                  </NativeSelect.Root>
+                  <NeedTypePicker
+                    label="Services you provide"
+                    options={PROVIDER_TYPES}
+                    value={profile.providerTypes}
+                    onChange={(next) => setProfile((prev) => ({ ...prev, providerTypes: next }))}
+                  />
+                  {(getPendingProviderTypes(user).length > 0 ||
+                    profile.providerTypes.length > getApprovedProviderTypes(user).length) && (
+                    <Text textStyle="bodySm" color="onSurfaceVariant" mt="2">
+                      New or additional services require platform administrator approval.
+                    </Text>
+                  )}
+                  {getApprovedProviderTypes(user).length > 0 && (
+                    <Text textStyle="bodySm" color="primary" mt="2">
+                      Approved: {getApprovedProviderTypes(user).join(', ')}
+                    </Text>
+                  )}
+                  {getPendingProviderTypes(user).length > 0 && (
+                    <Text textStyle="bodySm" color="onSurfaceVariant" mt="1">
+                      Pending approval: {getPendingProviderTypes(user).join(', ')}
+                    </Text>
+                  )}
                 </Box>
                 <Box>
                   <Text textStyle="labelMd" mb="2">

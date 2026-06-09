@@ -134,6 +134,7 @@ const api = {
 
   users: {
     me: () => request('GET', '/users/me'),
+    getProvider: (id) => request('GET', `/users/providers/${id}`),
     updateProfile: (payload) => request('PATCH', '/users/me', { body: payload }),
     updatePassword: (payload) => request('PATCH', '/users/me/password', { body: payload }),
     uploadAvatar: (file) => {
@@ -225,6 +226,8 @@ const api = {
     createUser: (payload) => request('POST', '/admin/users', { body: payload }),
     updateUserStatus: (id, status) =>
       request('PATCH', `/admin/users/${id}/status`, { body: { status } }),
+    approveProviderServices: (id) =>
+      request('PATCH', `/admin/users/${id}/provider-services/approve`),
     listTrips: async (query) => {
       const result = await request('GET', '/admin/trips', { query })
       if (result?.trips) {
