@@ -12,11 +12,12 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
-import { Link as RouterLink, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { ItineraryTimeline } from '../components/molecules/ItineraryTimeline'
 import { TripSnapshotSidebar } from '../components/molecules/TripSnapshotSidebar'
 import { FavoriteProviderButton } from '../components/molecules/FavoriteProviderButton'
+import { ProviderNameLink } from '../components/molecules/ProviderNameLink'
 import { RequestHistoryPanel } from '../components/molecules/RequestHistoryPanel'
 import { RequestMessagesPanel } from '../components/molecules/RequestMessagesPanel'
 import { buildRequestSummaryRows, RequestSummaryModal } from '../components/molecules/RequestSummaryModal'
@@ -35,7 +36,6 @@ import {
   getNeedTypeIcon,
 } from '../lib/format'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
-import { cacheProviderProfile } from '../lib/providerProfile'
 
 function useTripDetail(id) {
   const [trip, setTrip] = useState(null)
@@ -115,15 +115,7 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
       <Box flex="1" minW="220px">
         <Flex align="center" gap="2" mb="1">
           {providerId ? (
-            <RouterLink
-              to={`/providers/${providerId}`}
-              state={{ provider: offer.provider }}
-              onClick={() => cacheProviderProfile(offer.provider)}
-            >
-              <Text textStyle="labelMd" color="primary" fontWeight="600" _hover={{ textDecoration: 'underline' }}>
-                {offer.provider?.name || 'Provider'}
-              </Text>
-            </RouterLink>
+            <ProviderNameLink provider={offer.provider} />
           ) : (
             <Text textStyle="labelMd">{offer.provider?.name || 'Provider'}</Text>
           )}
@@ -906,7 +898,7 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange }
 
 export function TripDetailPage() {
   const { isOrganizer, isProvider, isAdmin, user } = useAuth()
-  const { id } = useParams()
+  const { tripId: id } = useParams()
   const { trip, requests, offersByRequest, recommendedProviders, favoriteProviderIds, loading, error, reload } =
     useTripDetail(id)
 
@@ -1062,15 +1054,7 @@ export function TripDetailPage() {
                       </Flex>
                       <Box flex="1">
                         <Flex align="center" gap="2">
-                          <RouterLink
-                            to={`/providers/${provider._id}`}
-                            state={{ provider }}
-                            onClick={() => cacheProviderProfile(provider)}
-                          >
-                            <Text textStyle="labelMd" color="primary" _hover={{ textDecoration: 'underline' }}>
-                              {provider.name}
-                            </Text>
-                          </RouterLink>
+                          <ProviderNameLink provider={provider} />
                           {provider.badge && (
                             <Text textStyle="labelSm" color="primary" fontWeight="700">
                               {provider.badge}

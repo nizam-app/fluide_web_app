@@ -12,33 +12,33 @@ import { readCachedProvider } from '../lib/providerProfile'
 import { stitchGreenButton } from '../theme/fluide-theme'
 
 export function ProviderProfilePage() {
-  const { id } = useParams()
+  const { providerId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
   const { isOrganizer, isAdmin, isProvider } = useAuth()
   const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
-  const previewProvider = location.state?.provider || readCachedProvider(id)
+  const previewProvider = location.state?.provider || readCachedProvider(providerId)
 
   const fetcher = useCallback(async () => {
     try {
-      return await api.users.getProvider(id)
+      return await api.users.getProvider(providerId)
     } catch (err) {
       if (err?.status !== 404) throw err
 
       const previewId = previewProvider?._id || previewProvider
-      if (previewId && String(previewId) === String(id)) {
+      if (previewId && String(previewId) === String(providerId)) {
         return { provider: previewProvider }
       }
 
       if (isOrganizer) {
         const favorites = await api.favorites.list()
-        const provider = favorites.providers?.find((item) => String(item._id) === String(id))
+        const provider = favorites.providers?.find((item) => String(item._id) === String(providerId))
         if (provider) return { provider }
       }
 
       throw err
     }
-  }, [id, isOrganizer, previewProvider])
+  }, [providerId, isOrganizer, previewProvider])
   const { data, loading, error } = useApiResource(fetcher)
   const provider = data?.provider
 

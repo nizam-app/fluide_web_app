@@ -40,8 +40,8 @@ export function PortalShell() {
       <PortalHeader onMenuToggle={() => setMobileNavOpen((o) => !o)} />
       <Flex flex="1" minH="0">
         <PortalSidebar mobileOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
-        <Box as="main" flex="1" minW="0" overflow="auto">
-          <Outlet key={`${location.pathname}${location.search}`} />
+        <Box as="main" flex="1" minW="0" overflow="auto" key={`${location.pathname}${location.search}`}>
+          <Outlet />
         </Box>
       </Flex>
     </Box>
