@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Box, Button, Flex, Grid, Image, Spinner, Stack, Text } from '@chakra-ui/react'
-import { Link as RouterLink, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { FavoriteProviderButton } from '../components/molecules/FavoriteProviderButton'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
@@ -13,11 +13,10 @@ import { stitchGreenButton } from '../theme/fluide-theme'
 
 export function ProviderProfilePage() {
   const { providerId } = useParams()
-  const location = useLocation()
   const navigate = useNavigate()
   const { isOrganizer, isAdmin, isProvider } = useAuth()
   const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
-  const previewProvider = location.state?.provider || readCachedProvider(providerId)
+  const cachedProvider = useMemo(() => readCachedProvider(providerId), [providerId])
 
   const fetcher = useCallback(async () => {
     try {
@@ -25,9 +24,8 @@ export function ProviderProfilePage() {
     } catch (err) {
       if (err?.status !== 404) throw err
 
-      const previewId = previewProvider?._id || previewProvider
-      if (previewId && String(previewId) === String(providerId)) {
-        return { provider: previewProvider }
+      if (cachedProvider && String(cachedProvider._id || cachedProvider) === String(providerId)) {
+        return { provider: cachedProvider }
       }
 
       if (isOrganizer) {
@@ -38,9 +36,9 @@ export function ProviderProfilePage() {
 
       throw err
     }
-  }, [providerId, isOrganizer, previewProvider])
+  }, [providerId, isOrganizer, cachedProvider])
   const { data, loading, error } = useApiResource(fetcher)
-  const provider = data?.provider
+  const provider = data?.provider ?? cachedProvider
 
   return (
     <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
@@ -56,7 +54,7 @@ export function ProviderProfilePage() {
         Back
       </Button>
 
-      {loading ? (
+      {loading && !provider ? (
         <Flex justify="center" py="20">
           <Spinner color="primary" />
         </Flex>

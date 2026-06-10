@@ -19,7 +19,7 @@ export function ProviderNameLink({ provider, children, textStyle = 'labelMd', ..
     <Link
       to={`/providers/${providerId}`}
       reloadDocument
-      state={{ provider }}
+      onMouseDown={() => cacheProviderProfile(provider)}
       onClick={() => cacheProviderProfile(provider)}
       style={{ textDecoration: 'none' }}
     >
