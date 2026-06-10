@@ -96,7 +96,7 @@ export function AuthProvider({ children }) {
       applySession(result)
       return {
         role: result.user?.role,
-        welcomeEmailSent: result.welcomeEmailSent === true,
+        welcomeEmailSent: result.welcomeEmailSent,
         welcomeEmailSentTo: result.welcomeEmailSentTo || result.user?.email,
       }
     },

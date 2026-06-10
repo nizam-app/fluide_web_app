@@ -10,6 +10,7 @@ import { accountTypeOptions, PROVIDER_TYPES } from '../data/mockData'
 import { getHomePath, ROLES } from '../lib/roles'
 import { BrandName } from '../components/atoms/BrandName'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
+import api from '../lib/api'
 
 const SHOW_DEMO = import.meta.env.DEV
 
@@ -124,9 +125,39 @@ export function AuthPage() {
         setTab('login')
         return
       }
+      if (result?.welcomeEmailSent === false) {
+        setSignupNotice(
+          `Account created, but the welcome email could not be delivered to ${sentTo}. Click "Resend welcome email" below.`,
+        )
+        setTab('login')
+        return
+      }
       navigate(getHomePath(result.role), { replace: true })
     } catch (err) {
       setError(err.message ?? 'Sign up failed.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleResendWelcome = async () => {
+    const target = email.trim().toLowerCase()
+    if (!target) {
+      setError('Enter your email address first.')
+      return
+    }
+    setError('')
+    setSubmitting(true)
+    try {
+      const result = await api.auth.resendWelcome({ email: target })
+      const sentTo = result.welcomeEmailSentTo || target
+      if (result.welcomeEmailSent) {
+        setSignupNotice(`Welcome email sent to ${sentTo}. Check your inbox and spam folder.`)
+      } else {
+        setSignupNotice(`We could not send the welcome email to ${sentTo}. Wait a minute and try again.`)
+      }
+    } catch (err) {
+      setError(err.message ?? 'Could not resend welcome email.')
     } finally {
       setSubmitting(false)
     }
@@ -211,6 +242,19 @@ export function AuthPage() {
                     <Text textStyle="bodySm" color="onSecondaryContainer">
                       {signupNotice}
                     </Text>
+                    {email.trim() && (
+                      <Button
+                        unstyled
+                        mt="2"
+                        textStyle="labelSm"
+                        color="primary"
+                        fontWeight="600"
+                        onClick={handleResendWelcome}
+                        disabled={submitting}
+                      >
+                        Resend welcome email
+                      </Button>
+                    )}
                   </Box>
                 )}
                 {error && (

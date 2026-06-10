@@ -126,6 +126,7 @@ const api = {
 
   auth: {
     register: (payload) => request('POST', '/auth/register', { body: payload }),
+    resendWelcome: (payload) => request('POST', '/auth/resend-welcome', { body: payload }),
     login: (payload) => request('POST', '/auth/login', { body: payload }),
     logout: () => request('POST', '/auth/logout'),
     me: () => request('GET', '/auth/me'),
