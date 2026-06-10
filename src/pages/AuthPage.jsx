@@ -111,9 +111,15 @@ export function AuthPage() {
       })
       if (result?.requiresApproval) {
         setSignupNotice(
-          result.message ||
-            'Your supplier account is pending platform administrator approval. You can log in once it is approved.',
+          `${result.message || 'Your supplier account is pending platform administrator approval. You can log in once it is approved.'}${
+            result.welcomeEmailSent ? ' A confirmation email was sent to your inbox.' : ''
+          }`,
         )
+        setTab('login')
+        return
+      }
+      if (result?.welcomeEmailSent) {
+        setSignupNotice(`Account created! We sent a welcome email to ${email.trim()}. Check your inbox and spam folder.`)
         setTab('login')
         return
       }

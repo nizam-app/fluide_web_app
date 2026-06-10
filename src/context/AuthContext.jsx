@@ -93,7 +93,11 @@ export function AuthProvider({ children }) {
       }
       const result = await api.auth.register(payload)
       if (result?.requiresApproval) return result
-      return applySession(result)
+      applySession(result)
+      return {
+        role: result.user?.role,
+        welcomeEmailSent: result.welcomeEmailSent === true,
+      }
     },
     [applySession],
   )
