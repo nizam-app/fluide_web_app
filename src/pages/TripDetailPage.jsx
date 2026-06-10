@@ -35,7 +35,7 @@ import {
   getNeedTypeIcon,
 } from '../lib/format'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
-import { cacheProviderProfile } from './ProviderProfilePage'
+import { cacheProviderProfile } from '../lib/providerProfile'
 
 function useTripDetail(id) {
   const [trip, setTrip] = useState(null)

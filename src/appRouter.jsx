@@ -11,7 +11,6 @@ import { OrganizerFavoritesPage } from './pages/OrganizerFavoritesPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RoleDashboardPage } from './pages/RoleDashboardPage'
 import { RoleRequestsPage } from './pages/RoleRequestsPage'
-import { TripsLayout } from './components/templates/TripsLayout'
 import { RoleTripsPage } from './pages/RoleTripsPage'
 import { TripDetailPage } from './pages/TripDetailPage'
 import { ProviderProfilePage } from './pages/ProviderProfilePage'
@@ -28,14 +27,8 @@ export const appRouter = createBrowserRouter([
     children: [
       { path: '/dashboard', element: <RoleDashboardPage /> },
       { path: '/create-trip', element: <CreateTripPage /> },
-      {
-        path: '/trips',
-        element: <TripsLayout />,
-        children: [
-          { index: true, element: <RoleTripsPage /> },
-          { path: ':id', element: <TripDetailPage /> },
-        ],
-      },
+      { path: '/trips', element: <RoleTripsPage /> },
+      { path: '/trips/:id', element: <TripDetailPage /> },
       { path: '/requests', element: <RoleRequestsPage /> },
       { path: '/favorites', element: <OrganizerFavoritesPage /> },
       { path: '/providers/:id', element: <ProviderProfilePage /> },
