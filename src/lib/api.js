@@ -143,6 +143,14 @@ const api = {
       formData.append('image', file)
       return request('POST', '/users/me/avatar', { formData })
     },
+    uploadDocument: (file, { label, category }) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('label', label)
+      formData.append('category', category)
+      return request('POST', '/users/me/documents', { formData })
+    },
+    deleteDocument: (documentId) => request('DELETE', `/users/me/documents/${documentId}`),
     deleteAccount: (password) => request('DELETE', '/users/me', { body: { password } }),
   },
 
@@ -229,6 +237,9 @@ const api = {
       request('PATCH', `/admin/users/${id}/status`, { body: { status } }),
     approveProviderServices: (id) =>
       request('PATCH', `/admin/users/${id}/provider-services/approve`),
+    updateUser: (id, payload) => request('PATCH', `/admin/users/${id}`, { body: payload }),
+    updateUserDocumentStatus: (id, documentId, status) =>
+      request('PATCH', `/admin/users/${id}/documents/${documentId}`, { body: { status } }),
     listTrips: async (query) => {
       const result = await request('GET', '/admin/trips', { query })
       if (result?.trips) {

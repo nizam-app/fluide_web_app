@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Box, Button, Flex, Grid, Image, Spinner, Stack, Text } from '@chakra-ui/react'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
@@ -7,8 +7,10 @@ import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { useAuth } from '../context/AuthContext'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
+import { ProviderTrustPreview } from '../components/molecules/ProviderTrustPreview'
+import { documentCategoryLabel, formatBillingAddress } from '../lib/format'
 import { formatProviderTypesLabel } from '../lib/providerTypes'
-import { readCachedProvider } from '../lib/providerProfile'
+import { cacheProviderProfile, readCachedProvider } from '../lib/providerProfile'
 import { stitchGreenButton } from '../theme/fluide-theme'
 
 export function ProviderProfilePage() {
@@ -39,6 +41,12 @@ export function ProviderProfilePage() {
   }, [providerId, isOrganizer, cachedProvider])
   const { data, loading, error } = useApiResource(fetcher)
   const provider = data?.provider ?? cachedProvider
+
+  useEffect(() => {
+    if (data?.provider) {
+      cacheProviderProfile(data.provider)
+    }
+  }, [data?.provider])
 
   return (
     <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }}>
@@ -103,7 +111,9 @@ export function ProviderProfilePage() {
             )}
           </Flex>
 
-          <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="6">
+          <ProviderTrustPreview provider={provider} />
+
+          <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="6" mt="8">
             <Stack gap="4">
               <Box>
                 <Text textStyle="labelMd" mb="2">
@@ -117,6 +127,28 @@ export function ProviderProfilePage() {
                 </Text>
                 <Text textStyle="bodyMd">{provider.contactPerson || '—'}</Text>
               </Box>
+              <Box>
+                <Text textStyle="labelMd" mb="2">
+                  SIRET
+                </Text>
+                <Text textStyle="bodyMd">{provider.siret || '—'}</Text>
+              </Box>
+              <Box>
+                <Text textStyle="labelMd" mb="2">
+                  Billing address
+                </Text>
+                <Text textStyle="bodyMd">
+                  {provider.billingAddressLabel || formatBillingAddress(provider.billingAddress) || '—'}
+                </Text>
+              </Box>
+              {provider.ibanMasked && (
+                <Box>
+                  <Text textStyle="labelMd" mb="2">
+                    IBAN
+                  </Text>
+                  <Text textStyle="bodyMd">{provider.ibanMasked}</Text>
+                </Box>
+              )}
             </Stack>
             <Box>
               <Text textStyle="labelMd" mb="2">
@@ -127,6 +159,57 @@ export function ProviderProfilePage() {
               </Text>
             </Box>
           </Grid>
+
+          <Box mt="8" pt="8" borderTopWidth="1px" borderColor="outlineVariant">
+            <Text textStyle="headlineSm" mb="1">
+              {isAdmin ? 'Documents' : 'Verified documents'}
+            </Text>
+            <Text textStyle="bodySm" color="onSurfaceVariant" mb="4">
+              {isAdmin
+                ? 'All paperwork uploaded by this supplier, including pending review.'
+                : 'Official paperwork shared by this supplier for organizer trust.'}
+            </Text>
+            {(provider.documents || []).length === 0 ? (
+              <Text textStyle="bodyMd" color="onSurfaceVariant">
+                {isAdmin ? 'No documents uploaded yet.' : 'No verified documents available yet.'}
+              </Text>
+            ) : (
+              <Stack gap="3">
+                {provider.documents.map((doc) => (
+                  <Flex
+                    key={doc._id}
+                    p="4"
+                    borderWidth="1px"
+                    borderColor="outlineVariant"
+                    borderRadius="lg"
+                    align="center"
+                    justify="space-between"
+                    gap="4"
+                    flexWrap="wrap"
+                  >
+                    <Box>
+                      <Text textStyle="labelMd">{doc.label}</Text>
+                      <Text textStyle="bodySm" color="onSurfaceVariant" textTransform="capitalize">
+                        {documentCategoryLabel(doc.category)}
+                        {isAdmin && doc.status ? ` · ${doc.status}` : ''}
+                      </Text>
+                    </Box>
+                    <Button
+                      as="a"
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      size="sm"
+                      variant="outline"
+                      borderRadius="pill"
+                    >
+                      View document
+                    </Button>
+                  </Flex>
+                ))}
+              </Stack>
+            )}
+          </Box>
         </Box>
       )}
     </Box>

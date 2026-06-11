@@ -18,6 +18,7 @@ import { ItineraryTimeline } from '../components/molecules/ItineraryTimeline'
 import { TripSnapshotSidebar } from '../components/molecules/TripSnapshotSidebar'
 import { FavoriteProviderButton } from '../components/molecules/FavoriteProviderButton'
 import { ProviderNameLink } from '../components/molecules/ProviderNameLink'
+import { ProviderTrustPreview } from '../components/molecules/ProviderTrustPreview'
 import { RequestHistoryPanel } from '../components/molecules/RequestHistoryPanel'
 import { RequestMessagesPanel } from '../components/molecules/RequestMessagesPanel'
 import { buildRequestSummaryRows, RequestSummaryModal } from '../components/molecules/RequestSummaryModal'
@@ -134,6 +135,7 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
             {offer.provider.providerType}
           </Text>
         )}
+        <ProviderTrustPreview provider={offer.provider} compact />
       </Box>
       <Text textStyle="headlineSm" color="primary" fontWeight="700">
         {formatPrice(offer.price, offer.currency)}

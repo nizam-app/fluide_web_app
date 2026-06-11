@@ -107,6 +107,26 @@ export function statusLabel(status) {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+export function formatBillingAddress(address) {
+  if (!address) return null
+  const parts = [address.line1, address.postalCode, address.city, address.country].filter(Boolean)
+  return parts.length ? parts.join(', ') : null
+}
+
+export function countApprovedDocuments(documents = []) {
+  return documents.filter((doc) => doc.status === 'approved').length
+}
+
+export function documentCategoryLabel(category) {
+  const labels = {
+    insurance: 'Insurance',
+    registration: 'Registration',
+    certification: 'Certification',
+    other: 'Other',
+  }
+  return labels[category] || category || 'Document'
+}
+
 /** Adapts a backend Trip document to the shape TripListingCard expects. */
 export function tripToCard(trip) {
   if (!trip) return null

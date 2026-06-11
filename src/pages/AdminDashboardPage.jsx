@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Button, Flex, Grid, HStack, Spinner, Stack, Table, Text } from '@chakra-ui/react'
 import { useLocation } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
+import { AdminEditSupplierModal } from '../components/molecules/AdminEditSupplierModal'
 import { AdminCompactStats } from '../components/molecules/AdminCompactStats'
 import { AdminQuickAction } from '../components/molecules/AdminQuickAction'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
@@ -17,6 +18,7 @@ export function AdminDashboardPage() {
   const { hash } = useLocation()
   const [busyUserId, setBusyUserId] = useState(null)
   const [busyApproveId, setBusyApproveId] = useState(null)
+  const [editingSupplier, setEditingSupplier] = useState(null)
 
   const fetcher = useCallback(
     () =>
@@ -290,6 +292,16 @@ export function AdminDashboardPage() {
                         </Table.Cell>
                         <Table.Cell py="4" px="6">
                           <HStack gap="2" flexWrap="wrap">
+                            {u.role === 'provider' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                borderRadius="pill"
+                                onClick={() => setEditingSupplier(u)}
+                              >
+                                Edit profile
+                              </Button>
+                            )}
                             {u.role === 'provider' && (u.pendingProviderTypes?.length || 0) > 0 && (
                               <Button
                                 size="sm"
@@ -490,6 +502,13 @@ export function AdminDashboardPage() {
             </Grid>
           </>
         )}
+
+        <AdminEditSupplierModal
+          open={Boolean(editingSupplier)}
+          user={editingSupplier}
+          onClose={() => setEditingSupplier(null)}
+          onSaved={() => reload()}
+        />
       </Box>
   )
 }

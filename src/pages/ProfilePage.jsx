@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Box, Button, Flex, Grid, Image, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, HStack, Image, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
@@ -8,11 +8,20 @@ import api from '../lib/api'
 import { ORGANIZATION_TYPES, PROVIDER_TYPES } from '../data/mockData'
 import { getSelectedProviderTypes, getApprovedProviderTypes, getPendingProviderTypes } from '../lib/providerTypes'
 import { getRoleLabel } from '../lib/roles'
+import { documentCategoryLabel } from '../lib/format'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
+
+const DOCUMENT_CATEGORIES = [
+  { value: 'insurance', label: 'Insurance' },
+  { value: 'registration', label: 'Registration' },
+  { value: 'certification', label: 'Certification' },
+  { value: 'other', label: 'Other' },
+]
 
 export function ProfilePage() {
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
+  const documentInputRef = useRef(null)
   const { user, isOrganizer, isProvider, isAdmin, updateProfile, updatePassword, logout, refresh } = useAuth()
   const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
 
@@ -48,6 +57,10 @@ export function ProfilePage() {
   const [deleteStatus, setDeleteStatus] = useState({ type: null, message: '' })
   const [profileStatus, setProfileStatus] = useState({ type: null, message: '' })
   const [profileBusy, setProfileBusy] = useState(false)
+  const [documentForm, setDocumentForm] = useState({ label: '', category: 'insurance' })
+  const [documentBusy, setDocumentBusy] = useState(false)
+  const [documentStatus, setDocumentStatus] = useState({ type: null, message: '' })
+  const [deleteDocBusyId, setDeleteDocBusyId] = useState(null)
 
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirm: '' })
   const [passwordStatus, setPasswordStatus] = useState({ type: null, message: '' })
@@ -101,6 +114,51 @@ export function ProfilePage() {
     }))
   const updatePasswordField = (field) => (event) =>
     setPassword((prev) => ({ ...prev, [field]: event.target.value }))
+
+  const handleDocumentUpload = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    const label = documentForm.label.trim()
+    if (!label) {
+      setDocumentStatus({ type: 'error', message: 'Document label is required.' })
+      return
+    }
+
+    setDocumentBusy(true)
+    setDocumentStatus({ type: null, message: '' })
+    try {
+      await api.users.uploadDocument(file, {
+        label,
+        category: documentForm.category,
+      })
+      setDocumentForm({ label: '', category: documentForm.category })
+      await refresh()
+      setDocumentStatus({
+        type: 'success',
+        message: 'Document uploaded. It will appear to organizers after admin approval.',
+      })
+    } catch (err) {
+      setDocumentStatus({ type: 'error', message: err?.message || 'Could not upload document.' })
+    } finally {
+      setDocumentBusy(false)
+    }
+  }
+
+  const handleDeleteDocument = async (documentId) => {
+    setDeleteDocBusyId(documentId)
+    setDocumentStatus({ type: null, message: '' })
+    try {
+      await api.users.deleteDocument(documentId)
+      await refresh()
+      setDocumentStatus({ type: 'success', message: 'Document removed.' })
+    } catch (err) {
+      setDocumentStatus({ type: 'error', message: err?.message || 'Could not delete document.' })
+    } finally {
+      setDeleteDocBusyId(null)
+    }
+  }
 
   const handleProfileSubmit = async (event) => {
     event?.preventDefault()
@@ -403,6 +461,130 @@ export function ProfilePage() {
                 Save billing details
               </Button>
             </Stack>
+          </Box>
+        )}
+
+        {isProvider && (
+          <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" mb="6">
+            <Text textStyle="headlineSm" mb="1">
+              Trust documents
+            </Text>
+            <Text textStyle="bodySm" color="onSurfaceVariant" mb="5">
+              Upload insurance, registration, or certification files. Organizers only see documents after admin approval.
+            </Text>
+            <Stack gap="4" mb="6">
+              <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="4">
+                <Box>
+                  <Text textStyle="labelMd" mb="2">
+                    Document label
+                  </Text>
+                  <Input
+                    value={documentForm.label}
+                    onChange={(event) =>
+                      setDocumentForm((prev) => ({ ...prev, label: event.target.value }))
+                    }
+                    placeholder="e.g. Professional liability insurance"
+                    css={fluideInputStyles}
+                  />
+                </Box>
+                <Box>
+                  <Text textStyle="labelMd" mb="2">
+                    Category
+                  </Text>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      value={documentForm.category}
+                      onChange={(event) =>
+                        setDocumentForm((prev) => ({ ...prev, category: event.target.value }))
+                      }
+                      css={fluideInputStyles}
+                    >
+                      {DOCUMENT_CATEGORIES.map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
+                </Box>
+              </Grid>
+              <HStack gap="3" flexWrap="wrap">
+                <input
+                  ref={documentInputRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  hidden
+                  onChange={handleDocumentUpload}
+                />
+                <Button
+                  {...stitchGreenButton}
+                  px="8"
+                  loading={documentBusy}
+                  onClick={() => documentInputRef.current?.click()}
+                >
+                  Upload document
+                </Button>
+                <Text textStyle="bodySm" color="onSurfaceVariant">
+                  PDF or image, up to server limit.
+                </Text>
+              </HStack>
+              {documentStatus.message && (
+                <Text textStyle="bodySm" color={documentStatus.type === 'success' ? 'primary' : 'error'}>
+                  {documentStatus.message}
+                </Text>
+              )}
+            </Stack>
+
+            {(user?.documents || []).length === 0 ? (
+              <Text textStyle="bodySm" color="onSurfaceVariant">
+                No documents uploaded yet.
+              </Text>
+            ) : (
+              <Stack gap="3">
+                {(user.documents || []).map((doc) => (
+                  <Flex
+                    key={doc._id}
+                    p="4"
+                    borderWidth="1px"
+                    borderColor="outlineVariant"
+                    borderRadius="lg"
+                    align="center"
+                    justify="space-between"
+                    gap="4"
+                    flexWrap="wrap"
+                  >
+                    <Box>
+                      <Text textStyle="labelMd">{doc.label}</Text>
+                      <Text textStyle="bodySm" color="onSurfaceVariant" textTransform="capitalize">
+                        {documentCategoryLabel(doc.category)} · {doc.status}
+                      </Text>
+                    </Box>
+                    <HStack gap="2">
+                      <Button
+                        as="a"
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="sm"
+                        variant="outline"
+                        borderRadius="pill"
+                      >
+                        View
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        borderRadius="pill"
+                        loading={deleteDocBusyId === doc._id}
+                        onClick={() => handleDeleteDocument(doc._id)}
+                      >
+                        Remove
+                      </Button>
+                    </HStack>
+                  </Flex>
+                ))}
+              </Stack>
+            )}
           </Box>
         )}
 
