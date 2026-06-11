@@ -1,13 +1,25 @@
-import { Box, Flex, Grid, Input, Stack, Text } from '@chakra-ui/react'
+import { useState } from 'react'
+import { Box, Button, Flex, Grid, Input, Stack, Text } from '@chakra-ui/react'
+import { MaterialIcon } from '../atoms/MaterialIcon'
 import { DestinationAddressPreview } from './DestinationAddressPreview'
 import { ServiceOptionsDropdown } from './ServiceOptionsDropdown'
 import {
   CREATE_TRIP_SERVICE_OPTIONS,
   DEFAULT_SERVICE_STEP_COUNT,
   SERVICE_NEED_CONFIG,
-  getAddressQueriesFromStep,
 } from '../../lib/servicePlan'
 import { fluideDateInputStyles, fluideInputStyles } from '../../theme/fluide-theme'
+
+function StepField({ label, children }) {
+  return (
+    <Box flex="0 0 auto">
+      <Text textStyle="labelSm" color="onSurfaceVariant" mb="1.5">
+        {label}
+      </Text>
+      {children}
+    </Box>
+  )
+}
 
 function updateNeedField(plan, needType, field, value) {
   return {
@@ -109,7 +121,7 @@ function ServiceNeedRow({ needType, plan, onChange }) {
   )
 }
 
-function ServicePlanStep({ stepIndex, plan, onChange }) {
+function ServicePlanStep({ stepIndex, plan, onChange, isLastVisible, onAddNext }) {
   const handleTypesChange = (selectedTypes) => {
     const needs = { ...plan.needs }
     for (const type of selectedTypes) {
@@ -120,8 +132,6 @@ function ServicePlanStep({ stepIndex, plan, onChange }) {
     onChange({ ...plan, selectedTypes, needs })
   }
 
-  const addressPreviewQuery = getAddressQueriesFromStep(plan)[0] || ''
-
   return (
     <Box
       borderWidth="1px"
@@ -131,53 +141,60 @@ function ServicePlanStep({ stepIndex, plan, onChange }) {
       bg="surfaceContainerLowest"
     >
       <Stack gap="5">
-        <Text textStyle="labelMd" fontWeight="600">
-          Step {stepIndex + 1}
-        </Text>
+        <Flex align="center" gap="2">
+          <Flex
+            align="center"
+            justify="center"
+            w="8"
+            h="8"
+            borderRadius="full"
+            bg="primary"
+            color="onPrimary"
+            fontWeight="700"
+            textStyle="labelSm"
+            flexShrink={0}
+          >
+            {stepIndex + 1}
+          </Flex>
+          <Text textStyle="labelMd" fontWeight="600">
+            Step {stepIndex + 1}
+          </Text>
+        </Flex>
 
-        <Grid templateColumns={{ base: '1fr', md: 'minmax(0, 200px) 1fr' }} gap="4" alignItems="end">
-          <Box>
+        <Flex gap="4" flexWrap="wrap" align="flex-end">
+          <StepField label="Service date">
             <Input
               type="date"
               value={plan.serviceDate}
               onChange={(event) => onChange({ ...plan, serviceDate: event.target.value })}
               css={fluideDateInputStyles}
               bg="surface"
+              w={{ base: 'full', sm: '11.5rem' }}
             />
-            <Text textStyle="bodySm" color="onSurfaceVariant" mt="1">
-              jj/mm/aa
-            </Text>
-          </Box>
+          </StepField>
 
-          <Box>
-            <Flex align="center" gap="2" flexWrap="wrap">
-              <Text textStyle="labelSm" color="onSurfaceVariant" flexShrink={0}>
-                from
-              </Text>
-              <Input
-                type="time"
-                value={plan.timeFrom}
-                onChange={(event) => onChange({ ...plan, timeFrom: event.target.value })}
-                css={fluideInputStyles}
-                bg="surface"
-                flex="1"
-                minW="120px"
-              />
-              <Text textStyle="labelSm" color="onSurfaceVariant" flexShrink={0}>
-                to
-              </Text>
-              <Input
-                type="time"
-                value={plan.timeTo}
-                onChange={(event) => onChange({ ...plan, timeTo: event.target.value })}
-                css={fluideInputStyles}
-                bg="surface"
-                flex="1"
-                minW="120px"
-              />
-            </Flex>
-          </Box>
-        </Grid>
+          <StepField label="From">
+            <Input
+              type="time"
+              value={plan.timeFrom}
+              onChange={(event) => onChange({ ...plan, timeFrom: event.target.value })}
+              css={fluideInputStyles}
+              bg="surface"
+              w="8.5rem"
+            />
+          </StepField>
+
+          <StepField label="To">
+            <Input
+              type="time"
+              value={plan.timeTo}
+              onChange={(event) => onChange({ ...plan, timeTo: event.target.value })}
+              css={fluideInputStyles}
+              bg="surface"
+              w="8.5rem"
+            />
+          </StepField>
+        </Flex>
 
         <ServiceOptionsDropdown
           options={CREATE_TRIP_SERVICE_OPTIONS}
@@ -193,8 +210,19 @@ function ServicePlanStep({ stepIndex, plan, onChange }) {
           </Stack>
         )}
 
-        {!plan.selectedTypes.length && addressPreviewQuery && (
-          <DestinationAddressPreview query={addressPreviewQuery} />
+        {isLastVisible && onAddNext && (
+          <Button
+            type="button"
+            variant="outline"
+            borderRadius="pill"
+            borderColor="primary"
+            color="primary"
+            alignSelf="flex-start"
+            onClick={onAddNext}
+          >
+            <MaterialIcon name="add" size={18} />
+            Add step {stepIndex + 2}
+          </Button>
         )}
       </Stack>
     </Box>
@@ -210,28 +238,41 @@ export function TripServiceNeedsBuilder({ value, onChange }) {
     needs: {},
   }))
 
+  const [visibleStepCount, setVisibleStepCount] = useState(() => {
+    const filled = steps.filter((step) => step.selectedTypes.length > 0).length
+    return Math.min(Math.max(filled || 1, 1), DEFAULT_SERVICE_STEP_COUNT)
+  })
+
   const updateStep = (index, nextStep) => {
     const next = [...steps]
     next[index] = nextStep
     onChange(next)
   }
 
+  const handleAddNextStep = () => {
+    setVisibleStepCount((count) => Math.min(count + 1, DEFAULT_SERVICE_STEP_COUNT))
+  }
+
+  const visibleSteps = steps.slice(0, visibleStepCount)
+
   return (
-    <Box borderTopWidth="1px" borderColor="outlineVariant" pt="8" mt="2">
-      <Text textStyle="headlineSm" color="onSurfaceVariant" fontWeight="500" mb="2">
+    <Box pt="2">
+      <Text textStyle="headlineSm" color="onSurface" fontWeight="600" mb="1">
         What do you need?
       </Text>
-      <Text textStyle="bodySm" color="onSurfaceVariant" mb="6">
-        Add services for each step of your trip (up to {DEFAULT_SERVICE_STEP_COUNT} steps).
+      <Text textStyle="bodySm" color="onSurfaceVariant" mb="5">
+        Fill in each step, then use &ldquo;Add step 2&rdquo; or &ldquo;Add step 3&rdquo; to continue.
       </Text>
 
-      <Stack gap="6">
-        {steps.map((plan, index) => (
+      <Stack gap="5">
+        {visibleSteps.map((plan, index) => (
           <ServicePlanStep
             key={`service-step-${index + 1}`}
             stepIndex={index}
             plan={plan}
             onChange={(next) => updateStep(index, next)}
+            isLastVisible={index === visibleStepCount - 1}
+            onAddNext={visibleStepCount < DEFAULT_SERVICE_STEP_COUNT ? handleAddNextStep : undefined}
           />
         ))}
       </Stack>

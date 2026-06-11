@@ -252,9 +252,14 @@ export function CreateTripPage() {
           </Text>
         </Box>
 
-        <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap="8">
-          <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" shadow="level1">
-            <Stack gap="4" as="form" onSubmit={handleSubmit}>
+        <Grid templateColumns={{ base: '1fr', xl: 'minmax(0, 1fr) 20rem' }} gap="8" alignItems="start">
+          <Box bg="surface" borderRadius="fluide3xl" p={{ base: '5', md: '8' }} borderWidth="1px" borderColor="outlineVariant" shadow="level1" w="full">
+            <Stack gap="6" as="form" onSubmit={handleSubmit}>
+              <Box>
+                <Text textStyle="headlineSm" fontWeight="600" mb="4">
+                  Trip details
+                </Text>
+                <Stack gap="4">
               <FormField label="Trip Title">
                 <Input
                   placeholder="e.g. Summer Youth Camp Transport"
@@ -336,8 +341,12 @@ export function CreateTripPage() {
                   css={fluideInputStyles}
                 />
               </FormField>
+                </Stack>
+              </Box>
 
-              <BookingModePicker value={form.bookingMode} onChange={handleBookingModeChange} />
+              <Box pt="2" borderTopWidth="1px" borderColor="outlineVariant">
+                <BookingModePicker value={form.bookingMode} onChange={handleBookingModeChange} />
+              </Box>
 
               <TripServiceNeedsBuilder value={servicePlanSteps} onChange={setServicePlanSteps} />
 
@@ -380,13 +389,14 @@ export function CreateTripPage() {
             </Stack>
           </Box>
 
-          <Stack gap="4">
+          <Stack gap="4" position={{ xl: 'sticky' }} top="4">
             <Box
               bg="surface"
               borderRadius="fluide3xl"
               borderWidth="1px"
               borderColor="outlineVariant"
               p="5"
+              w="full"
             >
               <Text textStyle="labelMd" mb="2">
                 Cover image
