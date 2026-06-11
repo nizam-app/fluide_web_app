@@ -18,14 +18,8 @@ const DOCUMENT_CATEGORIES = [
   { value: 'other', label: 'Other' },
 ]
 
-export function ProfilePage() {
-  const navigate = useNavigate()
-  const fileInputRef = useRef(null)
-  const documentInputRef = useRef(null)
-  const { user, isOrganizer, isProvider, isAdmin, updateProfile, updatePassword, logout, refresh } = useAuth()
-  const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
-
-  const [profile, setProfile] = useState({
+function buildProfileStateFromUser(user) {
+  return {
     name: user?.name || '',
     email: user?.email || '',
     organizationType: user?.organizationType || 'Municipality',
@@ -44,19 +38,59 @@ export function ProfilePage() {
       country: user?.billingAddress?.country || 'France',
     },
     billing: {
-      chorusProReady: user?.billing?.chorusProReady || false,
+      chorusProReady: Boolean(user?.billing?.chorusProReady),
       chorusServiceCode: user?.billing?.chorusServiceCode || '',
       legalEntityId: user?.billing?.legalEntityId || '',
       paymentTerms: user?.billing?.paymentTerms || '',
       notes: user?.billing?.notes || '',
     },
-  })
+  }
+}
+
+function buildBillingPayload(profile) {
+  const trimOrNull = (value) => {
+    const trimmed = String(value || '').trim()
+    return trimmed || null
+  }
+
+  return {
+    companyName: trimOrNull(profile.companyName),
+    siret: trimOrNull(profile.siret),
+    iban: trimOrNull(profile.iban),
+    bic: trimOrNull(profile.bic),
+    billingAddress: {
+      line1: trimOrNull(profile.billingAddress.line1),
+      line2: trimOrNull(profile.billingAddress.line2),
+      city: trimOrNull(profile.billingAddress.city),
+      postalCode: trimOrNull(profile.billingAddress.postalCode),
+      country: trimOrNull(profile.billingAddress.country) || 'France',
+    },
+    billing: {
+      chorusProReady: Boolean(profile.billing.chorusProReady),
+      chorusServiceCode: trimOrNull(profile.billing.chorusServiceCode),
+      legalEntityId: trimOrNull(profile.billing.legalEntityId),
+      paymentTerms: trimOrNull(profile.billing.paymentTerms),
+      notes: trimOrNull(profile.billing.notes),
+    },
+  }
+}
+
+export function ProfilePage() {
+  const navigate = useNavigate()
+  const fileInputRef = useRef(null)
+  const documentInputRef = useRef(null)
+  const { user, isOrganizer, isProvider, isAdmin, updateProfile, updatePassword, logout, refresh } = useAuth()
+  const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
+
+  const [profile, setProfile] = useState(() => buildProfileStateFromUser(user))
   const [avatarBusy, setAvatarBusy] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
   const [deleteBusy, setDeleteBusy] = useState(false)
   const [deleteStatus, setDeleteStatus] = useState({ type: null, message: '' })
   const [profileStatus, setProfileStatus] = useState({ type: null, message: '' })
   const [profileBusy, setProfileBusy] = useState(false)
+  const [billingBusy, setBillingBusy] = useState(false)
+  const [billingStatus, setBillingStatus] = useState({ type: null, message: '' })
   const [documentForm, setDocumentForm] = useState({ label: '', category: 'insurance' })
   const [documentBusy, setDocumentBusy] = useState(false)
   const [documentStatus, setDocumentStatus] = useState({ type: null, message: '' })
@@ -67,38 +101,9 @@ export function ProfilePage() {
   const [passwordBusy, setPasswordBusy] = useState(false)
 
   useEffect(() => {
-    const handle = Promise.resolve().then(() =>
-      setProfile({
-        name: user?.name || '',
-        email: user?.email || '',
-        organizationType: user?.organizationType || 'Municipality',
-        providerTypes: getSelectedProviderTypes(user).length ? getSelectedProviderTypes(user) : ['Transport'],
-        contactPerson: user?.contactPerson || '',
-        companyDescription: user?.companyDescription || '',
-        companyName: user?.companyName || '',
-        siret: user?.siret || '',
-        iban: user?.iban || '',
-        bic: user?.bic || '',
-        billingAddress: {
-          line1: user?.billingAddress?.line1 || '',
-          line2: user?.billingAddress?.line2 || '',
-          city: user?.billingAddress?.city || '',
-          postalCode: user?.billingAddress?.postalCode || '',
-          country: user?.billingAddress?.country || 'France',
-        },
-        billing: {
-          chorusProReady: user?.billing?.chorusProReady || false,
-          chorusServiceCode: user?.billing?.chorusServiceCode || '',
-          legalEntityId: user?.billing?.legalEntityId || '',
-          paymentTerms: user?.billing?.paymentTerms || '',
-          notes: user?.billing?.notes || '',
-        },
-      }),
-    )
-    return () => {
-      handle.catch(() => {})
-    }
-  }, [user])
+    if (!user) return
+    setProfile(buildProfileStateFromUser(user))
+  }, [user?._id, user?.updatedAt])
 
   const updateProfileField = (field) => (event) =>
     setProfile((prev) => ({ ...prev, [field]: event.target.value }))
@@ -178,14 +183,11 @@ export function ProfilePage() {
         payload.providerTypes = profile.providerTypes
         payload.contactPerson = profile.contactPerson.trim() || undefined
         payload.companyDescription = profile.companyDescription.trim() || undefined
-        payload.companyName = profile.companyName.trim() || undefined
-        payload.siret = profile.siret.trim() || undefined
-        payload.iban = profile.iban.trim() || undefined
-        payload.bic = profile.bic.trim() || undefined
-        payload.billingAddress = profile.billingAddress
-        payload.billing = profile.billing
       }
       const result = await updateProfile(payload)
+      if (result?.user) {
+        setProfile(buildProfileStateFromUser(result.user))
+      }
       setProfileStatus({
         type: 'success',
         message: result?.message || 'Profile updated.',
@@ -194,6 +196,31 @@ export function ProfilePage() {
       setProfileStatus({ type: 'error', message: err?.message || 'Could not update your profile.' })
     } finally {
       setProfileBusy(false)
+    }
+  }
+
+  const handleBillingSubmit = async (event) => {
+    event?.preventDefault()
+    setBillingStatus({ type: null, message: '' })
+    setBillingBusy(true)
+    try {
+      const result = await updateProfile(buildBillingPayload(profile))
+      if (result?.user) {
+        setProfile(buildProfileStateFromUser(result.user))
+      } else {
+        await refresh()
+      }
+      setBillingStatus({
+        type: 'success',
+        message: 'Billing details saved.',
+      })
+    } catch (err) {
+      setBillingStatus({
+        type: 'error',
+        message: err?.message || 'Could not save billing details.',
+      })
+    } finally {
+      setBillingBusy(false)
     }
   }
 
@@ -415,7 +442,7 @@ export function ProfilePage() {
             <Text textStyle="bodySm" color="onSurfaceVariant" mb="5">
               Legal and billing details used for invoices and public-sector compatibility.
             </Text>
-            <Stack gap="4">
+            <Stack gap="4" as="form" onSubmit={handleBillingSubmit}>
               <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="4">
                 <Box>
                   <Text textStyle="labelMd" mb="2">Company name</Text>
@@ -457,7 +484,19 @@ export function ProfilePage() {
                   <Input placeholder="Billing notes" value={profile.billing.notes} onChange={updateNestedField('billing', 'notes')} css={fluideInputStyles} />
                 </Box>
               </Grid>
-              <Button w="fit-content" {...stitchGreenButton} px="8" onClick={handleProfileSubmit} loading={profileBusy}>
+              {billingStatus.message && (
+                <Text textStyle="bodySm" color={billingStatus.type === 'success' ? 'primary' : 'error'}>
+                  {billingStatus.message}
+                </Text>
+              )}
+              <Button
+                type="submit"
+                w="fit-content"
+                {...stitchGreenButton}
+                px="8"
+                loading={billingBusy}
+                disabled={billingBusy}
+              >
                 Save billing details
               </Button>
             </Stack>
