@@ -263,6 +263,8 @@ export function CreateTripPage() {
         <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap="8">
           <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" shadow="level1">
             <Stack gap="4" as="form" onSubmit={handleSubmit}>
+              <TripServiceNeedsBuilder value={servicePlan} onChange={setServicePlan} />
+
               <FormField label="Trip Title">
                 <Input
                   placeholder="e.g. Summer Youth Camp Transport"
@@ -354,7 +356,6 @@ export function CreateTripPage() {
                   />
                 </FormField>
               </Grid>
-              <TripServiceNeedsBuilder value={servicePlan} onChange={setServicePlan} />
               <BookingModePicker value={form.bookingMode} onChange={handleBookingModeChange} />
               <ItineraryBuilder value={itinerary} onChange={setItinerary} />
               <FormField label="Trip summary (optional)">
