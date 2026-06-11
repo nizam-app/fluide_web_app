@@ -4,21 +4,16 @@ import { useNavigate } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { BookingModePicker } from '../components/molecules/BookingModePicker'
 import { CurrencyPicker } from '../components/molecules/CurrencyPicker'
-import { ItineraryBuilder } from '../components/molecules/ItineraryBuilder'
 import { TripServiceNeedsBuilder } from '../components/molecules/TripServiceNeedsBuilder'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import api from '../lib/api'
 import {
-  createEmptyServicePlan,
-  serializeServicePlanForApi,
-  servicePlanToItineraryLegs,
+  collectNeedTypesFromSteps,
+  createEmptyServicePlanSteps,
+  serializeServicePlanStepsForApi,
+  servicePlanStepsToItineraryLegs,
 } from '../lib/servicePlan'
-import {
-  BOOKING_MODES,
-  createLeg,
-  getFilledLegs,
-  serializeLegsForApi,
-} from '../lib/itinerary'
+import { BOOKING_MODES, serializeLegsForApi } from '../lib/itinerary'
 import { toApiNeedTypes } from '../lib/needTypes'
 import { formatPrice } from '../lib/format'
 import { computeCostPerParticipant } from '../lib/requestStatus'
@@ -39,6 +34,18 @@ function FormField({ label, children, compact = false }) {
   )
 }
 
+function applyBundledTypesToSteps(steps) {
+  const bundledTypes = ['Transport', 'Accommodation']
+  return steps.map((plan) => {
+    const selectedTypes = [...new Set([...plan.selectedTypes, ...bundledTypes])]
+    const needs = { ...plan.needs }
+    for (const type of bundledTypes) {
+      if (!needs[type]) needs[type] = { pickup: '', destination: '', venueName: '', details: '' }
+    }
+    return { ...plan, selectedTypes, needs }
+  })
+}
+
 export function CreateTripPage() {
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
@@ -50,12 +57,10 @@ export function CreateTripPage() {
     participants: '',
     bookingMode: BOOKING_MODES.MULTI,
     description: '',
-    accessibility: '',
     budgetEstimate: '',
     budgetCurrency: 'EUR',
   })
-  const [servicePlan, setServicePlan] = useState(createEmptyServicePlan)
-  const [itinerary, setItinerary] = useState([createLeg('transfer'), createLeg('stay'), createLeg('transfer')])
+  const [servicePlanSteps, setServicePlanSteps] = useState(createEmptyServicePlanSteps)
   const [imageFile, setImageFile] = useState(null)
   const [autoImageUrl, setAutoImageUrl] = useState('')
   const [autoImageAttribution, setAutoImageAttribution] = useState('')
@@ -67,21 +72,10 @@ export function CreateTripPage() {
   const update = (field) => (event) => setForm((prev) => ({ ...prev, [field]: event.target.value }))
 
   const handleBookingModeChange = (bookingMode) => {
-    setForm((prev) => {
-      const next = { ...prev, bookingMode }
-      if (bookingMode === BOOKING_MODES.BUNDLED) {
-        const bundledTypes = ['Transport', 'Accommodation']
-        setServicePlan((plan) => {
-          const selectedTypes = [...new Set([...plan.selectedTypes, ...bundledTypes])]
-          const needs = { ...plan.needs }
-          for (const type of bundledTypes) {
-            if (!needs[type]) needs[type] = { pickup: '', destination: '', venueName: '', details: '' }
-          }
-          return { ...plan, selectedTypes, needs }
-        })
-      }
-      return next
-    })
+    setForm((prev) => ({ ...prev, bookingMode }))
+    if (bookingMode === BOOKING_MODES.BUNDLED) {
+      setServicePlanSteps((steps) => applyBundledTypesToSteps(steps))
+    }
   }
 
   const imagePreview = useMemo(
@@ -160,13 +154,14 @@ export function CreateTripPage() {
       setError('Title, location, and start date are required.')
       return
     }
-    const filledItinerary = getFilledLegs(itinerary)
-    if (!form.description.trim() && filledItinerary.length === 0) {
-      setError('Add a short trip summary or at least one itinerary step.')
+
+    const filledSteps = servicePlanSteps.filter((step) => step.selectedTypes.length > 0)
+    if (!form.description.trim() && !filledSteps.length) {
+      setError('Add a short trip summary or at least one service step.')
       return
     }
-    if (!servicePlan.selectedTypes.length) {
-      setError('Select at least one service in Step 1.')
+    if (!filledSteps.length) {
+      setError('Select at least one service option in Step 1, 2, or 3.')
       return
     }
 
@@ -175,25 +170,22 @@ export function CreateTripPage() {
     try {
       let tripId = pendingTripId
       if (!tripId) {
+        const selectedNeedTypes = collectNeedTypesFromSteps(servicePlanSteps)
         const payload = {
           title: form.title.trim(),
           description: form.description.trim() || form.title.trim(),
           location: form.location.trim(),
           startDate: form.startDate,
           participants,
-          needTypes: toApiNeedTypes(servicePlan.selectedTypes),
+          needTypes: toApiNeedTypes(selectedNeedTypes),
           bookingMode: form.bookingMode,
           status: 'published',
         }
-        const apiServicePlan = serializeServicePlanForApi(servicePlan)
+        const apiServicePlan = serializeServicePlanStepsForApi(servicePlanSteps)
         if (apiServicePlan) payload.servicePlan = apiServicePlan
-        const planLegs = servicePlanToItineraryLegs(servicePlan)
-        const apiItinerary = serializeLegsForApi(
-          planLegs.length ? [...planLegs, ...getFilledLegs(itinerary)] : itinerary,
-        )
+        const apiItinerary = serializeLegsForApi(servicePlanStepsToItineraryLegs(servicePlanSteps))
         if (apiItinerary.length) payload.itinerary = apiItinerary
         if (form.endDate) payload.endDate = form.endDate
-        if (form.accessibility.trim()) payload.accessibility = form.accessibility.trim()
         const budget = Number(form.budgetEstimate)
         if (form.budgetEstimate !== '' && Number.isFinite(budget) && budget >= 0) {
           payload.budgetEstimate = budget
@@ -215,7 +207,7 @@ export function CreateTripPage() {
           const { itinerary: _i, servicePlan: _sp, bookingMode: _b, ...fallbackPayload } = payload
           result = await api.trips.create(fallbackPayload)
           itineraryWarning =
-            'Trip saved, but the server does not store service details or itinerary yet — ask your admin to update the API.'
+            'Trip saved, but the server does not store service details yet — ask your admin to update the API.'
         }
         tripId = result?.trip?._id || result?.trip?.id
         setPendingTripId(tripId)
@@ -263,8 +255,6 @@ export function CreateTripPage() {
         <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap="8">
           <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" shadow="level1">
             <Stack gap="4" as="form" onSubmit={handleSubmit}>
-              <TripServiceNeedsBuilder value={servicePlan} onChange={setServicePlan} />
-
               <FormField label="Trip Title">
                 <Input
                   placeholder="e.g. Summer Youth Camp Transport"
@@ -338,30 +328,23 @@ export function CreateTripPage() {
                 </Box>
               )}
 
-              <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="4">
-                <FormField label="Location">
-                  <Input
-                    placeholder="City, Region"
-                    value={form.location}
-                    onChange={update('location')}
-                    css={fluideInputStyles}
-                  />
-                </FormField>
-                <FormField label="Accessibility (optional)">
-                  <Input
-                    placeholder="e.g. High, ramp access"
-                    value={form.accessibility}
-                    onChange={update('accessibility')}
-                    css={fluideInputStyles}
-                  />
-                </FormField>
-              </Grid>
+              <FormField label="Location">
+                <Input
+                  placeholder="City, Region"
+                  value={form.location}
+                  onChange={update('location')}
+                  css={fluideInputStyles}
+                />
+              </FormField>
+
               <BookingModePicker value={form.bookingMode} onChange={handleBookingModeChange} />
-              <ItineraryBuilder value={itinerary} onChange={setItinerary} />
+
+              <TripServiceNeedsBuilder value={servicePlanSteps} onChange={setServicePlanSteps} />
+
               <FormField label="Trip summary (optional)">
                 <Textarea
                   rows={3}
-                  placeholder="Short overview — e.g. Family group stay in Marseille, hotel + transfers included. Use the itinerary above for dates and locations."
+                  placeholder="Short overview — e.g. Family group stay in Marseille, hotel + transfers included."
                   value={form.description}
                   onChange={update('description')}
                   borderRadius="fluide"
