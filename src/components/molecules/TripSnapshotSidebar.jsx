@@ -3,6 +3,7 @@ import { MaterialIcon } from '../atoms/MaterialIcon'
 import { formatDateRange, formatPrice, getNeedTypeIcon, initialsFromName } from '../../lib/format'
 import { BOOKING_MODES, getFilledLegs, normalizeItinerary } from '../../lib/itinerary'
 import { fromApiNeedTypes } from '../../lib/needTypes'
+import { SERVICE_NEED_CONFIG } from '../../lib/servicePlan'
 
 function SnapshotRow({ icon, label, value }) {
   if (value == null || value === '' || value === '—') return null
@@ -159,6 +160,50 @@ export function TripSnapshotSidebar({ trip, requests = [], totalOffers = 0 }) {
                 </Flex>
               ))}
             </HStack>
+          </Box>
+        ) : null}
+
+        {trip.servicePlan?.needs?.length > 0 ? (
+          <Box mt="4" pt="4" borderTopWidth="1px" borderColor="outlineVariant">
+            <Text textStyle="labelSm" color="onSurfaceVariant" mb="2">
+              Service details
+            </Text>
+            {(trip.servicePlan.serviceDate || trip.servicePlan.timeFrom || trip.servicePlan.timeTo) && (
+              <Text textStyle="bodySm" color="onSurfaceVariant" mb="2">
+                {[
+                  trip.servicePlan.serviceDate,
+                  trip.servicePlan.timeFrom && trip.servicePlan.timeTo
+                    ? `${trip.servicePlan.timeFrom} – ${trip.servicePlan.timeTo}`
+                    : trip.servicePlan.timeFrom || trip.servicePlan.timeTo,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Text>
+            )}
+            <Stack gap="2">
+              {trip.servicePlan.needs.map((need) => {
+                const uiType = fromApiNeedType(need.needType) || need.needType
+                const config = SERVICE_NEED_CONFIG[uiType]
+                const detail = [
+                  need.pickup && need.destination
+                    ? `${need.pickup} → ${need.destination}`
+                    : need.pickup || need.destination,
+                  need.venueName,
+                  need.details,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+                if (!detail) return null
+                return (
+                  <Text key={`${uiType}-${detail}`} textStyle="bodySm">
+                    <Text as="span" fontWeight="600" color="primary">
+                      {config?.label || uiType}:
+                    </Text>{' '}
+                    {detail}
+                  </Text>
+                )
+              })}
+            </Stack>
           </Box>
         ) : null}
       </Box>

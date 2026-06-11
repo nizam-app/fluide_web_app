@@ -5,10 +5,14 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { BookingModePicker } from '../components/molecules/BookingModePicker'
 import { CurrencyPicker } from '../components/molecules/CurrencyPicker'
 import { ItineraryBuilder } from '../components/molecules/ItineraryBuilder'
-import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
+import { TripServiceNeedsBuilder } from '../components/molecules/TripServiceNeedsBuilder'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
-import { NEED_TYPE_OPTIONS } from '../data/mockData'
 import api from '../lib/api'
+import {
+  createEmptyServicePlan,
+  serializeServicePlanForApi,
+  servicePlanToItineraryLegs,
+} from '../lib/servicePlan'
 import {
   BOOKING_MODES,
   createLeg,
@@ -44,13 +48,13 @@ export function CreateTripPage() {
     startDate: '',
     endDate: '',
     participants: '',
-    needTypes: [NEED_TYPE_OPTIONS[0]],
     bookingMode: BOOKING_MODES.MULTI,
     description: '',
     accessibility: '',
     budgetEstimate: '',
     budgetCurrency: 'EUR',
   })
+  const [servicePlan, setServicePlan] = useState(createEmptyServicePlan)
   const [itinerary, setItinerary] = useState([createLeg('transfer'), createLeg('stay'), createLeg('transfer')])
   const [imageFile, setImageFile] = useState(null)
   const [autoImageUrl, setAutoImageUrl] = useState('')
@@ -67,8 +71,14 @@ export function CreateTripPage() {
       const next = { ...prev, bookingMode }
       if (bookingMode === BOOKING_MODES.BUNDLED) {
         const bundledTypes = ['Transport', 'Accommodation']
-        const merged = [...new Set([...prev.needTypes, ...bundledTypes])]
-        next.needTypes = merged.filter((t) => NEED_TYPE_OPTIONS.includes(t))
+        setServicePlan((plan) => {
+          const selectedTypes = [...new Set([...plan.selectedTypes, ...bundledTypes])]
+          const needs = { ...plan.needs }
+          for (const type of bundledTypes) {
+            if (!needs[type]) needs[type] = { pickup: '', destination: '', venueName: '', details: '' }
+          }
+          return { ...plan, selectedTypes, needs }
+        })
       }
       return next
     })
@@ -155,8 +165,8 @@ export function CreateTripPage() {
       setError('Add a short trip summary or at least one itinerary step.')
       return
     }
-    if (!form.needTypes.length) {
-      setError('Select at least one need type for this trip.')
+    if (!servicePlan.selectedTypes.length) {
+      setError('Select at least one service in Step 1.')
       return
     }
 
@@ -171,11 +181,16 @@ export function CreateTripPage() {
           location: form.location.trim(),
           startDate: form.startDate,
           participants,
-          needTypes: toApiNeedTypes(form.needTypes),
+          needTypes: toApiNeedTypes(servicePlan.selectedTypes),
           bookingMode: form.bookingMode,
           status: 'published',
         }
-        const apiItinerary = serializeLegsForApi(itinerary)
+        const apiServicePlan = serializeServicePlanForApi(servicePlan)
+        if (apiServicePlan) payload.servicePlan = apiServicePlan
+        const planLegs = servicePlanToItineraryLegs(servicePlan)
+        const apiItinerary = serializeLegsForApi(
+          planLegs.length ? [...planLegs, ...getFilledLegs(itinerary)] : itinerary,
+        )
         if (apiItinerary.length) payload.itinerary = apiItinerary
         if (form.endDate) payload.endDate = form.endDate
         if (form.accessibility.trim()) payload.accessibility = form.accessibility.trim()
@@ -192,12 +207,15 @@ export function CreateTripPage() {
           const msg = String(createErr?.message || '').toLowerCase()
           const maybeUnknownFields =
             createErr?.status === 400 &&
-            (msg.includes('itinerary') || msg.includes('bookingmode') || msg.includes('booking'))
+            (msg.includes('itinerary') ||
+              msg.includes('serviceplan') ||
+              msg.includes('bookingmode') ||
+              msg.includes('booking'))
           if (!maybeUnknownFields) throw createErr
-          const { itinerary: _i, bookingMode: _b, ...fallbackPayload } = payload
+          const { itinerary: _i, servicePlan: _sp, bookingMode: _b, ...fallbackPayload } = payload
           result = await api.trips.create(fallbackPayload)
           itineraryWarning =
-            'Trip saved, but the server does not store itinerary yet — ask your admin to update the API.'
+            'Trip saved, but the server does not store service details or itinerary yet — ask your admin to update the API.'
         }
         tripId = result?.trip?._id || result?.trip?.id
         setPendingTripId(tripId)
@@ -336,11 +354,8 @@ export function CreateTripPage() {
                   />
                 </FormField>
               </Grid>
+              <TripServiceNeedsBuilder value={servicePlan} onChange={setServicePlan} />
               <BookingModePicker value={form.bookingMode} onChange={handleBookingModeChange} />
-              <NeedTypePicker
-                value={form.needTypes}
-                onChange={(needTypes) => setForm((prev) => ({ ...prev, needTypes }))}
-              />
               <ItineraryBuilder value={itinerary} onChange={setItinerary} />
               <FormField label="Trip summary (optional)">
                 <Textarea

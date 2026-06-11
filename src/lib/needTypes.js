@@ -40,6 +40,7 @@ export function normalizeTrip(trip) {
     needTypes: fromApiNeedTypes(trip.needTypes),
     itinerary: normalizeItinerary(trip.itinerary),
     bookingMode: trip.bookingMode === BOOKING_MODES.BUNDLED ? BOOKING_MODES.BUNDLED : BOOKING_MODES.MULTI,
+    servicePlan: trip.servicePlan || null,
   }
 }
 

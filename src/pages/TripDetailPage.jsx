@@ -31,6 +31,7 @@ import { NEED_TYPE_OPTIONS } from '../data/mockData'
 import api from '../lib/api'
 import { BOOKING_MODES, bundledRequestMessage } from '../lib/itinerary'
 import { normalizeRequest, normalizeTrip, toApiNeedType } from '../lib/needTypes'
+import { formatServiceNeedMessage, formatServicePlanSummary } from '../lib/servicePlan'
 import { getRequestDisplayStatus } from '../lib/requestStatus'
 import {
   formatOfferAttachmentLabel,
@@ -423,7 +424,9 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       await api.requests.create({
         trip: tripId,
         needType: toApiNeedType(primaryType),
-        message: [bundledRequestMessage(trip), message.trim()].filter(Boolean).join('\n\n'),
+        message: [bundledRequestMessage(trip), formatServicePlanSummary(trip?.servicePlan), message.trim()]
+          .filter(Boolean)
+          .join('\n\n'),
       })
       setMessage('')
       setShowSummary(false)
@@ -464,13 +467,15 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
     try {
       const trimmedMessage = message.trim() || undefined
       const results = await Promise.allSettled(
-        types.map((type) =>
-          api.requests.create({
+        types.map((type) => {
+          const planMessage = formatServiceNeedMessage(trip?.servicePlan, type)
+          const requestMessage = [planMessage, trimmedMessage].filter(Boolean).join('\n\n') || undefined
+          return api.requests.create({
             trip: tripId,
             needType: toApiNeedType(type),
-            message: trimmedMessage,
-          }),
-        ),
+            message: requestMessage,
+          })
+        }),
       )
       const failed = results.filter((r) => r.status === 'rejected')
       if (failed.length === results.length) {
