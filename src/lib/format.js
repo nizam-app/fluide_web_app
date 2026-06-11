@@ -117,6 +117,11 @@ export function countApprovedDocuments(documents = []) {
   return documents.filter((doc) => doc.status === 'approved').length
 }
 
+export function formatOfferAttachmentLabel(attachment) {
+  if (!attachment?.url) return null
+  return attachment.fileName || 'Quote'
+}
+
 export function documentCategoryLabel(category) {
   const labels = {
     insurance: 'Insurance',

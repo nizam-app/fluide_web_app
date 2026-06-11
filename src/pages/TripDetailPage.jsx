@@ -33,6 +33,7 @@ import { BOOKING_MODES, bundledRequestMessage } from '../lib/itinerary'
 import { normalizeRequest, normalizeTrip, toApiNeedType } from '../lib/needTypes'
 import { getRequestDisplayStatus } from '../lib/requestStatus'
 import {
+  formatOfferAttachmentLabel,
   formatPrice,
   getNeedTypeIcon,
 } from '../lib/format'
@@ -136,6 +137,21 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
           </Text>
         )}
         <ProviderTrustPreview provider={offer.provider} compact />
+        {offer.attachment?.url && (
+          <Button
+            as="a"
+            href={offer.attachment.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            size="sm"
+            variant="outline"
+            borderRadius="pill"
+            mt="2"
+          >
+            <MaterialIcon name="attach_file" size={16} />
+            {formatOfferAttachmentLabel(offer.attachment)}
+          </Button>
+        )}
       </Box>
       <Text textStyle="headlineSm" color="primary" fontWeight="700">
         {formatPrice(offer.price, offer.currency)}
@@ -640,9 +656,11 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
 }
 
 function ProviderOfferForm({ requestId, onSubmitted }) {
+  const attachmentInputRef = useRef(null)
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [currency, setCurrency] = useState('EUR')
+  const [attachmentFile, setAttachmentFile] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -656,13 +674,20 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
     }
     setSubmitting(true)
     try {
-      await api.requests.createOffer(requestId, {
-        description: description.trim(),
-        price: priceValue,
-        currency: currency.trim().toUpperCase() || 'EUR',
-      })
+      await api.requests.createOffer(
+        requestId,
+        {
+          description: description.trim(),
+          price: priceValue,
+          currency: currency.trim().toUpperCase() || 'EUR',
+          attachmentLabel: attachmentFile?.name,
+        },
+        attachmentFile,
+      )
       setDescription('')
       setPrice('')
+      setAttachmentFile(null)
+      if (attachmentInputRef.current) attachmentInputRef.current.value = ''
       await onSubmitted()
     } catch (err) {
       setError(err?.message || 'Could not submit your offer.')
@@ -716,6 +741,52 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
           />
         </Box>
       </Grid>
+      <Box mb="4">
+        <Text textStyle="labelMd" mb="2" color="onSecondaryContainer">
+          Quote / attachment (optional)
+        </Text>
+        <input
+          ref={attachmentInputRef}
+          type="file"
+          accept="image/*,application/pdf"
+          hidden
+          onChange={(event) => setAttachmentFile(event.target.files?.[0] || null)}
+        />
+        <Flex align="center" gap="3" flexWrap="wrap">
+          <Button
+            type="button"
+            variant="outline"
+            borderRadius="pill"
+            borderColor="outlineVariant"
+            bg="surface"
+            onClick={() => attachmentInputRef.current?.click()}
+          >
+            <MaterialIcon name="attach_file" size={18} />
+            {attachmentFile ? 'Change file' : 'Attach quote'}
+          </Button>
+          {attachmentFile && (
+            <Text textStyle="bodySm" color="onSecondaryContainer">
+              {attachmentFile.name}
+            </Text>
+          )}
+          {attachmentFile && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setAttachmentFile(null)
+                if (attachmentInputRef.current) attachmentInputRef.current.value = ''
+              }}
+            >
+              Remove
+            </Button>
+          )}
+        </Flex>
+        <Text textStyle="bodySm" color="onSecondaryContainer" mt="2">
+          PDF or image — devis, proposal, or supporting document.
+        </Text>
+      </Box>
       {error && (
         <Text textStyle="bodySm" color="error" mb="3">
           {error}

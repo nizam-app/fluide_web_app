@@ -219,8 +219,19 @@ const api = {
     addMessage: (id, body) => request('POST', `/requests/${id}/messages`, { body: { body } }),
     history: (id) => request('GET', `/requests/${id}/history`),
     listOffers: (requestId) => request('GET', `/requests/${requestId}/offers`),
-    createOffer: (requestId, payload) =>
-      request('POST', `/requests/${requestId}/offers`, { body: payload }),
+    createOffer: (requestId, payload, file) => {
+      if (file) {
+        const formData = new FormData()
+        formData.append('description', payload.description)
+        formData.append('price', String(payload.price))
+        formData.append('currency', payload.currency || 'EUR')
+        if (payload.tier) formData.append('tier', payload.tier)
+        if (payload.attachmentLabel) formData.append('attachmentLabel', payload.attachmentLabel)
+        formData.append('attachment', file)
+        return request('POST', `/requests/${requestId}/offers`, { formData })
+      }
+      return request('POST', `/requests/${requestId}/offers`, { body: payload })
+    },
   },
 
   offers: {
