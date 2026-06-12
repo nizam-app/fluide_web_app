@@ -96,7 +96,25 @@ function useTripDetail(id) {
     }
   }, [load])
 
-  return { trip, requests, offersByRequest, recommendedProviders, favoriteProviderIds, loading, error, reload: load }
+  const addOfferToRequest = useCallback((requestId, offer) => {
+    if (!requestId || !offer) return
+    setOffersByRequest((prev) => ({
+      ...prev,
+      [requestId]: [...(prev[requestId] || []), offer],
+    }))
+  }, [])
+
+  return {
+    trip,
+    requests,
+    offersByRequest,
+    recommendedProviders,
+    favoriteProviderIds,
+    loading,
+    error,
+    reload: load,
+    addOfferToRequest,
+  }
 }
 
 function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdraw, busy }) {
@@ -699,7 +717,7 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
     }
     setSubmitting(true)
     try {
-      await api.requests.createOffer(
+      const result = await api.requests.createOffer(
         requestId,
         {
           description: description.trim(),
@@ -710,16 +728,15 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
         attachmentFile,
       )
       if (!mountedRef.current) return
-      setDescription('')
-      setPrice('')
-      setAttachmentFile(null)
-      if (attachmentInputRef.current) attachmentInputRef.current.value = ''
-      window.setTimeout(() => onSubmitted?.(), 0)
+      if (!result?.offer) {
+        setError('Could not submit your offer.')
+        return
+      }
+      onSubmitted?.(result.offer)
     } catch (err) {
       if (!mountedRef.current) return
       setError(err?.message || 'Could not submit your offer.')
-    } finally {
-      if (mountedRef.current) setSubmitting(false)
+      setSubmitting(false)
     }
   }
 
@@ -831,10 +848,16 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
   )
 }
 
-function RequestSection({ request, offers, role, currentUserId, trip, onChange }) {
+function RequestSection({ request, offers, role, currentUserId, trip, onChange, onOfferCreated }) {
   const [busyOfferId, setBusyOfferId] = useState(null)
   const [pendingAcceptOffer, setPendingAcceptOffer] = useState(null)
+  const [proposalSubmitted, setProposalSubmitted] = useState(false)
   const displayStatus = getRequestDisplayStatus(request)
+
+  const handleOfferCreated = (offer) => {
+    setProposalSubmitted(true)
+    onOfferCreated?.(request._id, offer)
+  }
 
   const accept = async (offer) => {
     setPendingAcceptOffer(offer)
@@ -962,18 +985,21 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange }
         messages={request.messages || []}
         canPost={canPostMessages}
         currentUserId={currentUserId}
-        onPosted={onChange}
       />
 
-      {role === 'provider' && request.status === 'pending' && !providerAlreadyOffered && (
+      {role === 'provider' && request.status === 'pending' && !providerAlreadyOffered && !proposalSubmitted && (
         <Box mt="6">
-          <ProviderOfferForm requestId={request._id} onSubmitted={onChange} />
+          <ProviderOfferForm requestId={request._id} onSubmitted={handleOfferCreated} />
         </Box>
       )}
-      {role === 'provider' && providerAlreadyOffered && (
-        <Text textStyle="bodySm" color="onSurfaceVariant" mt="4">
-          You have already submitted an offer for this request.
-        </Text>
+      {role === 'provider' && (providerAlreadyOffered || proposalSubmitted) && (
+        <Box mt="4" bg="primaryContainer" borderRadius="lg" px="4" py="3">
+          <Text textStyle="bodySm" color="onPrimaryContainer" fontWeight="600">
+            {proposalSubmitted && !providerAlreadyOffered
+              ? 'Proposal sent successfully. The organizer can review it below.'
+              : 'You have already submitted an offer for this request.'}
+          </Text>
+        </Box>
       )}
       {offers.length === 0 && role !== 'provider' && (
         <Text textStyle="bodySm" color="onSurfaceVariant" mt="4">
@@ -1003,8 +1029,17 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange }
 export function TripDetailPage() {
   const { isOrganizer, isProvider, isAdmin, user } = useAuth()
   const { tripId: id } = useParams()
-  const { trip, requests, offersByRequest, recommendedProviders, favoriteProviderIds, loading, error, reload } =
-    useTripDetail(id)
+  const {
+    trip,
+    requests,
+    offersByRequest,
+    recommendedProviders,
+    favoriteProviderIds,
+    loading,
+    error,
+    reload,
+    addOfferToRequest,
+  } = useTripDetail(id)
   const [favoriteIds, setFavoriteIds] = useState([])
 
   useEffect(() => {
@@ -1212,6 +1247,7 @@ export function TripDetailPage() {
                     currentUserId={user?._id}
                     trip={trip}
                     onChange={() => reload({ silent: true })}
+                    onOfferCreated={addOfferToRequest}
                   />
                 ))}
                 {requests.length === 0 && !isOrganizer && (

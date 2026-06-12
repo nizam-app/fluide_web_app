@@ -225,7 +225,8 @@ const api = {
     },
     history: (id) => request('GET', `/requests/${id}/history`),
     listOffers: (requestId) => request('GET', `/requests/${requestId}/offers`),
-    createOffer: (requestId, payload, file) => {
+    createOffer: async (requestId, payload, file) => {
+      let result
       if (file) {
         const formData = new FormData()
         formData.append('description', payload.description)
@@ -234,9 +235,11 @@ const api = {
         if (payload.tier) formData.append('tier', payload.tier)
         if (payload.attachmentLabel) formData.append('attachmentLabel', payload.attachmentLabel)
         formData.append('attachment', file)
-        return request('POST', `/requests/${requestId}/offers`, { formData })
+        result = await request('POST', `/requests/${requestId}/offers`, { formData })
+      } else {
+        result = await request('POST', `/requests/${requestId}/offers`, { body: payload })
       }
-      return request('POST', `/requests/${requestId}/offers`, { body: payload })
+      return result
     },
   },
 

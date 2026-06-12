@@ -44,7 +44,7 @@ export function RequestMessagesPanel({
         setThread(result.request.messages)
       }
       setBody('')
-      window.setTimeout(() => onPosted?.(), 0)
+      onPosted?.()
     } catch (err) {
       if (!mountedRef.current) return
       setError(err?.message || 'Could not send the message.')
