@@ -77,8 +77,16 @@ export function normalizeNeedTypeKey(needType) {
   return LEGACY_NEED_TYPE_KEYS[needType] || needType
 }
 
+export function createServicePlanStepId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return `step-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
 export function createEmptyServicePlan() {
   return {
+    id: createServicePlanStepId(),
     serviceDate: '',
     timeFrom: '',
     timeTo: '',
@@ -94,6 +102,7 @@ export function createEmptyServicePlanSteps(count = INITIAL_SERVICE_STEP_COUNT) 
 function planStepFromApi(step) {
   if (!step?.needs?.length) {
     return {
+      id: step?.id || createServicePlanStepId(),
       serviceDate: step?.serviceDate || '',
       timeFrom: step?.timeFrom || '',
       timeTo: step?.timeTo || '',
@@ -115,6 +124,7 @@ function planStepFromApi(step) {
     }
   }
   return {
+    id: step.id || createServicePlanStepId(),
     serviceDate: step.serviceDate || '',
     timeFrom: step.timeFrom || '',
     timeTo: step.timeTo || '',

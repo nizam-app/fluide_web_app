@@ -7,6 +7,7 @@ import {
   SERVICE_FIELD_KIND,
   SERVICE_NEED_CONFIG,
   createEmptyServicePlan,
+  createServicePlanStepId,
 } from '../../lib/servicePlan'
 import { fluideDateInputStyles, fluideInputStyles } from '../../theme/fluide-theme'
 
@@ -250,7 +251,9 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemov
 }
 
 export function TripServiceNeedsBuilder({ value, onChange }) {
-  const steps = value?.length ? value : [createEmptyServicePlan()]
+  const steps = (value?.length ? value : [createEmptyServicePlan()]).map((step) =>
+    step.id ? step : { ...step, id: createServicePlanStepId() },
+  )
 
   const updateStep = (index, nextStep) => {
     const next = [...steps]
@@ -279,7 +282,7 @@ export function TripServiceNeedsBuilder({ value, onChange }) {
       <Stack gap="5">
         {steps.map((plan, index) => (
           <ServicePlanStep
-            key={`service-step-${index + 1}`}
+            key={plan.id || `service-step-${index}`}
             stepIndex={index}
             plan={plan}
             onChange={(next) => updateStep(index, next)}

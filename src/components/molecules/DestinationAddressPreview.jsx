@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Box, Flex, Image, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import api from '../../lib/api'
@@ -7,26 +7,38 @@ export function DestinationAddressPreview({ query }) {
   const [imageUrl, setImageUrl] = useState('')
   const [attribution, setAttribution] = useState('')
   const [busy, setBusy] = useState(false)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     const trimmed = query?.trim() || ''
     if (trimmed.length < 3) {
       setImageUrl('')
       setAttribution('')
+      setBusy(false)
       return undefined
     }
 
     const timer = window.setTimeout(async () => {
+      if (!mountedRef.current) return
       setBusy(true)
       try {
         const result = await api.utils.destinationImage(trimmed)
+        if (!mountedRef.current) return
         setImageUrl(result?.image?.url || result?.image?.thumbUrl || '')
         setAttribution(result?.image?.attribution || '')
       } catch {
+        if (!mountedRef.current) return
         setImageUrl('')
         setAttribution('')
       } finally {
-        setBusy(false)
+        if (mountedRef.current) setBusy(false)
       }
     }, 500)
 

@@ -8,6 +8,10 @@ export function ServiceOptionsDropdown({ options, value = [], onChange }) {
   const rootRef = useRef(null)
 
   useEffect(() => {
+    return () => setOpen(false)
+  }, [])
+
+  useEffect(() => {
     if (!open) return undefined
     const handlePointerDown = (event) => {
       if (!rootRef.current?.contains(event.target)) {
