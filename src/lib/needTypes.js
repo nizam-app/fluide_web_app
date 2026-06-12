@@ -4,16 +4,30 @@
 import { BOOKING_MODES, normalizeItinerary } from './itinerary'
 
 export const NEED_TYPE_TO_API = {
-  Transport: 'Transport',
+  Transportation: 'Transport',
   Accommodation: 'Hotel',
+  Restaurants: 'Restaurant',
+  'Guided Tours': 'Activity',
+  'Activities & Leisure': 'Activity',
+  Tickets: 'Other Service',
+  'Shuttles & Transfers': 'Transport',
+  'Educational Activities': 'Activity',
+  Events: 'Other Service',
+  Other: 'Other Service',
+  // Legacy UI keys
+  Transport: 'Transport',
   'Food & Catering': 'Restaurant',
   'Guide & Tour': 'Activity',
   Equipment: 'Other Service',
 }
 
-export const NEED_TYPE_FROM_API = Object.fromEntries(
-  Object.entries(NEED_TYPE_TO_API).map(([ui, api]) => [api, ui]),
-)
+export const NEED_TYPE_FROM_API = {
+  Transport: 'Transportation',
+  Hotel: 'Accommodation',
+  Restaurant: 'Restaurants',
+  Activity: 'Guided Tours',
+  'Other Service': 'Other',
+}
 
 export function toApiNeedType(label) {
   if (!label) return label
@@ -26,7 +40,8 @@ export function fromApiNeedType(value) {
 }
 
 export function toApiNeedTypes(types) {
-  return (types || []).map(toApiNeedType)
+  const apiTypes = (types || []).map(toApiNeedType)
+  return [...new Set(apiTypes)]
 }
 
 export function fromApiNeedTypes(types) {

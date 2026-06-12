@@ -35,7 +35,7 @@ function FormField({ label, children, compact = false }) {
 }
 
 function applyBundledTypesToSteps(steps) {
-  const bundledTypes = ['Transport', 'Accommodation']
+  const bundledTypes = ['Transportation', 'Accommodation']
   return steps.map((plan) => {
     const selectedTypes = [...new Set([...plan.selectedTypes, ...bundledTypes])]
     const needs = { ...plan.needs }
@@ -161,7 +161,7 @@ export function CreateTripPage() {
       return
     }
     if (!filledSteps.length) {
-      setError('Select at least one service option in Step 1, 2, or 3.')
+      setError('Select at least one service option in at least one step.')
       return
     }
 

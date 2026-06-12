@@ -1,30 +1,81 @@
 import { fromApiNeedType, toApiNeedType } from './needTypes'
 
+/** @type {'transfer' | 'venue' | 'details'} */
+export const SERVICE_FIELD_KIND = {
+  TRANSFER: 'transfer',
+  VENUE: 'venue',
+  DETAILS: 'details',
+}
+
+const LEGACY_NEED_TYPE_KEYS = {
+  Transport: 'Transportation',
+  'Food & Catering': 'Restaurants',
+  'Guide & Tour': 'Guided Tours',
+  Equipment: 'Other',
+}
+
 export const SERVICE_NEED_CONFIG = {
-  Transport: {
-    label: 'Transfer',
+  Transportation: {
+    label: 'Transportation',
+    fieldKind: SERVICE_FIELD_KIND.TRANSFER,
     pickupLabel: 'Pick up',
     destinationLabel: 'Destination',
   },
   Accommodation: {
-    label: 'Hotel',
-    venueLabel: 'Hotel name',
+    label: 'Accommodation',
+    fieldKind: SERVICE_FIELD_KIND.VENUE,
     venuePlaceholder: 'Hotel KiVA',
   },
-  'Food & Catering': {
-    label: 'Restaurant',
-    venueLabel: 'Restaurant name',
+  Restaurants: {
+    label: 'Restaurants',
+    fieldKind: SERVICE_FIELD_KIND.VENUE,
     venuePlaceholder: 'Resto KiVA',
   },
-  Equipment: {
-    label: 'Equipment',
-    detailsLabel: 'Equipment needed',
-    detailsPlaceholder: 'Wheelchair, walking stick',
+  'Guided Tours': {
+    label: 'Guided Tours',
+    fieldKind: SERVICE_FIELD_KIND.DETAILS,
+    detailsPlaceholder: 'City walking tour, museum guide…',
+  },
+  'Activities & Leisure': {
+    label: 'Activities & Leisure',
+    fieldKind: SERVICE_FIELD_KIND.DETAILS,
+    detailsPlaceholder: 'Kayaking, team games, leisure park…',
+  },
+  Tickets: {
+    label: 'Tickets',
+    fieldKind: SERVICE_FIELD_KIND.DETAILS,
+    detailsPlaceholder: 'Museum entry, show tickets…',
+  },
+  'Shuttles & Transfers': {
+    label: 'Shuttles & Transfers',
+    fieldKind: SERVICE_FIELD_KIND.TRANSFER,
+    pickupLabel: 'Pick up',
+    destinationLabel: 'Destination',
+  },
+  'Educational Activities': {
+    label: 'Educational Activities',
+    fieldKind: SERVICE_FIELD_KIND.DETAILS,
+    detailsPlaceholder: 'Workshop, school visit, training…',
+  },
+  Events: {
+    label: 'Events',
+    fieldKind: SERVICE_FIELD_KIND.DETAILS,
+    detailsPlaceholder: 'Conference, ceremony, group event…',
+  },
+  Other: {
+    label: 'Other',
+    fieldKind: SERVICE_FIELD_KIND.DETAILS,
+    detailsPlaceholder: 'Describe what you need',
   },
 }
 
 export const CREATE_TRIP_SERVICE_OPTIONS = Object.keys(SERVICE_NEED_CONFIG)
-export const DEFAULT_SERVICE_STEP_COUNT = 3
+export const INITIAL_SERVICE_STEP_COUNT = 1
+
+export function normalizeNeedTypeKey(needType) {
+  if (!needType) return needType
+  return LEGACY_NEED_TYPE_KEYS[needType] || needType
+}
 
 export function createEmptyServicePlan() {
   return {
@@ -36,8 +87,8 @@ export function createEmptyServicePlan() {
   }
 }
 
-export function createEmptyServicePlanSteps(count = DEFAULT_SERVICE_STEP_COUNT) {
-  return Array.from({ length: count }, () => createEmptyServicePlan())
+export function createEmptyServicePlanSteps(count = INITIAL_SERVICE_STEP_COUNT) {
+  return Array.from({ length: Math.max(count, 1) }, () => createEmptyServicePlan())
 }
 
 function planStepFromApi(step) {
@@ -50,10 +101,12 @@ function planStepFromApi(step) {
       needs: {},
     }
   }
-  const selectedTypes = step.needs.map((item) => fromApiNeedType(item.needType) || item.needType)
+  const selectedTypes = step.needs.map(
+    (item) => normalizeNeedTypeKey(fromApiNeedType(item.needType) || item.needType),
+  )
   const needs = {}
   for (const item of step.needs) {
-    const key = fromApiNeedType(item.needType) || item.needType
+    const key = normalizeNeedTypeKey(fromApiNeedType(item.needType) || item.needType)
     needs[key] = {
       pickup: item.pickup || '',
       destination: item.destination || '',
@@ -75,16 +128,11 @@ export function getServicePlanStepsFromTrip(trip) {
   if (!plan) return createEmptyServicePlanSteps()
 
   if (plan.steps?.length) {
-    const steps = plan.steps.map(planStepFromApi)
-    while (steps.length < DEFAULT_SERVICE_STEP_COUNT) {
-      steps.push(createEmptyServicePlan())
-    }
-    return steps.slice(0, DEFAULT_SERVICE_STEP_COUNT)
+    return plan.steps.map(planStepFromApi)
   }
 
   if (plan.needs?.length) {
-    const legacy = planStepFromApi(plan)
-    return [legacy, ...createEmptyServicePlanSteps(DEFAULT_SERVICE_STEP_COUNT - 1)]
+    return [planStepFromApi(plan)]
   }
 
   return createEmptyServicePlanSteps()
@@ -147,25 +195,29 @@ export function servicePlanStepsToItineraryLegs(steps) {
   return legs
 }
 
+const TRANSFER_NEED_TYPES = new Set(['Transportation', 'Shuttles & Transfers', 'Transport'])
+
 export function servicePlanToItineraryLegs(plan) {
   const legs = []
-  const transport = plan.needs?.Transport
-  if (transport && (transport.pickup?.trim() || transport.destination?.trim())) {
-    legs.push({
-      type: 'transfer',
-      date: plan.serviceDate || undefined,
-      time: plan.timeFrom || undefined,
-      pickup: transport.pickup?.trim() || '',
-      destination: transport.destination?.trim() || '',
-    })
-  }
-  const hotel = plan.needs?.Accommodation
-  if (hotel?.venueName?.trim()) {
-    legs.push({
-      type: 'stay',
-      location: hotel.venueName.trim(),
-      detail: plan.serviceDate ? `Service date: ${plan.serviceDate}` : undefined,
-    })
+  for (const needType of plan.selectedTypes || []) {
+    const detail = plan.needs?.[needType]
+    if (!detail) continue
+    if (TRANSFER_NEED_TYPES.has(needType) && (detail.pickup?.trim() || detail.destination?.trim())) {
+      legs.push({
+        type: 'transfer',
+        date: plan.serviceDate || undefined,
+        time: plan.timeFrom || undefined,
+        pickup: detail.pickup?.trim() || '',
+        destination: detail.destination?.trim() || '',
+      })
+    }
+    if (needType === 'Accommodation' && detail.venueName?.trim()) {
+      legs.push({
+        type: 'stay',
+        location: detail.venueName.trim(),
+        detail: plan.serviceDate ? `Service date: ${plan.serviceDate}` : undefined,
+      })
+    }
   }
   return legs
 }
@@ -182,18 +234,25 @@ function formatStepSchedule(step) {
 function formatStepNeedLines(step, uiNeedType) {
   const need = step.needs?.[uiNeedType]
   if (!need) return []
+  const config = SERVICE_NEED_CONFIG[uiNeedType]
   const lines = []
-  if (need.pickup || need.destination) {
-    lines.push(`Transfer: ${[need.pickup, need.destination].filter(Boolean).join(' → ')}`)
+  if (config?.fieldKind === SERVICE_FIELD_KIND.TRANSFER && (need.pickup || need.destination)) {
+    lines.push(`${config.label}: ${[need.pickup, need.destination].filter(Boolean).join(' → ')}`)
   }
-  if (need.venueName) {
-    const label = uiNeedType === 'Food & Catering' ? 'Restaurant' : 'Hotel'
-    lines.push(`${label}: ${need.venueName}`)
+  if (config?.fieldKind === SERVICE_FIELD_KIND.VENUE && need.venueName) {
+    lines.push(`${config.label}: ${need.venueName}`)
   }
-  if (need.details) {
-    lines.push(`Equipment: ${need.details}`)
+  if (config?.fieldKind === SERVICE_FIELD_KIND.DETAILS && need.details) {
+    lines.push(`${config.label}: ${need.details}`)
   }
   return lines
+}
+
+function stepNeedsMatchingApiType(step, apiNeedType) {
+  return (step.needs || []).filter((item) => {
+    const uiType = normalizeNeedTypeKey(fromApiNeedType(item.needType) || item.needType)
+    return uiType === apiNeedType || toApiNeedType(uiType) === apiNeedType || item.needType === apiNeedType
+  })
 }
 
 export function formatServiceNeedMessage(servicePlan, uiNeedType) {
@@ -205,20 +264,16 @@ export function formatServiceNeedMessage(servicePlan, uiNeedType) {
       ? [servicePlan]
       : []
 
+  const apiType = toApiNeedType(uiNeedType)
   const blocks = []
   for (let index = 0; index < apiSteps.length; index += 1) {
     const step = apiSteps[index]
-    const apiType = toApiNeedType(uiNeedType)
-    const need =
-      step.needs?.find(
-        (item) => item.needType === uiNeedType || toApiNeedType(item.needType) === apiType,
-      ) || null
-
-    if (!need && !step.serviceDate) continue
+    const matchingNeeds = stepNeedsMatchingApiType(step, apiType)
+    if (!matchingNeeds.length && !step.serviceDate) continue
 
     const lines = [...formatStepSchedule(step)]
-    if (need) {
-      const uiType = fromApiNeedType(need.needType) || need.needType
+    for (const need of matchingNeeds) {
+      const uiType = normalizeNeedTypeKey(fromApiNeedType(need.needType) || need.needType)
       lines.push(...formatStepNeedLines({ needs: { [uiType]: need } }, uiType))
     }
     if (lines.length) {
@@ -240,7 +295,7 @@ export function formatServicePlanSummary(servicePlan) {
 
   return apiSteps
     .map((step, index) => {
-      const types = step.needs?.map((need) => fromApiNeedType(need.needType) || need.needType) || []
+      const types = step.needs?.map((need) => normalizeNeedTypeKey(fromApiNeedType(need.needType) || need.needType)) || []
       const uniqueTypes = [...new Set(types)]
       const parts = uniqueTypes
         .map((uiType) => {
@@ -254,7 +309,7 @@ export function formatServicePlanSummary(servicePlan) {
               {
                 needs: {
                   [uiType]: step.needs.find(
-                    (need) => (fromApiNeedType(need.needType) || need.needType) === uiType,
+                    (need) => normalizeNeedTypeKey(fromApiNeedType(need.needType) || need.needType) === uiType,
                   ),
                 },
               },
@@ -274,12 +329,17 @@ export function formatServicePlanSummary(servicePlan) {
 
 export function getAddressQueriesFromStep(step) {
   const queries = []
-  const transport = step.needs?.Transport
-  if (transport?.destination?.trim()) queries.push(transport.destination.trim())
-  if (transport?.pickup?.trim()) queries.push(transport.pickup.trim())
-  const hotel = step.needs?.Accommodation
-  if (hotel?.venueName?.trim()) queries.push(hotel.venueName.trim())
-  const restaurant = step.needs?.['Food & Catering']
-  if (restaurant?.venueName?.trim()) queries.push(restaurant.venueName.trim())
+  for (const needType of step.selectedTypes || []) {
+    const config = SERVICE_NEED_CONFIG[needType]
+    const detail = step.needs?.[needType]
+    if (!detail || !config) continue
+    if (config.fieldKind === SERVICE_FIELD_KIND.TRANSFER) {
+      if (detail.destination?.trim()) queries.push(detail.destination.trim())
+      if (detail.pickup?.trim()) queries.push(detail.pickup.trim())
+    }
+    if (config.fieldKind === SERVICE_FIELD_KIND.VENUE && detail.venueName?.trim()) {
+      queries.push(detail.venueName.trim())
+    }
+  }
   return queries
 }

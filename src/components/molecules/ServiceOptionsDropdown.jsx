@@ -27,14 +27,14 @@ export function ServiceOptionsDropdown({ options, value = [], onChange }) {
   }
 
   return (
-    <Box ref={rootRef} position="relative" w="fit-content" minW={{ base: 'full', sm: '220px' }}>
+    <Box ref={rootRef} position="relative" w="fit-content" minW={{ base: 'full', sm: '260px' }}>
       <Flex
         as="button"
         type="button"
         align="center"
         justify="space-between"
         gap="3"
-        w={{ base: 'full', sm: '220px' }}
+        w={{ base: 'full', sm: '260px' }}
         px="4"
         py="3"
         borderRadius="lg"
@@ -57,12 +57,13 @@ export function ServiceOptionsDropdown({ options, value = [], onChange }) {
           top="calc(100% + 4px)"
           left="0"
           zIndex={20}
-          minW={{ base: 'full', sm: '220px' }}
+          minW={{ base: 'full', sm: '260px' }}
+          maxH="16rem"
+          overflowY="auto"
           bg="primaryContainer"
           borderWidth="1px"
           borderColor="primary"
           borderRadius="lg"
-          overflow="hidden"
           shadow="level2"
         >
           {options.map((option) => {

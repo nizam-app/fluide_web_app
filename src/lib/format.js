@@ -1,8 +1,17 @@
 import { fromApiNeedTypes } from './needTypes'
 
 const NEED_TYPE_ICONS = {
-  Transport: 'directions_bus',
+  Transportation: 'directions_bus',
   Accommodation: 'hotel',
+  Restaurants: 'restaurant',
+  'Guided Tours': 'hiking',
+  'Activities & Leisure': 'sports_soccer',
+  Tickets: 'confirmation_number',
+  'Shuttles & Transfers': 'airport_shuttle',
+  'Educational Activities': 'school',
+  Events: 'event',
+  Other: 'more_horiz',
+  Transport: 'directions_bus',
   'Food & Catering': 'restaurant',
   'Guide & Tour': 'hiking',
   Equipment: 'backpack',

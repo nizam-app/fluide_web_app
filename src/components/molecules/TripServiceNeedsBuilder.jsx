@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import { Box, Button, Flex, Grid, Input, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Input, Stack, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import { DestinationAddressPreview } from './DestinationAddressPreview'
 import { ServiceOptionsDropdown } from './ServiceOptionsDropdown'
 import {
   CREATE_TRIP_SERVICE_OPTIONS,
-  DEFAULT_SERVICE_STEP_COUNT,
+  SERVICE_FIELD_KIND,
   SERVICE_NEED_CONFIG,
+  createEmptyServicePlan,
 } from '../../lib/servicePlan'
 import { fluideDateInputStyles, fluideInputStyles } from '../../theme/fluide-theme'
 
@@ -45,11 +45,11 @@ function ServiceNeedRow({ needType, plan, onChange }) {
   const detail = plan.needs[needType] || {}
   const label = config.label || needType
   const previewQuery =
-    needType === 'Transport'
+    config.fieldKind === SERVICE_FIELD_KIND.TRANSFER
       ? detail.destination || detail.pickup
-      : needType === 'Equipment'
-        ? ''
-        : detail.venueName
+      : config.fieldKind === SERVICE_FIELD_KIND.VENUE
+        ? detail.venueName
+        : ''
 
   return (
     <Stack gap="3" w="full">
@@ -75,9 +75,10 @@ function ServiceNeedRow({ needType, plan, onChange }) {
           {label}
         </Flex>
 
-        {needType === 'Transport' ? (
-          <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="3" flex="1">
+        {config.fieldKind === SERVICE_FIELD_KIND.TRANSFER ? (
+          <Flex gap="3" flex="1" direction={{ base: 'column', sm: 'row' }}>
             <Input
+              flex="1"
               placeholder={config.pickupLabel}
               value={detail.pickup || ''}
               onChange={(event) => onChange(updateNeedField(plan, needType, 'pickup', event.target.value))}
@@ -85,6 +86,7 @@ function ServiceNeedRow({ needType, plan, onChange }) {
               bg="surface"
             />
             <Input
+              flex="1"
               placeholder={config.destinationLabel}
               value={detail.destination || ''}
               onChange={(event) =>
@@ -93,20 +95,24 @@ function ServiceNeedRow({ needType, plan, onChange }) {
               css={fluideInputStyles}
               bg="surface"
             />
-          </Grid>
+          </Flex>
         ) : (
           <Input
             flex="1"
             placeholder={
-              needType === 'Equipment' ? config.detailsPlaceholder : config.venuePlaceholder
+              config.fieldKind === SERVICE_FIELD_KIND.DETAILS
+                ? config.detailsPlaceholder
+                : config.venuePlaceholder
             }
-            value={needType === 'Equipment' ? detail.details || '' : detail.venueName || ''}
+            value={
+              config.fieldKind === SERVICE_FIELD_KIND.DETAILS ? detail.details || '' : detail.venueName || ''
+            }
             onChange={(event) =>
               onChange(
                 updateNeedField(
                   plan,
                   needType,
-                  needType === 'Equipment' ? 'details' : 'venueName',
+                  config.fieldKind === SERVICE_FIELD_KIND.DETAILS ? 'details' : 'venueName',
                   event.target.value,
                 ),
               )
@@ -121,7 +127,7 @@ function ServiceNeedRow({ needType, plan, onChange }) {
   )
 }
 
-function ServicePlanStep({ stepIndex, plan, onChange, isLastVisible, onAddNext }) {
+function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemoveStep, canRemove }) {
   const handleTypesChange = (selectedTypes) => {
     const needs = { ...plan.needs }
     for (const type of selectedTypes) {
@@ -141,24 +147,38 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLastVisible, onAddNext }
       bg="surfaceContainerLowest"
     >
       <Stack gap="5">
-        <Flex align="center" gap="2">
-          <Flex
-            align="center"
-            justify="center"
-            w="8"
-            h="8"
-            borderRadius="full"
-            bg="primary"
-            color="onPrimary"
-            fontWeight="700"
-            textStyle="labelSm"
-            flexShrink={0}
-          >
-            {stepIndex + 1}
+        <Flex align="center" justify="space-between" gap="3">
+          <Flex align="center" gap="2">
+            <Flex
+              align="center"
+              justify="center"
+              w="8"
+              h="8"
+              borderRadius="full"
+              bg="primary"
+              color="onPrimary"
+              fontWeight="700"
+              textStyle="labelSm"
+              flexShrink={0}
+            >
+              {stepIndex + 1}
+            </Flex>
+            <Text textStyle="labelMd" fontWeight="600">
+              Step {stepIndex + 1}
+            </Text>
           </Flex>
-          <Text textStyle="labelMd" fontWeight="600">
-            Step {stepIndex + 1}
-          </Text>
+          {canRemove && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              color="onSurfaceVariant"
+              onClick={onRemoveStep}
+            >
+              <MaterialIcon name="delete" size={16} />
+              Remove
+            </Button>
+          )}
         </Flex>
 
         <Flex gap="4" flexWrap="wrap" align="flex-end">
@@ -210,7 +230,7 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLastVisible, onAddNext }
           </Stack>
         )}
 
-        {isLastVisible && onAddNext && (
+        {isLast && (
           <Button
             type="button"
             variant="outline"
@@ -218,10 +238,10 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLastVisible, onAddNext }
             borderColor="primary"
             color="primary"
             alignSelf="flex-start"
-            onClick={onAddNext}
+            onClick={onAddStep}
           >
             <MaterialIcon name="add" size={18} />
-            Add step {stepIndex + 2}
+            Add step
           </Button>
         )}
       </Stack>
@@ -230,18 +250,7 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLastVisible, onAddNext }
 }
 
 export function TripServiceNeedsBuilder({ value, onChange }) {
-  const steps = value?.length ? value : Array.from({ length: DEFAULT_SERVICE_STEP_COUNT }, () => ({
-    serviceDate: '',
-    timeFrom: '',
-    timeTo: '',
-    selectedTypes: [],
-    needs: {},
-  }))
-
-  const [visibleStepCount, setVisibleStepCount] = useState(() => {
-    const filled = steps.filter((step) => step.selectedTypes.length > 0).length
-    return Math.min(Math.max(filled || 1, 1), DEFAULT_SERVICE_STEP_COUNT)
-  })
+  const steps = value?.length ? value : [createEmptyServicePlan()]
 
   const updateStep = (index, nextStep) => {
     const next = [...steps]
@@ -249,11 +258,14 @@ export function TripServiceNeedsBuilder({ value, onChange }) {
     onChange(next)
   }
 
-  const handleAddNextStep = () => {
-    setVisibleStepCount((count) => Math.min(count + 1, DEFAULT_SERVICE_STEP_COUNT))
+  const handleAddStep = () => {
+    onChange([...steps, createEmptyServicePlan()])
   }
 
-  const visibleSteps = steps.slice(0, visibleStepCount)
+  const handleRemoveStep = (index) => {
+    if (steps.length <= 1) return
+    onChange(steps.filter((_, stepIndex) => stepIndex !== index))
+  }
 
   return (
     <Box pt="2">
@@ -261,18 +273,20 @@ export function TripServiceNeedsBuilder({ value, onChange }) {
         What do you need?
       </Text>
       <Text textStyle="bodySm" color="onSurfaceVariant" mb="5">
-        Fill in each step, then use &ldquo;Add step 2&rdquo; or &ldquo;Add step 3&rdquo; to continue.
+        Add as many steps as your route needs. Use &ldquo;Add step&rdquo; to continue.
       </Text>
 
       <Stack gap="5">
-        {visibleSteps.map((plan, index) => (
+        {steps.map((plan, index) => (
           <ServicePlanStep
             key={`service-step-${index + 1}`}
             stepIndex={index}
             plan={plan}
             onChange={(next) => updateStep(index, next)}
-            isLastVisible={index === visibleStepCount - 1}
-            onAddNext={visibleStepCount < DEFAULT_SERVICE_STEP_COUNT ? handleAddNextStep : undefined}
+            isLast={index === steps.length - 1}
+            onAddStep={handleAddStep}
+            onRemoveStep={() => handleRemoveStep(index)}
+            canRemove={steps.length > 1}
           />
         ))}
       </Stack>
