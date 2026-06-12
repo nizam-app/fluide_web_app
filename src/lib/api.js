@@ -216,7 +216,13 @@ const api = {
     update: (id, payload) => request('PATCH', `/requests/${id}`, { body: mapRequestPayload(payload) }),
     delete: (id) => request('DELETE', `/requests/${id}`),
     updateStatus: (id, status) => request('PATCH', `/requests/${id}/status`, { body: { status } }),
-    addMessage: (id, body) => request('POST', `/requests/${id}/messages`, { body: { body } }),
+    addMessage: async (id, body) => {
+      const result = await request('POST', `/requests/${id}/messages`, { body: { body } })
+      if (result?.request) {
+        result.request = normalizeRequest(result.request)
+      }
+      return result
+    },
     history: (id) => request('GET', `/requests/${id}/history`),
     listOffers: (requestId) => request('GET', `/requests/${requestId}/offers`),
     createOffer: (requestId, payload, file) => {

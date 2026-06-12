@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Box, Button, Flex, Stack, Text, Textarea } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import api from '../../lib/api'
@@ -13,22 +13,42 @@ export function RequestMessagesPanel({
   currentUserId,
 }) {
   const [body, setBody] = useState('')
+  const [thread, setThread] = useState(messages)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    setThread(messages)
+  }, [messages, requestId])
 
   const submit = async (event) => {
     event.preventDefault()
-    if (!body.trim()) return
+    const trimmed = body.trim()
+    if (!trimmed || busy) return
+
     setBusy(true)
     setError('')
     try {
-      await api.requests.addMessage(requestId, body.trim())
+      const result = await api.requests.addMessage(requestId, trimmed)
+      if (!mountedRef.current) return
+      if (result?.request?.messages) {
+        setThread(result.request.messages)
+      }
       setBody('')
-      await onPosted?.()
+      window.setTimeout(() => onPosted?.(), 0)
     } catch (err) {
+      if (!mountedRef.current) return
       setError(err?.message || 'Could not send the message.')
     } finally {
-      setBusy(false)
+      if (mountedRef.current) setBusy(false)
     }
   }
 
@@ -44,19 +64,22 @@ export function RequestMessagesPanel({
         borderColor="outlineVariant"
         overflow="hidden"
       >
-        <Stack gap="3" p="4" maxH="280px" overflowY="auto" minH={messages.length ? '120px' : '72px'}>
-          {messages.length === 0 ? (
+        <Stack gap="3" p="4" maxH="280px" overflowY="auto" minH={thread.length ? '120px' : '72px'}>
+          {thread.length === 0 ? (
             <Flex align="center" justify="center" minH="72px">
               <Text textStyle="bodySm" color="onSurfaceVariant" textAlign="center">
                 No messages yet. Start the conversation below.
               </Text>
             </Flex>
           ) : (
-            messages.map((msg) => {
+            thread.map((msg) => {
               const authorId = msg.author?._id || msg.author
               const isOwn = currentUserId && String(authorId) === String(currentUserId)
               return (
-                <Flex key={msg._id || `${msg.createdAt}-${msg.body}`} justify={isOwn ? 'flex-end' : 'flex-start'}>
+                <Flex
+                  key={msg._id || `${msg.createdAt}-${authorId}-${msg.body?.slice(0, 24)}`}
+                  justify={isOwn ? 'flex-end' : 'flex-start'}
+                >
                   <Box
                     maxW={{ base: '92%', sm: '78%' }}
                     bg={isOwn ? 'primaryContainer' : 'surface'}
@@ -115,12 +138,27 @@ export function RequestMessagesPanel({
                 _placeholder: { color: 'onSurfaceVariant', opacity: 0.7 },
               }}
             />
-            <Button {...stitchGreenButton} type="submit" loading={busy} px="4" flexShrink={0}>
-              <MaterialIcon name="send" size={18} />
-              Send
+            <Button
+              {...stitchGreenButton}
+              type="submit"
+              px="4"
+              flexShrink={0}
+              disabled={busy || !body.trim()}
+              opacity={busy ? 0.75 : 1}
+              className="notranslate"
+              translate="no"
+              lang="en"
+              aria-busy={busy}
+            >
+              <Flex as="span" align="center" gap="1" className="notranslate" translate="no" lang="en">
+                <MaterialIcon name="send" size={18} />
+                <Text as="span" textStyle="labelSm">
+                  Send
+                </Text>
+              </Flex>
             </Button>
           </Flex>
-        ) : messages.length > 0 ? (
+        ) : thread.length > 0 ? (
           <Box p="3" bg="surface" borderTopWidth="1px" borderColor="outlineVariant">
             <Text textStyle="bodySm" color="onSurfaceVariant">
               You can read this thread but cannot post new messages.
