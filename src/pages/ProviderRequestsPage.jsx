@@ -7,6 +7,7 @@ import { StatusBadge } from '../components/molecules/StatusBadge'
 import { useApiResource } from '../hooks/useApiResource'
 import api from '../lib/api'
 import { formatDateShort } from '../lib/format'
+import { stableBusyProps } from '../lib/stableButton'
 import { stitchGreenButton } from '../theme/fluide-theme'
 
 const FILTERS = [
@@ -108,7 +109,7 @@ export function ProviderRequestsPage() {
                             size="sm"
                             variant="ghost"
                             color="primary"
-                            loading={busyId === row._id}
+                            {...stableBusyProps(busyId === row._id)}
                             onClick={() => markCompleted(row._id)}
                           >
                             Mark Completed

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Box, Button, Flex, Stack, Text, Textarea } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import api from '../../lib/api'
+import { stableBusyProps } from '../../lib/stableButton'
 import { formatDateTime } from '../../lib/format'
 import { fluideInputStyles, stitchGreenButton } from '../../theme/fluide-theme'
 
@@ -143,12 +144,8 @@ export function RequestMessagesPanel({
               type="submit"
               px="4"
               flexShrink={0}
+              {...stableBusyProps(busy)}
               disabled={busy || !body.trim()}
-              opacity={busy ? 0.75 : 1}
-              className="notranslate"
-              translate="no"
-              lang="en"
-              aria-busy={busy}
             >
               <Flex as="span" align="center" gap="1" className="notranslate" translate="no" lang="en">
                 <MaterialIcon name="send" size={18} />

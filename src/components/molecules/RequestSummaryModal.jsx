@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react'
 import { formatDateRange, formatPrice } from '../../lib/format'
 import { getRequestDisplayLabel } from '../../lib/requestStatus'
+import { stableBusyProps } from '../../lib/stableButton'
 import { stitchBlackButton } from '../../theme/fluide-theme'
 
 export function RequestSummaryModal({ open, title, trip, rows, onConfirm, onCancel, confirmLabel = 'Confirm', loading }) {
@@ -97,9 +98,9 @@ export function RequestSummaryModal({ open, title, trip, rows, onConfirm, onCanc
             {...stitchBlackButton}
             borderRadius="lg"
             onClick={onConfirm}
-            disabled={loading}
+            {...stableBusyProps(loading)}
           >
-            {loading ? 'Please wait…' : confirmLabel}
+            {confirmLabel}
           </Button>
         </Flex>
       </Box>

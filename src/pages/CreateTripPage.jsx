@@ -18,6 +18,7 @@ import { toApiNeedTypes } from '../lib/needTypes'
 import { formatPrice } from '../lib/format'
 import { computeCostPerParticipant } from '../lib/requestStatus'
 import { textWithBrand } from '../lib/textWithBrand'
+import { stableBusyProps } from '../lib/stableButton'
 import { fluideCompactInputStyles, fluideDateInputStyles, fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
@@ -382,7 +383,7 @@ export function CreateTripPage() {
                     Continue without image
                   </Button>
                 )}
-                <Button {...stitchBlackButton} px="10" py="3" type="submit" loading={submitting} disabled={submitting}>
+                <Button {...stitchBlackButton} px="10" py="3" type="submit" {...stableBusyProps(submitting)}>
                   {pendingTripId ? 'Retry image upload' : 'Publish Request'}
                 </Button>
               </Flex>

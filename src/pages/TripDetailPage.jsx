@@ -38,6 +38,7 @@ import {
   formatPrice,
   getNeedTypeIcon,
 } from '../lib/format'
+import { stableBusyProps } from '../lib/stableButton'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
 function useTripDetail(id) {
@@ -159,27 +160,14 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
       </Text>
       {canManage && offer.status === 'submitted' && (
         <HStack>
-          <Button
-            size="sm"
-            {...stitchGreenButton}
-            disabled={busy}
-            opacity={busy ? 0.75 : 1}
-            className="notranslate"
-            translate="no"
-            lang="en"
-            onClick={() => onAccept(offer)}
-          >
+          <Button size="sm" {...stitchGreenButton} {...stableBusyProps(busy)} onClick={() => onAccept(offer)}>
             Accept
           </Button>
           <Button
             size="sm"
             variant="outline"
             borderRadius="pill"
-            disabled={busy}
-            opacity={busy ? 0.75 : 1}
-            className="notranslate"
-            translate="no"
-            lang="en"
+            {...stableBusyProps(busy)}
             onClick={() => onReject(offer)}
           >
             Reject
@@ -191,11 +179,7 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
           size="sm"
           variant="outline"
           borderRadius="pill"
-          disabled={busy}
-          opacity={busy ? 0.75 : 1}
-          className="notranslate"
-          translate="no"
-          lang="en"
+          {...stableBusyProps(busy)}
           onClick={() => onWithdraw(offer)}
         >
           Withdraw
@@ -229,7 +213,7 @@ function ChangeCoverButton({ tripId, onChanged }) {
     setBusy(true)
     try {
       await api.trips.uploadImage(tripId, file)
-      await onChanged()
+      window.setTimeout(() => onChanged?.(), 0)
     } catch (err) {
       setError(err?.message || 'Could not upload the image.')
     } finally {
@@ -246,8 +230,7 @@ function ChangeCoverButton({ tripId, onChanged }) {
         bg="surface"
         color="onSurface"
         borderRadius="pill"
-        loading={busy}
-        disabled={busy}
+        {...stableBusyProps(busy)}
         onClick={() => inputRef.current?.click()}
       >
         <MaterialIcon name="photo_camera" size={16} />
@@ -402,9 +385,8 @@ function DeleteTripButton({ tripId, tripTitle, requestCount, offerCount, backTo 
                 borderRadius="pill"
                 px="6"
                 onClick={handleDelete}
-                loading={deleting}
-                disabled={deleting}
-                _hover={{ opacity: 0.9 }}
+                {...stableBusyProps(deleting)}
+                _hover={{ opacity: deleting ? 0.75 : 0.9 }}
               >
                 Delete permanently
               </Button>
@@ -569,7 +551,7 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
               />
             </Box>
             <Flex justify="flex-end">
-              <Button type="submit" {...stitchBlackButton} px="6" loading={submitting} disabled={submitting}>
+              <Button type="submit" {...stitchBlackButton} px="6" {...stableBusyProps(submitting)}>
                 <MaterialIcon name="inventory_2" size={18} />
                 Open package request
               </Button>
@@ -654,7 +636,7 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
               type="submit"
               {...stitchBlackButton}
               px="6"
-              loading={submitting}
+              {...stableBusyProps(submitting)}
               disabled={submitting || selectedTypes.length === 0}
             >
               <MaterialIcon name="add" size={18} />
@@ -837,16 +819,7 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
           {error}
         </Text>
       )}
-      <Button
-        type="submit"
-        {...stitchGreenButton}
-        disabled={submitting}
-        opacity={submitting ? 0.75 : 1}
-        className="notranslate"
-        translate="no"
-        lang="en"
-        aria-busy={submitting}
-      >
+      <Button type="submit" {...stitchGreenButton} {...stableBusyProps(submitting)}>
         <Flex as="span" align="center" gap="2" className="notranslate" translate="no" lang="en">
           <MaterialIcon name="send" size={18} />
           <Text as="span" textStyle="labelSm">
@@ -872,8 +845,8 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange }
     setBusyOfferId(pendingAcceptOffer._id)
     try {
       await api.offers.updateStatus(pendingAcceptOffer._id, 'accepted')
-      await onChange()
       setPendingAcceptOffer(null)
+      window.setTimeout(() => onChange?.(), 0)
     } catch (err) {
       window.alert(err?.message || 'Could not accept the offer.')
     } finally {
@@ -884,7 +857,7 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange }
     setBusyOfferId(offer._id)
     try {
       await api.offers.updateStatus(offer._id, 'rejected')
-      await onChange()
+      window.setTimeout(() => onChange?.(), 0)
     } catch (err) {
       window.alert(err?.message || 'Could not reject the offer.')
     } finally {
@@ -895,7 +868,7 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange }
     setBusyOfferId(offer._id)
     try {
       await api.offers.updateStatus(offer._id, 'withdrawn')
-      await onChange()
+      window.setTimeout(() => onChange?.(), 0)
     } catch (err) {
       window.alert(err?.message || 'Could not withdraw the offer.')
     } finally {

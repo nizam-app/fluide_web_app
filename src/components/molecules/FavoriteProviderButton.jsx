@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button, Flex, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import api from '../../lib/api'
+import { stableBusyProps } from '../../lib/stableButton'
 
 export function FavoriteProviderButton({ providerId, initialFavorite = false, onChange }) {
   const [favorite, setFavorite] = useState(initialFavorite)
@@ -54,14 +55,9 @@ export function FavoriteProviderButton({ providerId, initialFavorite = false, on
       type="button"
       variant={favorite ? 'solid' : 'outline'}
       borderRadius="pill"
-      disabled={busy}
-      opacity={busy ? 0.75 : 1}
+      {...stableBusyProps(busy)}
       onClick={toggle}
-      className="notranslate"
-      translate="no"
-      lang="en"
       aria-pressed={favorite}
-      aria-busy={busy}
       aria-label={label}
     >
       <Flex as="span" align="center" gap="1" className="notranslate" translate="no" lang="en">
