@@ -96,6 +96,7 @@ export function ProfilePage() {
   const [profileStatus, setProfileStatus] = useState({ type: null, message: '' })
   const [profileBusy, setProfileBusy] = useState(false)
   const [localeBusy, setLocaleBusy] = useState(false)
+  const [localeStatus, setLocaleStatus] = useState({ type: null, message: '' })
   const [billingBusy, setBillingBusy] = useState(false)
   const [billingStatus, setBillingStatus] = useState({ type: null, message: '' })
   const [documentForm, setDocumentForm] = useState({ label: '', category: 'insurance' })
@@ -179,20 +180,20 @@ export function ProfilePage() {
     setProfile((prev) => ({ ...prev, locale: nextLocale }))
     setLocale(nextLocale)
     setLocaleBusy(true)
-    setProfileStatus({ type: null, message: '' })
+    setLocaleStatus({ type: null, message: '' })
     try {
       const result = await updateProfile({ locale: nextLocale })
       if (result?.user?.locale === 'en' || result?.user?.locale === 'fr') {
         setProfile((prev) => ({ ...prev, locale: result.user.locale }))
         setLocale(result.user.locale)
       }
-      setProfileStatus({
+      setLocaleStatus({
         type: 'success',
         message: nextLocale === 'fr' ? 'Langue des e-mails mise à jour.' : 'Email language updated.',
       })
     } catch (err) {
       setProfile((prev) => ({ ...prev, locale: user?.locale === 'en' ? 'en' : 'fr' }))
-      setProfileStatus({ type: 'error', message: err?.message || 'Could not update email language.' })
+      setLocaleStatus({ type: 'error', message: err?.message || 'Could not update email language.' })
     } finally {
       setLocaleBusy(false)
     }
@@ -332,12 +333,14 @@ export function ProfilePage() {
     }
   }
 
+  const contentMaxW = isProvider || isAdmin ? '56rem' : '42rem'
+
   return (
       <Box
         w="full"
-        maxW="contentMax"
+        maxW={contentMaxW}
         mx="auto"
-        px={{ base: 'marginMobile', lg: 'marginDesktop' }}
+        px={{ base: 4, md: 6 }}
         py={{ base: 6, lg: 8 }}
       >
         {!isAdmin && <RolePageHeader role={headerRole} />}
@@ -351,17 +354,19 @@ export function ProfilePage() {
         </Text>
 
         <Box
+          id="email-language"
           bg="secondaryContainer"
           borderRadius="fluide3xl"
-          p={{ base: 5, md: 8 }}
-          borderWidth="1px"
+          p={{ base: 5, md: 6 }}
+          borderWidth="2px"
           borderColor="primary"
           mb="6"
+          shadow="level1"
         >
-          <Flex align="center" gap="3" mb="2">
+          <Flex align="flex-start" gap="3" mb="4">
             <Flex
-              w="10"
-              h="10"
+              w="11"
+              h="11"
               borderRadius="full"
               bg="primary"
               color="onPrimary"
@@ -369,42 +374,43 @@ export function ProfilePage() {
               justify="center"
               flexShrink={0}
             >
-              <MaterialIcon name="mail" size={20} />
+              <MaterialIcon name="mail" size={22} />
             </Flex>
             <Box>
               <Text textStyle="headlineSm" color="onSecondaryContainer">
+                Langue des e-mails
+              </Text>
+              <Text textStyle="labelSm" color="primary" fontWeight="600" mt="0.5">
                 Email language
               </Text>
-              <Text textStyle="bodySm" color="onSecondaryContainer" opacity={0.85}>
-                Choose the language for offer alerts, messages, and other Flunexia emails.
+              <Text textStyle="bodySm" color="onSecondaryContainer" opacity={0.9} mt="2">
+                Offres, messages et notifications Flunexia sont envoyés dans la langue choisie ci-dessous.
               </Text>
             </Box>
           </Flex>
-          <Box mt="5">
-            <EmailLanguagePicker
-              value={profile.locale}
-              onChange={handleLocaleChange}
-              disabled={localeBusy}
-            />
-          </Box>
+          <EmailLanguagePicker
+            value={profile.locale}
+            onChange={handleLocaleChange}
+            disabled={localeBusy}
+          />
           {localeBusy && (
             <Text textStyle="bodySm" color="onSecondaryContainer" mt="3">
-              Saving…
+              Enregistrement…
             </Text>
           )}
-          {profileStatus.message && (
+          {localeStatus.message && (
             <Text
               textStyle="bodySm"
-              color={profileStatus.type === 'success' ? 'primary' : 'error'}
+              color={localeStatus.type === 'success' ? 'primary' : 'error'}
               mt="3"
               fontWeight="600"
             >
-              {profileStatus.message}
+              {localeStatus.message}
             </Text>
           )}
         </Box>
 
-        <Box bg="surface" borderRadius="fluide3xl" p={{ base: 5, md: 8 }} borderWidth="1px" borderColor="outlineVariant" mb="6">
+        <Box bg="surface" borderRadius="fluide3xl" p={{ base: 5, md: 6 }} borderWidth="1px" borderColor="outlineVariant" mb="6">
           <Text textStyle="headlineSm" mb="4">
             Account details
           </Text>
@@ -730,7 +736,7 @@ export function ProfilePage() {
             Change password
           </Text>
           <Stack gap="5" as="form" onSubmit={handlePasswordSubmit}>
-            <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="5">
+            <Stack gap="4" maxW="28rem">
               <Box>
                 <Text textStyle="labelMd" mb="2">
                   Current password
@@ -742,7 +748,6 @@ export function ProfilePage() {
                   css={fluideInputStyles}
                 />
               </Box>
-              <Box />
               <Box>
                 <Text textStyle="labelMd" mb="2">
                   New password
@@ -765,7 +770,7 @@ export function ProfilePage() {
                   css={fluideInputStyles}
                 />
               </Box>
-            </Grid>
+            </Stack>
             {passwordStatus.message && (
               <Text textStyle="bodySm" color={passwordStatus.type === 'success' ? 'primary' : 'error'}>
                 {passwordStatus.message}
