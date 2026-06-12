@@ -64,15 +64,7 @@ export function RequestMessagesPanel({
   }
 
   return (
-    <Box
-      mt="6"
-      pt="5"
-      borderTopWidth="1px"
-      borderColor="outlineVariant"
-      translate="no"
-      className="notranslate"
-      lang="en"
-    >
+    <Box mt="6" pt="5" borderTopWidth="1px" borderColor="outlineVariant">
       <Text textStyle="labelMd" mb="3" fontWeight="600">
         Messages
       </Text>

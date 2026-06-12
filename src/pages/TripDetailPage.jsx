@@ -759,9 +759,6 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
       bg={submitted ? 'primaryContainer' : 'secondaryContainer'}
       borderRadius="fluide3xl"
       p="6"
-      translate="no"
-      className="notranslate"
-      lang="en"
     >
       {submitted ? (
         <>

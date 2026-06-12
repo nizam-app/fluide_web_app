@@ -1,11 +1,21 @@
-import { Component } from 'react'
+import { Component, Fragment } from 'react'
 import { Box, Button, Text } from '@chakra-ui/react'
+import { isTranslateDomError } from '../lib/translateDomPatch'
 
 export class ErrorBoundary extends Component {
-  state = { error: null }
+  state = { error: null, recoveryKey: 0 }
 
   static getDerivedStateFromError(error) {
+    if (isTranslateDomError(error)) {
+      return null
+    }
     return { error }
+  }
+
+  componentDidCatch(error) {
+    if (isTranslateDomError(error)) {
+      this.setState((state) => ({ recoveryKey: state.recoveryKey + 1 }))
+    }
   }
 
   render() {
@@ -22,6 +32,7 @@ export class ErrorBoundary extends Component {
         </Box>
       )
     }
-    return this.props.children
+
+    return <Fragment key={this.state.recoveryKey}>{this.props.children}</Fragment>
   }
 }
