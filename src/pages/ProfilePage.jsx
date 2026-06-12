@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Box, Button, Flex, Grid, HStack, Image, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
+import { MaterialIcon } from '../components/atoms/MaterialIcon'
+import { EmailLanguagePicker } from '../components/molecules/EmailLanguagePicker'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
+import { stableBusyProps } from '../lib/stableButton'
 import { useAuth } from '../context/AuthContext'
 import { useLocale } from '../context/LocaleContext'
 import api from '../lib/api'
@@ -92,6 +95,7 @@ export function ProfilePage() {
   const [deleteStatus, setDeleteStatus] = useState({ type: null, message: '' })
   const [profileStatus, setProfileStatus] = useState({ type: null, message: '' })
   const [profileBusy, setProfileBusy] = useState(false)
+  const [localeBusy, setLocaleBusy] = useState(false)
   const [billingBusy, setBillingBusy] = useState(false)
   const [billingStatus, setBillingStatus] = useState({ type: null, message: '' })
   const [documentForm, setDocumentForm] = useState({ label: '', category: 'insurance' })
@@ -168,6 +172,32 @@ export function ProfilePage() {
     }
   }
 
+  const handleLocaleChange = async (nextLocale) => {
+    if (nextLocale !== 'en' && nextLocale !== 'fr') return
+    if (nextLocale === profile.locale || localeBusy) return
+
+    setProfile((prev) => ({ ...prev, locale: nextLocale }))
+    setLocale(nextLocale)
+    setLocaleBusy(true)
+    setProfileStatus({ type: null, message: '' })
+    try {
+      const result = await updateProfile({ locale: nextLocale })
+      if (result?.user?.locale === 'en' || result?.user?.locale === 'fr') {
+        setProfile((prev) => ({ ...prev, locale: result.user.locale }))
+        setLocale(result.user.locale)
+      }
+      setProfileStatus({
+        type: 'success',
+        message: nextLocale === 'fr' ? 'Langue des e-mails mise à jour.' : 'Email language updated.',
+      })
+    } catch (err) {
+      setProfile((prev) => ({ ...prev, locale: user?.locale === 'en' ? 'en' : 'fr' }))
+      setProfileStatus({ type: 'error', message: err?.message || 'Could not update email language.' })
+    } finally {
+      setLocaleBusy(false)
+    }
+  }
+
   const handleProfileSubmit = async (event) => {
     event?.preventDefault()
     setProfileStatus({ type: null, message: '' })
@@ -177,7 +207,7 @@ export function ProfilePage() {
     }
     setProfileBusy(true)
     try {
-      const payload = { name: profile.name.trim(), locale: profile.locale }
+      const payload = { name: profile.name.trim() }
       if (profile.email.trim() && profile.email.trim() !== user?.email) {
         payload.email = profile.email.trim()
       }
@@ -303,7 +333,13 @@ export function ProfilePage() {
   }
 
   return (
-      <Box p={{ base: 'marginMobile', lg: 'marginDesktop' }} maxW="4xl">
+      <Box
+        w="full"
+        maxW="contentMax"
+        mx="auto"
+        px={{ base: 'marginMobile', lg: 'marginDesktop' }}
+        py={{ base: 6, lg: 8 }}
+      >
         {!isAdmin && <RolePageHeader role={headerRole} />}
         <Text textStyle="headlineMd" mb="1">
           Profile
@@ -314,7 +350,61 @@ export function ProfilePage() {
           {isAdmin && 'Internal admin account settings.'}
         </Text>
 
-        <Box bg="surface" borderRadius="fluide3xl" p="8" borderWidth="1px" borderColor="outlineVariant" mb="6">
+        <Box
+          bg="secondaryContainer"
+          borderRadius="fluide3xl"
+          p={{ base: 5, md: 8 }}
+          borderWidth="1px"
+          borderColor="primary"
+          mb="6"
+        >
+          <Flex align="center" gap="3" mb="2">
+            <Flex
+              w="10"
+              h="10"
+              borderRadius="full"
+              bg="primary"
+              color="onPrimary"
+              align="center"
+              justify="center"
+              flexShrink={0}
+            >
+              <MaterialIcon name="mail" size={20} />
+            </Flex>
+            <Box>
+              <Text textStyle="headlineSm" color="onSecondaryContainer">
+                Email language
+              </Text>
+              <Text textStyle="bodySm" color="onSecondaryContainer" opacity={0.85}>
+                Choose the language for offer alerts, messages, and other Flunexia emails.
+              </Text>
+            </Box>
+          </Flex>
+          <Box mt="5">
+            <EmailLanguagePicker
+              value={profile.locale}
+              onChange={handleLocaleChange}
+              disabled={localeBusy}
+            />
+          </Box>
+          {localeBusy && (
+            <Text textStyle="bodySm" color="onSecondaryContainer" mt="3">
+              Saving…
+            </Text>
+          )}
+          {profileStatus.message && (
+            <Text
+              textStyle="bodySm"
+              color={profileStatus.type === 'success' ? 'primary' : 'error'}
+              mt="3"
+              fontWeight="600"
+            >
+              {profileStatus.message}
+            </Text>
+          )}
+        </Box>
+
+        <Box bg="surface" borderRadius="fluide3xl" p={{ base: 5, md: 8 }} borderWidth="1px" borderColor="outlineVariant" mb="6">
           <Text textStyle="headlineSm" mb="4">
             Account details
           </Text>
@@ -353,71 +443,50 @@ export function ProfilePage() {
                 </Button>
               </Box>
             </Flex>
-            <Box>
-              <Text textStyle="labelMd" mb="2">
-                Name
-              </Text>
-              <Input value={profile.name} onChange={updateProfileField('name')} css={fluideInputStyles} />
-            </Box>
-            <Box>
-              <Text textStyle="labelMd" mb="2">
-                Email
-              </Text>
-              <Input
-                type="email"
-                value={profile.email}
-                onChange={updateProfileField('email')}
-                css={fluideInputStyles}
-                readOnly={isAdmin}
-              />
-            </Box>
-            <Box>
-              <Text textStyle="labelMd" mb="2">
-                Account type
-              </Text>
-              <Input value={getRoleLabel(user?.role)} readOnly css={fluideInputStyles} opacity={0.85} />
-            </Box>
-            <Box>
-              <Text textStyle="labelMd" mb="2">
-                Email language
-              </Text>
-              <NativeSelect.Root>
-                <NativeSelect.Field
-                  css={fluideInputStyles}
-                  value={profile.locale}
-                  onChange={(event) =>
-                    setProfile((prev) => ({
-                      ...prev,
-                      locale: event.target.value === 'en' ? 'en' : 'fr',
-                    }))
-                  }
-                >
-                  <option value="fr">Français</option>
-                  <option value="en">English</option>
-                </NativeSelect.Field>
-              </NativeSelect.Root>
-              <Text textStyle="bodySm" color="onSurfaceVariant" mt="2">
-                Notification emails are sent in this language.
-              </Text>
-            </Box>
-            {isOrganizer && (
+            <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="5">
               <Box>
                 <Text textStyle="labelMd" mb="2">
-                  Organization type
+                  Name
                 </Text>
-                <NativeSelect.Root>
-                  <NativeSelect.Field
-                    css={fluideInputStyles}
-                    value={profile.organizationType}
-                    onChange={updateProfileField('organizationType')}
-                  >
-                    {ORGANIZATION_TYPES.map((t) => (
-                      <option key={t}>{t}</option>
-                    ))}
-                  </NativeSelect.Field>
-                </NativeSelect.Root>
+                <Input value={profile.name} onChange={updateProfileField('name')} css={fluideInputStyles} />
               </Box>
-            )}
+              <Box>
+                <Text textStyle="labelMd" mb="2">
+                  Email
+                </Text>
+                <Input
+                  type="email"
+                  value={profile.email}
+                  onChange={updateProfileField('email')}
+                  css={fluideInputStyles}
+                  readOnly={isAdmin}
+                />
+              </Box>
+              <Box>
+                <Text textStyle="labelMd" mb="2">
+                  Account type
+                </Text>
+                <Input value={getRoleLabel(user?.role)} readOnly css={fluideInputStyles} opacity={0.85} />
+              </Box>
+              {isOrganizer && (
+                <Box>
+                  <Text textStyle="labelMd" mb="2">
+                    Organization type
+                  </Text>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      css={fluideInputStyles}
+                      value={profile.organizationType}
+                      onChange={updateProfileField('organizationType')}
+                    >
+                      {ORGANIZATION_TYPES.map((t) => (
+                        <option key={t}>{t}</option>
+                      ))}
+                    </NativeSelect.Field>
+                  </NativeSelect.Root>
+                </Box>
+              )}
+            </Grid>
             {isProvider && (
               <>
                 <Box>
@@ -457,7 +526,7 @@ export function ProfilePage() {
                 {profileStatus.message}
               </Text>
             )}
-            <Button type="submit" w="fit-content" {...stitchGreenButton} px="8" loading={profileBusy} disabled={profileBusy}>
+            <Button type="submit" w="fit-content" {...stitchGreenButton} px="8" {...stableBusyProps(profileBusy)}>
               Save changes
             </Button>
           </Stack>
