@@ -7,12 +7,12 @@ import {
   HStack,
   Image,
   Input,
-  NativeSelect,
   Stack,
   Text,
 } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { EmailLanguagePicker } from '../components/molecules/EmailLanguagePicker'
+import { FormSelect } from '../components/molecules/FormSelect'
 import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { ProfileField, ProfileSection } from '../components/molecules/ProfileSection'
 import { stableBusyProps } from '../lib/stableButton'
@@ -319,26 +319,27 @@ export function ProfilePage() {
     }
   }
 
-  const pageMaxW = isProvider || isAdmin ? '52rem' : '40rem'
+  const profileInputStyles = { ...fluideInputStyles, bg: 'surface' }
 
   return (
-    <Box w="full" maxW={pageMaxW} mx="auto" px={{ base: 4, md: 6 }} py={{ base: 5, md: 8 }}>
-      <Box mb="6">
-        <Text textStyle="headlineMd" mb="1">
+    <Box w="full" maxW={isProvider || isAdmin ? '52rem' : '44rem'} mx="auto" px={{ base: 4, md: 8 }} py={{ base: 6, md: 10 }}>
+      <Box mb="8">
+        <Text textStyle="headlineMd" mb="1.5">
           Profile
         </Text>
-        <Text textStyle="bodySm" color="onSurfaceVariant">
-          Manage your account and preferences.
+        <Text textStyle="bodyMd" color="onSurfaceVariant">
+          Manage your account, email preferences, and security settings.
         </Text>
       </Box>
 
       <Box
         bg="surface"
-        borderRadius="xl"
+        borderRadius="2xl"
         borderWidth="1px"
         borderColor="outlineVariant"
+        boxShadow="level2"
         overflow="hidden"
-        mb="6"
+        mb="8"
       >
         <ProfileSection>
           <Flex align={{ base: 'flex-start', sm: 'center' }} gap="4" flexWrap="wrap">
@@ -362,14 +363,25 @@ export function ProfilePage() {
               )}
             </Box>
             <Box flex="1" minW="12rem">
-              <Text textStyle="labelMd" fontWeight="600">
-                {user?.name || 'Account'}
-              </Text>
-              <Text textStyle="bodySm" color="onSurfaceVariant" mt="0.5">
+              <Flex align="center" gap="2" flexWrap="wrap" mb="1">
+                <Text fontSize="18px" lineHeight="1.3" fontWeight="600" color="onSurface">
+                  {user?.name || 'Account'}
+                </Text>
+                <Box
+                  px="2.5"
+                  py="0.5"
+                  borderRadius="pill"
+                  bg="primaryContainer"
+                  color="onPrimaryContainer"
+                  fontSize="12px"
+                  fontWeight="600"
+                  lineHeight="1.4"
+                >
+                  {getRoleLabel(user?.role)}
+                </Box>
+              </Flex>
+              <Text textStyle="bodySm" color="onSurfaceVariant">
                 {user?.email}
-              </Text>
-              <Text textStyle="labelSm" color="onSurfaceVariant" mt="0.5">
-                {getRoleLabel(user?.role)}
               </Text>
             </Box>
             <Input type="file" accept="image/*" ref={fileInputRef} display="none" onChange={handleAvatarChange} />
@@ -378,6 +390,7 @@ export function ProfilePage() {
               size="sm"
               variant="outline"
               borderRadius="lg"
+              borderColor="outlineVariant"
               onClick={() => fileInputRef.current?.click()}
               {...stableBusyProps(avatarBusy)}
             >
@@ -386,42 +399,42 @@ export function ProfilePage() {
           </Flex>
         </ProfileSection>
 
-        <ProfileSection title="General" description="Your account information and notification preferences.">
-          <Stack gap="5" as="form" onSubmit={handleProfileSubmit}>
-            <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="5">
+        <ProfileSection title="General" description="Update your account details and how Flunexia emails you.">
+          <Stack gap="6" as="form" onSubmit={handleProfileSubmit}>
+            <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={{ base: 5, md: 6 }}>
               <ProfileField label="Name">
-                <Input value={profile.name} onChange={updateProfileField('name')} css={fluideInputStyles} />
+                <Input value={profile.name} onChange={updateProfileField('name')} css={profileInputStyles} />
               </ProfileField>
               <ProfileField label="Email">
                 <Input
                   type="email"
                   value={profile.email}
                   onChange={updateProfileField('email')}
-                  css={fluideInputStyles}
+                  css={profileInputStyles}
                   readOnly={isAdmin}
                 />
               </ProfileField>
-              <ProfileField label="Preferred language for email">
+              {isOrganizer && (
+                <ProfileField label="Organization type">
+                  <FormSelect value={profile.organizationType} onChange={updateProfileField('organizationType')}>
+                    {ORGANIZATION_TYPES.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </ProfileField>
+              )}
+              <ProfileField
+                label="Preferred language for email"
+                hint="Offer alerts, messages, and notifications are sent in this language."
+                fullWidth
+              >
                 <EmailLanguagePicker
                   value={profile.locale}
                   onChange={(next) => setProfile((prev) => ({ ...prev, locale: next }))}
                 />
               </ProfileField>
-              {isOrganizer && (
-                <ProfileField label="Organization type">
-                  <NativeSelect.Root>
-                    <NativeSelect.Field
-                      css={fluideInputStyles}
-                      value={profile.organizationType}
-                      onChange={updateProfileField('organizationType')}
-                    >
-                      {ORGANIZATION_TYPES.map((t) => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </NativeSelect.Field>
-                  </NativeSelect.Root>
-                </ProfileField>
-              )}
             </Grid>
 
             {isProvider && (
@@ -444,14 +457,14 @@ export function ProfilePage() {
                   <Input
                     value={profile.contactPerson}
                     onChange={updateProfileField('contactPerson')}
-                    css={fluideInputStyles}
+                    css={profileInputStyles}
                   />
                 </ProfileField>
               </Stack>
             )}
 
-            <Flex align="center" gap="4" flexWrap="wrap">
-              <Button type="submit" {...stitchGreenButton} px="6" {...stableBusyProps(profileBusy)}>
+            <Flex align="center" gap="4" flexWrap="wrap" pt="1">
+              <Button type="submit" {...stitchGreenButton} px="8" minH="44px" {...stableBusyProps(profileBusy)}>
                 Save changes
               </Button>
               <StatusMessage status={profileStatus} />
@@ -460,13 +473,13 @@ export function ProfilePage() {
         </ProfileSection>
 
         <ProfileSection title="Password" description="Update your sign-in password." isLast={isAdmin}>
-          <Stack gap="4" as="form" onSubmit={handlePasswordSubmit} maxW="24rem">
+          <Stack gap="5" as="form" onSubmit={handlePasswordSubmit} maxW="28rem">
             <ProfileField label="Current password">
               <Input
                 type="password"
                 value={password.currentPassword}
                 onChange={updatePasswordField('currentPassword')}
-                css={fluideInputStyles}
+                css={profileInputStyles}
               />
             </ProfileField>
             <ProfileField label="New password">
@@ -474,7 +487,7 @@ export function ProfilePage() {
                 type="password"
                 value={password.newPassword}
                 onChange={updatePasswordField('newPassword')}
-                css={fluideInputStyles}
+                css={profileInputStyles}
               />
             </ProfileField>
             <ProfileField label="Confirm new password">
@@ -482,11 +495,11 @@ export function ProfilePage() {
                 type="password"
                 value={password.confirm}
                 onChange={updatePasswordField('confirm')}
-                css={fluideInputStyles}
+                css={profileInputStyles}
               />
             </ProfileField>
             <Flex align="center" gap="4" flexWrap="wrap">
-              <Button type="submit" variant="outline" borderRadius="lg" px="6" {...stableBusyProps(passwordBusy)}>
+              <Button type="submit" {...stitchGreenButton} px="8" minH="44px" {...stableBusyProps(passwordBusy)}>
                 Update password
               </Button>
               <StatusMessage status={passwordStatus} />
@@ -502,7 +515,7 @@ export function ProfilePage() {
                 placeholder="Enter your password to confirm"
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
-                css={fluideInputStyles}
+                css={profileInputStyles}
               />
               <StatusMessage status={deleteStatus} />
               <Button
@@ -524,11 +537,12 @@ export function ProfilePage() {
       {isProvider && (
         <Box
           bg="surface"
-          borderRadius="xl"
+          borderRadius="2xl"
           borderWidth="1px"
           borderColor="outlineVariant"
+          boxShadow="level2"
           overflow="hidden"
-          mb="6"
+          mb="8"
         >
           <ProfileSection
             title="Billing & legal"
@@ -537,28 +551,28 @@ export function ProfilePage() {
             <Stack gap="5" as="form" onSubmit={handleBillingSubmit}>
               <Grid templateColumns={{ base: '1fr', sm: '1fr 1fr' }} gap="5">
                 <ProfileField label="Company name">
-                  <Input value={profile.companyName} onChange={updateProfileField('companyName')} css={fluideInputStyles} />
+                  <Input value={profile.companyName} onChange={updateProfileField('companyName')} css={profileInputStyles} />
                 </ProfileField>
                 <ProfileField label="SIRET">
-                  <Input value={profile.siret} onChange={updateProfileField('siret')} css={fluideInputStyles} />
+                  <Input value={profile.siret} onChange={updateProfileField('siret')} css={profileInputStyles} />
                 </ProfileField>
                 <ProfileField label="IBAN / RIB">
-                  <Input value={profile.iban} onChange={updateProfileField('iban')} css={fluideInputStyles} />
+                  <Input value={profile.iban} onChange={updateProfileField('iban')} css={profileInputStyles} />
                 </ProfileField>
                 <ProfileField label="BIC">
-                  <Input value={profile.bic} onChange={updateProfileField('bic')} css={fluideInputStyles} />
+                  <Input value={profile.bic} onChange={updateProfileField('bic')} css={profileInputStyles} />
                 </ProfileField>
               </Grid>
               <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap="5">
                 <ProfileField label="Billing address">
                   <Stack gap="2">
-                    <Input placeholder="Street" value={profile.billingAddress.line1} onChange={updateNestedField('billingAddress', 'line1')} css={fluideInputStyles} />
-                    <Input placeholder="Additional line" value={profile.billingAddress.line2} onChange={updateNestedField('billingAddress', 'line2')} css={fluideInputStyles} />
+                    <Input placeholder="Street" value={profile.billingAddress.line1} onChange={updateNestedField('billingAddress', 'line1')} css={profileInputStyles} />
+                    <Input placeholder="Additional line" value={profile.billingAddress.line2} onChange={updateNestedField('billingAddress', 'line2')} css={profileInputStyles} />
                     <Grid templateColumns="1fr 1fr" gap="2">
-                      <Input placeholder="Postal code" value={profile.billingAddress.postalCode} onChange={updateNestedField('billingAddress', 'postalCode')} css={fluideInputStyles} />
-                      <Input placeholder="City" value={profile.billingAddress.city} onChange={updateNestedField('billingAddress', 'city')} css={fluideInputStyles} />
+                      <Input placeholder="Postal code" value={profile.billingAddress.postalCode} onChange={updateNestedField('billingAddress', 'postalCode')} css={profileInputStyles} />
+                      <Input placeholder="City" value={profile.billingAddress.city} onChange={updateNestedField('billingAddress', 'city')} css={profileInputStyles} />
                     </Grid>
-                    <Input placeholder="Country" value={profile.billingAddress.country} onChange={updateNestedField('billingAddress', 'country')} css={fluideInputStyles} />
+                    <Input placeholder="Country" value={profile.billingAddress.country} onChange={updateNestedField('billingAddress', 'country')} css={profileInputStyles} />
                   </Stack>
                 </ProfileField>
                 <ProfileField label="Chorus Pro & billing notes">
@@ -567,15 +581,15 @@ export function ProfilePage() {
                       <Input type="checkbox" checked={profile.billing.chorusProReady} onChange={updateBillingFlag('chorusProReady')} />
                       <Text textStyle="bodySm">Chorus Pro ready</Text>
                     </Flex>
-                    <Input placeholder="Chorus service code" value={profile.billing.chorusServiceCode} onChange={updateNestedField('billing', 'chorusServiceCode')} css={fluideInputStyles} />
-                    <Input placeholder="Legal entity ID" value={profile.billing.legalEntityId} onChange={updateNestedField('billing', 'legalEntityId')} css={fluideInputStyles} />
-                    <Input placeholder="Payment terms" value={profile.billing.paymentTerms} onChange={updateNestedField('billing', 'paymentTerms')} css={fluideInputStyles} />
-                    <Input placeholder="Notes" value={profile.billing.notes} onChange={updateNestedField('billing', 'notes')} css={fluideInputStyles} />
+                    <Input placeholder="Chorus service code" value={profile.billing.chorusServiceCode} onChange={updateNestedField('billing', 'chorusServiceCode')} css={profileInputStyles} />
+                    <Input placeholder="Legal entity ID" value={profile.billing.legalEntityId} onChange={updateNestedField('billing', 'legalEntityId')} css={profileInputStyles} />
+                    <Input placeholder="Payment terms" value={profile.billing.paymentTerms} onChange={updateNestedField('billing', 'paymentTerms')} css={profileInputStyles} />
+                    <Input placeholder="Notes" value={profile.billing.notes} onChange={updateNestedField('billing', 'notes')} css={profileInputStyles} />
                   </Stack>
                 </ProfileField>
               </Grid>
               <Flex align="center" gap="4" flexWrap="wrap">
-                <Button type="submit" {...stitchGreenButton} px="6" {...stableBusyProps(billingBusy)}>
+                <Button type="submit" {...stitchGreenButton} px="8" minH="44px" {...stableBusyProps(billingBusy)}>
                   Save billing details
                 </Button>
                 <StatusMessage status={billingStatus} />
@@ -595,28 +609,25 @@ export function ProfilePage() {
                     value={documentForm.label}
                     onChange={(event) => setDocumentForm((prev) => ({ ...prev, label: event.target.value }))}
                     placeholder="e.g. Professional liability insurance"
-                    css={fluideInputStyles}
+                    css={profileInputStyles}
                   />
                 </ProfileField>
                 <ProfileField label="Category">
-                  <NativeSelect.Root>
-                    <NativeSelect.Field
-                      value={documentForm.category}
-                      onChange={(event) => setDocumentForm((prev) => ({ ...prev, category: event.target.value }))}
-                      css={fluideInputStyles}
-                    >
-                      {DOCUMENT_CATEGORIES.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </NativeSelect.Field>
-                  </NativeSelect.Root>
+                  <FormSelect
+                    value={documentForm.category}
+                    onChange={(event) => setDocumentForm((prev) => ({ ...prev, category: event.target.value }))}
+                  >
+                    {DOCUMENT_CATEGORIES.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </FormSelect>
                 </ProfileField>
               </Grid>
               <HStack gap="3" flexWrap="wrap">
                 <input ref={documentInputRef} type="file" accept="image/*,application/pdf" hidden onChange={handleDocumentUpload} />
-                <Button {...stitchGreenButton} px="6" onClick={() => documentInputRef.current?.click()} {...stableBusyProps(documentBusy)}>
+                <Button {...stitchGreenButton} px="8" minH="44px" onClick={() => documentInputRef.current?.click()} {...stableBusyProps(documentBusy)}>
                   Upload document
                 </Button>
               </HStack>

@@ -120,6 +120,21 @@ export const fluideInputStyles = {
   _focus: { borderColor: 'primary', boxShadow: '0 0 0 3px color-mix(in srgb, var(--chakra-colors-primary) 15%, transparent)' },
 }
 
+export const fluideSelectStyles = {
+  ...fluideInputStyles,
+  bg: 'surface',
+  width: '100%',
+  minH: '3rem',
+  fontSize: '16px',
+  fontWeight: '500',
+  lineHeight: '1.5',
+  color: 'onSurface',
+  cursor: 'pointer',
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  pr: '10',
+}
+
 /** Smaller fields for dates, budget, counts — buyer compact create-trip layout */
 export const fluideCompactInputStyles = {
   ...fluideInputStyles,
