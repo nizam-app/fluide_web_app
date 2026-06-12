@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Box, Button, Flex, Grid, HStack, Image, Input, NativeSelect, Stack, Text } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { EmailLanguagePicker } from '../components/molecules/EmailLanguagePicker'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
@@ -187,10 +186,7 @@ export function ProfilePage() {
         setProfile((prev) => ({ ...prev, locale: result.user.locale }))
         setLocale(result.user.locale)
       }
-      setLocaleStatus({
-        type: 'success',
-        message: nextLocale === 'fr' ? 'Langue des e-mails mise à jour.' : 'Email language updated.',
-      })
+      setLocaleStatus({ type: 'success', message: 'Saved.' })
     } catch (err) {
       setProfile((prev) => ({ ...prev, locale: user?.locale === 'en' ? 'en' : 'fr' }))
       setLocaleStatus({ type: 'error', message: err?.message || 'Could not update email language.' })
@@ -353,63 +349,6 @@ export function ProfilePage() {
           {isAdmin && 'Internal admin account settings.'}
         </Text>
 
-        <Box
-          id="email-language"
-          bg="secondaryContainer"
-          borderRadius="fluide3xl"
-          p={{ base: 5, md: 6 }}
-          borderWidth="2px"
-          borderColor="primary"
-          mb="6"
-          shadow="level1"
-        >
-          <Flex align="flex-start" gap="3" mb="4">
-            <Flex
-              w="11"
-              h="11"
-              borderRadius="full"
-              bg="primary"
-              color="onPrimary"
-              align="center"
-              justify="center"
-              flexShrink={0}
-            >
-              <MaterialIcon name="mail" size={22} />
-            </Flex>
-            <Box>
-              <Text textStyle="headlineSm" color="onSecondaryContainer">
-                Langue des e-mails
-              </Text>
-              <Text textStyle="labelSm" color="primary" fontWeight="600" mt="0.5">
-                Email language
-              </Text>
-              <Text textStyle="bodySm" color="onSecondaryContainer" opacity={0.9} mt="2">
-                Offres, messages et notifications Flunexia sont envoyés dans la langue choisie ci-dessous.
-              </Text>
-            </Box>
-          </Flex>
-          <EmailLanguagePicker
-            value={profile.locale}
-            onChange={handleLocaleChange}
-            disabled={localeBusy}
-          />
-          {localeBusy && (
-            <Text textStyle="bodySm" color="onSecondaryContainer" mt="3">
-              Enregistrement…
-            </Text>
-          )}
-          {localeStatus.message && (
-            <Text
-              textStyle="bodySm"
-              color={localeStatus.type === 'success' ? 'primary' : 'error'}
-              mt="3"
-              fontWeight="600"
-            >
-              {localeStatus.message}
-            </Text>
-          )}
-        </Box>
-
         <Box bg="surface" borderRadius="fluide3xl" p={{ base: 5, md: 6 }} borderWidth="1px" borderColor="outlineVariant" mb="6">
           <Text textStyle="headlineSm" mb="4">
             Account details
@@ -492,6 +431,30 @@ export function ProfilePage() {
                   </NativeSelect.Root>
                 </Box>
               )}
+              <Box>
+                <Text textStyle="labelMd" mb="2">
+                  Preferred language for email
+                </Text>
+                <EmailLanguagePicker
+                  value={profile.locale}
+                  onChange={handleLocaleChange}
+                  disabled={localeBusy}
+                />
+                {localeBusy && (
+                  <Text textStyle="bodySm" color="onSurfaceVariant" mt="2">
+                    Saving…
+                  </Text>
+                )}
+                {localeStatus.message && (
+                  <Text
+                    textStyle="bodySm"
+                    color={localeStatus.type === 'success' ? 'primary' : 'error'}
+                    mt="2"
+                  >
+                    {localeStatus.message}
+                  </Text>
+                )}
+              </Box>
             </Grid>
             {isProvider && (
               <>
