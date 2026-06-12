@@ -979,6 +979,11 @@ export function TripDetailPage() {
   const { tripId: id } = useParams()
   const { trip, requests, offersByRequest, recommendedProviders, favoriteProviderIds, loading, error, reload } =
     useTripDetail(id)
+  const [favoriteIds, setFavoriteIds] = useState([])
+
+  useEffect(() => {
+    setFavoriteIds(favoriteProviderIds)
+  }, [favoriteProviderIds])
 
   const role = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
   const backTo = isAdmin ? '/admin/trips' : '/trips'
@@ -1146,8 +1151,15 @@ export function TripDetailPage() {
                       </Box>
                       {isOrganizer && (
                         <FavoriteProviderButton
+                          key={provider._id}
                           providerId={provider._id}
-                          initialFavorite={favoriteProviderIds.includes(String(provider._id))}
+                          initialFavorite={favoriteIds.includes(String(provider._id))}
+                          onChange={(isFavorite) => {
+                            const id = String(provider._id)
+                            setFavoriteIds((prev) =>
+                              isFavorite ? [...new Set([...prev, id])] : prev.filter((item) => item !== id),
+                            )
+                          }}
                         />
                       )}
                     </Flex>

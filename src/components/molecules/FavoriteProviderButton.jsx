@@ -1,45 +1,75 @@
-import { useEffect, useState } from 'react'
-import { Button } from '@chakra-ui/react'
+import { useEffect, useRef, useState } from 'react'
+import { Button, Flex, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import api from '../../lib/api'
 
 export function FavoriteProviderButton({ providerId, initialFavorite = false, onChange }) {
   const [favorite, setFavorite] = useState(initialFavorite)
   const [busy, setBusy] = useState(false)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     setFavorite(initialFavorite)
-  }, [initialFavorite])
+  }, [initialFavorite, providerId])
 
-  const toggle = async () => {
+  const toggle = async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (busy) return
+
+    const nextFavorite = !favorite
     setBusy(true)
+    setFavorite(nextFavorite)
+
     try {
-      if (favorite) {
-        await api.favorites.remove(providerId)
-        setFavorite(false)
-        onChange?.(false)
-      } else {
+      if (nextFavorite) {
         await api.favorites.add(providerId)
-        setFavorite(true)
-        onChange?.(true)
+      } else {
+        await api.favorites.remove(providerId)
       }
+      if (!mountedRef.current) return
+      onChange?.(nextFavorite)
     } catch (err) {
+      if (!mountedRef.current) return
+      setFavorite(!nextFavorite)
       window.alert(err?.message || 'Could not update favorites.')
     } finally {
-      setBusy(false)
+      if (mountedRef.current) setBusy(false)
     }
   }
+
+  const label = favorite ? 'Favorited' : 'Favorite'
+  const iconName = favorite ? 'favorite' : 'favorite_border'
 
   return (
     <Button
       size="sm"
+      type="button"
       variant={favorite ? 'solid' : 'outline'}
       borderRadius="pill"
-      loading={busy}
+      disabled={busy}
+      opacity={busy ? 0.75 : 1}
       onClick={toggle}
+      className="notranslate"
+      translate="no"
+      lang="en"
+      aria-pressed={favorite}
+      aria-busy={busy}
+      aria-label={label}
     >
-      <MaterialIcon name={favorite ? 'favorite' : 'favorite_border'} size={16} filled={favorite} />
-      {favorite ? 'Favorited' : 'Favorite'}
+      <Flex as="span" align="center" gap="1" className="notranslate" translate="no" lang="en">
+        <MaterialIcon name={iconName} size={16} filled={favorite} />
+        <Text as="span" textStyle="labelSm">
+          {label}
+        </Text>
+      </Flex>
     </Button>
   )
 }

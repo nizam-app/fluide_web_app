@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { RouteErrorPage } from './components/RouteErrorPage'
 import { PortalShell } from './components/templates/PortalShell'
 import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { AdminRequestsPage } from './pages/AdminRequestsPage'
@@ -24,6 +25,7 @@ export const appRouter = createBrowserRouter([
 
   {
     element: <PortalShell />,
+    errorElement: <RouteErrorPage />,
     children: [
       { path: '/dashboard', element: <RoleDashboardPage /> },
       { path: '/create-trip', element: <CreateTripPage /> },
