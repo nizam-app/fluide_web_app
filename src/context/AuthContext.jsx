@@ -78,13 +78,14 @@ export function AuthProvider({ children }) {
   )
 
   const register = useCallback(
-    async ({ email, password, accountType, name, organizationType, providerType, providerTypes }) => {
+    async ({ email, password, accountType, name, organizationType, providerType, providerTypes, locale }) => {
       setError(null)
       const payload = {
         email: email.trim().toLowerCase(),
         password,
         accountType,
         name: name?.trim() || undefined,
+        locale: locale === 'en' || locale === 'fr' ? locale : undefined,
       }
       if (accountType === ROLES.ORGANIZER) payload.organizationType = organizationType
       if (accountType === ROLES.PROVIDER) {

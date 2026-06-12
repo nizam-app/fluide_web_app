@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { useAuth } from '../context/AuthContext'
+import { useLocale } from '../context/LocaleContext'
 import api from '../lib/api'
 import { ORGANIZATION_TYPES, PROVIDER_TYPES } from '../data/mockData'
 import { getSelectedProviderTypes, getApprovedProviderTypes, getPendingProviderTypes } from '../lib/providerTypes'
@@ -44,6 +45,7 @@ function buildProfileStateFromUser(user) {
       paymentTerms: user?.billing?.paymentTerms || '',
       notes: user?.billing?.notes || '',
     },
+    locale: user?.locale === 'en' ? 'en' : 'fr',
   }
 }
 
@@ -80,6 +82,7 @@ export function ProfilePage() {
   const fileInputRef = useRef(null)
   const documentInputRef = useRef(null)
   const { user, isOrganizer, isProvider, isAdmin, updateProfile, updatePassword, logout, refresh } = useAuth()
+  const { setLocale } = useLocale()
   const headerRole = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
 
   const [profile, setProfile] = useState(() => buildProfileStateFromUser(user))
@@ -174,7 +177,7 @@ export function ProfilePage() {
     }
     setProfileBusy(true)
     try {
-      const payload = { name: profile.name.trim() }
+      const payload = { name: profile.name.trim(), locale: profile.locale }
       if (profile.email.trim() && profile.email.trim() !== user?.email) {
         payload.email = profile.email.trim()
       }
@@ -187,6 +190,9 @@ export function ProfilePage() {
       const result = await updateProfile(payload)
       if (result?.user) {
         setProfile(buildProfileStateFromUser(result.user))
+        if (result.user.locale === 'en' || result.user.locale === 'fr') {
+          setLocale(result.user.locale)
+        }
       }
       setProfileStatus({
         type: 'success',
@@ -370,6 +376,29 @@ export function ProfilePage() {
                 Account type
               </Text>
               <Input value={getRoleLabel(user?.role)} readOnly css={fluideInputStyles} opacity={0.85} />
+            </Box>
+            <Box>
+              <Text textStyle="labelMd" mb="2">
+                Email language
+              </Text>
+              <NativeSelect.Root>
+                <NativeSelect.Field
+                  css={fluideInputStyles}
+                  value={profile.locale}
+                  onChange={(event) =>
+                    setProfile((prev) => ({
+                      ...prev,
+                      locale: event.target.value === 'en' ? 'en' : 'fr',
+                    }))
+                  }
+                >
+                  <option value="fr">Français</option>
+                  <option value="en">English</option>
+                </NativeSelect.Field>
+              </NativeSelect.Root>
+              <Text textStyle="bodySm" color="onSurfaceVariant" mt="2">
+                Notification emails are sent in this language.
+              </Text>
             </Box>
             {isOrganizer && (
               <Box>
