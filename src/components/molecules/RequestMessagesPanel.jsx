@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Box, Button, Flex, Stack, Text, Textarea } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import api from '../../lib/api'
-import { stableBusyProps } from '../../lib/stableButton'
+import { deferDomUpdate, stableBusyProps } from '../../lib/stableButton'
 import { formatDateTime } from '../../lib/format'
 import { fluideInputStyles, stitchGreenButton } from '../../theme/fluide-theme'
 
@@ -40,21 +40,39 @@ export function RequestMessagesPanel({
     try {
       const result = await api.requests.addMessage(requestId, trimmed)
       if (!mountedRef.current) return
-      if (result?.request?.messages) {
-        setThread(result.request.messages)
-      }
-      setBody('')
-      onPosted?.()
+      const incoming = result?.request?.messages || []
+      const lastMessage = incoming[incoming.length - 1]
+      deferDomUpdate(() => {
+        if (!mountedRef.current) return
+        if (lastMessage?._id) {
+          setThread((prev) => {
+            if (prev.some((msg) => msg._id === lastMessage._id)) return prev
+            return [...prev, lastMessage]
+          })
+        } else if (incoming.length) {
+          setThread(incoming)
+        }
+        setBody('')
+        setBusy(false)
+        onPosted?.()
+      })
     } catch (err) {
       if (!mountedRef.current) return
       setError(err?.message || 'Could not send the message.')
-    } finally {
-      if (mountedRef.current) setBusy(false)
+      setBusy(false)
     }
   }
 
   return (
-    <Box mt="6" pt="5" borderTopWidth="1px" borderColor="outlineVariant">
+    <Box
+      mt="6"
+      pt="5"
+      borderTopWidth="1px"
+      borderColor="outlineVariant"
+      translate="no"
+      className="notranslate"
+      lang="en"
+    >
       <Text textStyle="labelMd" mb="3" fontWeight="600">
         Messages
       </Text>

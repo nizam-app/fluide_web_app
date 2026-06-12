@@ -9,3 +9,14 @@ export function stableBusyProps(busy) {
     'aria-busy': busy || undefined,
   }
 }
+
+/** Defer React state updates until after paint — avoids removeChild crashes when browser translate mutates the DOM. */
+export function deferDomUpdate(callback) {
+  if (typeof window === 'undefined') {
+    callback()
+    return
+  }
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(callback)
+  })
+}

@@ -38,7 +38,7 @@ import {
   formatPrice,
   getNeedTypeIcon,
 } from '../lib/format'
-import { stableBusyProps } from '../lib/stableButton'
+import { deferDomUpdate, stableBusyProps } from '../lib/stableButton'
 import { fluideInputStyles, stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
 function useTripDetail(id) {
@@ -98,10 +98,17 @@ function useTripDetail(id) {
 
   const addOfferToRequest = useCallback((requestId, offer) => {
     if (!requestId || !offer) return
-    setOffersByRequest((prev) => ({
-      ...prev,
-      [requestId]: [...(prev[requestId] || []), offer],
-    }))
+    deferDomUpdate(() => {
+      if (!activeRef.current) return
+      setOffersByRequest((prev) => {
+        const existing = prev[requestId] || []
+        if (existing.some((item) => item._id === offer._id)) return prev
+        return {
+          ...prev,
+          [requestId]: [...existing, offer],
+        }
+      })
+    })
   }, [])
 
   return {
@@ -697,6 +704,7 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
   const [currency, setCurrency] = useState('EUR')
   const [attachmentFile, setAttachmentFile] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -708,7 +716,7 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    if (submitting) return
+    if (submitting || submitted) return
     setError('')
     const priceValue = Number(price)
     if (!description.trim() || !Number.isFinite(priceValue) || priceValue < 0) {
@@ -730,9 +738,15 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
       if (!mountedRef.current) return
       if (!result?.offer) {
         setError('Could not submit your offer.')
+        setSubmitting(false)
         return
       }
-      onSubmitted?.(result.offer)
+      setSubmitted(true)
+      setSubmitting(false)
+      deferDomUpdate(() => {
+        if (!mountedRef.current) return
+        onSubmitted?.(result.offer)
+      })
     } catch (err) {
       if (!mountedRef.current) return
       setError(err?.message || 'Could not submit your offer.')
@@ -741,7 +755,25 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
   }
 
   return (
-    <Box as="form" onSubmit={handleSubmit} bg="secondaryContainer" borderRadius="fluide3xl" p="6">
+    <Box
+      bg={submitted ? 'primaryContainer' : 'secondaryContainer'}
+      borderRadius="fluide3xl"
+      p="6"
+      translate="no"
+      className="notranslate"
+      lang="en"
+    >
+      {submitted ? (
+        <>
+          <Text textStyle="headlineSm" color="onPrimaryContainer" fontWeight="600">
+            Proposal sent successfully.
+          </Text>
+          <Text textStyle="bodySm" color="onPrimaryContainer" mt="2">
+            The organizer can review your offer below.
+          </Text>
+        </>
+      ) : (
+        <Box as="form" onSubmit={handleSubmit}>
       <Text textStyle="headlineSm" mb="4" color="onSecondaryContainer">
         Submit a proposal
       </Text>
@@ -844,6 +876,8 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
           </Text>
         </Flex>
       </Button>
+        </Box>
+      )}
     </Box>
   )
 }
@@ -851,11 +885,10 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
 function RequestSection({ request, offers, role, currentUserId, trip, onChange, onOfferCreated }) {
   const [busyOfferId, setBusyOfferId] = useState(null)
   const [pendingAcceptOffer, setPendingAcceptOffer] = useState(null)
-  const [proposalSubmitted, setProposalSubmitted] = useState(false)
   const displayStatus = getRequestDisplayStatus(request)
+  const hadOfferOnMountRef = useRef(null)
 
   const handleOfferCreated = (offer) => {
-    setProposalSubmitted(true)
     onOfferCreated?.(request._id, offer)
   }
 
@@ -908,6 +941,13 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange, 
     [offers, role, currentUserId],
   )
 
+  if (hadOfferOnMountRef.current === null) {
+    hadOfferOnMountRef.current = providerAlreadyOffered
+  }
+
+  const showProposalForm =
+    role === 'provider' && request.status === 'pending' && !hadOfferOnMountRef.current
+
   const isAssignedProvider =
     role === 'provider' &&
     request.provider &&
@@ -954,29 +994,35 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange, 
 
       <RequestHistoryPanel requestId={request._id} />
 
-      {offers.length > 0 && (
+      {(offers.length > 0 || showProposalForm) && (
         <Box mt="4" pt="4" borderTopWidth="1px" borderColor="outlineVariant">
           <Text textStyle="labelMd" mb="3" fontWeight="600">
             Offers
           </Text>
-          <Stack gap="3">
-            {offers.map((offer) => (
-              <OfferRow
-                key={offer._id}
-                offer={offer}
-                busy={busyOfferId === offer._id}
-                canManage={role === 'organizer' && request.status === 'pending'}
-                canWithdraw={
-                  role === 'provider' &&
-                  String(offer.provider?._id || offer.provider) === String(currentUserId) &&
-                  request.status === 'pending'
-                }
-                onAccept={accept}
-                onReject={reject}
-                onWithdraw={withdraw}
-              />
-            ))}
-          </Stack>
+          {offers.length === 0 ? (
+            <Text textStyle="bodySm" color="onSurfaceVariant">
+              Your offer will appear here after you submit a proposal.
+            </Text>
+          ) : (
+            <Stack gap="3">
+              {offers.map((offer) => (
+                <OfferRow
+                  key={offer._id}
+                  offer={offer}
+                  busy={busyOfferId === offer._id}
+                  canManage={role === 'organizer' && request.status === 'pending'}
+                  canWithdraw={
+                    role === 'provider' &&
+                    String(offer.provider?._id || offer.provider) === String(currentUserId) &&
+                    request.status === 'pending'
+                  }
+                  onAccept={accept}
+                  onReject={reject}
+                  onWithdraw={withdraw}
+                />
+              ))}
+            </Stack>
+          )}
         </Box>
       )}
 
@@ -987,19 +1033,15 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange, 
         currentUserId={currentUserId}
       />
 
-      {role === 'provider' && request.status === 'pending' && !providerAlreadyOffered && !proposalSubmitted && (
+      {showProposalForm && (
         <Box mt="6">
           <ProviderOfferForm requestId={request._id} onSubmitted={handleOfferCreated} />
         </Box>
       )}
-      {role === 'provider' && (providerAlreadyOffered || proposalSubmitted) && (
-        <Box mt="4" bg="primaryContainer" borderRadius="lg" px="4" py="3">
-          <Text textStyle="bodySm" color="onPrimaryContainer" fontWeight="600">
-            {proposalSubmitted && !providerAlreadyOffered
-              ? 'Proposal sent successfully. The organizer can review it below.'
-              : 'You have already submitted an offer for this request.'}
-          </Text>
-        </Box>
+      {role === 'provider' && hadOfferOnMountRef.current && (
+        <Text textStyle="bodySm" color="onSurfaceVariant" mt="4">
+          You have already submitted an offer for this request.
+        </Text>
       )}
       {offers.length === 0 && role !== 'provider' && (
         <Text textStyle="bodySm" color="onSurfaceVariant" mt="4">
