@@ -159,16 +159,45 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
       </Text>
       {canManage && offer.status === 'submitted' && (
         <HStack>
-          <Button size="sm" {...stitchGreenButton} loading={busy} onClick={() => onAccept(offer)}>
+          <Button
+            size="sm"
+            {...stitchGreenButton}
+            disabled={busy}
+            opacity={busy ? 0.75 : 1}
+            className="notranslate"
+            translate="no"
+            lang="en"
+            onClick={() => onAccept(offer)}
+          >
             Accept
           </Button>
-          <Button size="sm" variant="outline" borderRadius="pill" loading={busy} onClick={() => onReject(offer)}>
+          <Button
+            size="sm"
+            variant="outline"
+            borderRadius="pill"
+            disabled={busy}
+            opacity={busy ? 0.75 : 1}
+            className="notranslate"
+            translate="no"
+            lang="en"
+            onClick={() => onReject(offer)}
+          >
             Reject
           </Button>
         </HStack>
       )}
       {canWithdraw && offer.status === 'submitted' && (
-        <Button size="sm" variant="outline" borderRadius="pill" loading={busy} onClick={() => onWithdraw(offer)}>
+        <Button
+          size="sm"
+          variant="outline"
+          borderRadius="pill"
+          disabled={busy}
+          opacity={busy ? 0.75 : 1}
+          className="notranslate"
+          translate="no"
+          lang="en"
+          onClick={() => onWithdraw(offer)}
+        >
           Withdraw
         </Button>
       )}
@@ -662,6 +691,7 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
 
 function ProviderOfferForm({ requestId, onSubmitted }) {
   const attachmentInputRef = useRef(null)
+  const mountedRef = useRef(true)
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [currency, setCurrency] = useState('EUR')
@@ -669,8 +699,16 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (submitting) return
     setError('')
     const priceValue = Number(price)
     if (!description.trim() || !Number.isFinite(priceValue) || priceValue < 0) {
@@ -689,15 +727,17 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
         },
         attachmentFile,
       )
+      if (!mountedRef.current) return
       setDescription('')
       setPrice('')
       setAttachmentFile(null)
       if (attachmentInputRef.current) attachmentInputRef.current.value = ''
-      await onSubmitted()
+      window.setTimeout(() => onSubmitted?.(), 0)
     } catch (err) {
+      if (!mountedRef.current) return
       setError(err?.message || 'Could not submit your offer.')
     } finally {
-      setSubmitting(false)
+      if (mountedRef.current) setSubmitting(false)
     }
   }
 
@@ -797,9 +837,22 @@ function ProviderOfferForm({ requestId, onSubmitted }) {
           {error}
         </Text>
       )}
-      <Button type="submit" {...stitchGreenButton} loading={submitting} disabled={submitting}>
-        <MaterialIcon name="send" size={18} />
-        Send proposal
+      <Button
+        type="submit"
+        {...stitchGreenButton}
+        disabled={submitting}
+        opacity={submitting ? 0.75 : 1}
+        className="notranslate"
+        translate="no"
+        lang="en"
+        aria-busy={submitting}
+      >
+        <Flex as="span" align="center" gap="2" className="notranslate" translate="no" lang="en">
+          <MaterialIcon name="send" size={18} />
+          <Text as="span" textStyle="labelSm">
+            Send proposal
+          </Text>
+        </Flex>
       </Button>
     </Box>
   )
