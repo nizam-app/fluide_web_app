@@ -13,7 +13,7 @@ export const LEGAL_PAGES = {
           heading: 'Our mission',
           paragraphs: [
             'Flunexia is a B2B coordination platform for group trips and outings. We help organizers — municipalities, schools, associations, and companies — publish their needs in one place and compare supplier proposals transparently.',
-            'Our tagline — Simplify your organization, our priority — reflects our focus on helping organizers run group outings with less complexity and more control.',
+            'Our tagline — Optimize your organization, our priority — reflects our focus on helping organizers run group outings with less complexity and more control.',
           ],
         },
         {
@@ -47,7 +47,7 @@ export const LEGAL_PAGES = {
           heading: 'Notre mission',
           paragraphs: [
             'Flunexia est une plateforme B2B de coordination des voyages et sorties de groupe. Nous aidons les organisateurs — collectivités, écoles, associations et entreprises — à publier leurs besoins en un seul endroit et à comparer les propositions des prestataires de manière transparente.',
-            'Notre signature — Simplifier votre organisation, notre priorité — reflète notre engagement à aider les organisateurs à mener leurs sorties de groupe avec moins de complexité et plus de maîtrise.',
+            'Notre signature — Optimiser votre organisation, notre priorité — reflète notre engagement à aider les organisateurs à mener leurs sorties de groupe avec moins de complexité et plus de maîtrise.',
           ],
         },
         {
