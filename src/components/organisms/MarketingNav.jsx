@@ -3,19 +3,30 @@ import { Box, Button, Flex, Grid, HStack, Stack } from '@chakra-ui/react'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { getHomePath } from '../../lib/roles'
+import { useLocale } from '../../context/LocaleContext'
 import { FluideLogo } from '../atoms/FluideLogo'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import { stitchBlackButton } from '../../theme/fluide-theme'
 
-const publicLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Contact', href: '/contact' },
-]
+const publicLinks = {
+  en: [
+    { label: 'Home', href: '/' },
+    { label: 'About', href: '/about' },
+    { label: 'Contact', href: '/contact' },
+  ],
+  fr: [
+    { label: 'Accueil', href: '/' },
+    { label: 'À propos', href: '/about' },
+    { label: 'Contact', href: '/contact' },
+  ],
+}
 
 export function MarketingNav() {
   const { pathname } = useLocation()
+  const { locale } = useLocale()
   const { isAuthenticated, user } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const links = publicLinks[locale]
 
   return (
     <Box
@@ -48,7 +59,7 @@ export function MarketingNav() {
             justify="center"
             justifySelf="center"
           >
-            {publicLinks.map((link) => {
+            {links.map((link) => {
               const active = pathname === link.href
               return (
                 <RouterLink key={link.href} to={link.href}>
@@ -109,7 +120,7 @@ export function MarketingNav() {
       {menuOpen && (
         <Box display={{ md: 'none' }} px="4" pb="4" borderTopWidth="1px" borderColor="outlineVariant" w="full">
           <Stack gap="3" pt="3" maxW="contentMax" mx="auto">
-            {publicLinks.map((link) => (
+            {links.map((link) => (
               <RouterLink key={link.href} to={link.href} onClick={() => setMenuOpen(false)}>
                 <Box textStyle="labelMd" fontWeight="600" py="1">
                   {link.label}

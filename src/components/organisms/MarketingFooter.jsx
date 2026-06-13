@@ -1,47 +1,195 @@
-import { Box, Flex, HStack, Text } from '@chakra-ui/react'
+import { Box, Flex, Grid, Link, Stack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { BrandInlineText } from '../atoms/BrandInlineText'
 import { FluideLogo } from '../atoms/FluideLogo'
+import { MaterialIcon } from '../atoms/MaterialIcon'
 import { FOOTER } from '../../content/homeMarketing'
+import { CONTACT_EMAIL, FOOTER_CONTACT } from '../../content/siteContact'
 import { useLocale } from '../../context/LocaleContext'
+
+function FooterColumnTitle({ children }) {
+  return (
+    <Flex align="center" gap="2" mb="3">
+      <Box w="3px" h="4" borderRadius="full" bg="primary" flexShrink={0} />
+      <Text
+        fontSize="xs"
+        fontWeight="700"
+        letterSpacing="0.12em"
+        textTransform="uppercase"
+        color="onSurface"
+      >
+        {children}
+      </Text>
+    </Flex>
+  )
+}
+
+function FooterNavLink({ to, children, external = false }) {
+  const textProps = {
+    fontSize: 'sm',
+    color: 'onSurfaceVariant',
+    fontWeight: '500',
+    lineHeight: '2',
+    _hover: { color: 'primary' },
+    transition: 'color 0.15s',
+  }
+
+  if (external) {
+    return (
+      <Link href={to} {...textProps}>
+        {children}
+      </Link>
+    )
+  }
+
+  return (
+    <RouterLink to={to}>
+      <Text {...textProps}>{children}</Text>
+    </RouterLink>
+  )
+}
+
+function FooterColumn({ children, align = 'flex-start', textAlign = 'left' }) {
+  return (
+    <Stack
+      gap="1"
+      align={{ base: 'center', md: align }}
+      textAlign={{ base: 'center', md: textAlign }}
+      h="full"
+    >
+      {children}
+    </Stack>
+  )
+}
 
 export function MarketingFooter({ compact = false }) {
   const { locale } = useLocale()
   const copy = FOOTER[locale]
+  const contact = FOOTER_CONTACT[locale]
   const year = new Date().getFullYear()
 
   return (
-    <Box as="footer" w="full" py="8" borderTopWidth="1px" borderColor="outlineVariant" bg="surface" mt="auto">
-      <Flex
-        maxW="contentMax"
-        mx="auto"
-        px={{ base: 'marginMobile', lg: 'marginDesktop' }}
-        direction={{ base: 'column', md: 'row' }}
-        justify="space-between"
-        align="center"
-        gap="4"
-      >
-        <Flex direction="column" gap="3" align={{ base: 'center', md: 'flex-start' }}>
-          <FluideLogo to="/" />
-          {!compact && (
-            <Text textStyle="bodySm" color="onSurfaceVariant" display={{ base: 'none', sm: 'block' }}>
-              {copy.tagline}
+    <Box as="footer" w="full" mt="auto" bg="surfaceContainerLow" borderTopWidth="1px" borderColor="outlineVariant">
+      <Box h="4px" w="full" bg="primary" />
+
+      <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py={{ base: 12, md: 14 }}>
+        <Grid
+          templateColumns={{ base: '1fr', sm: '1fr 1fr', lg: '1.5fr 1fr 1fr 1.15fr' }}
+          gap={{ base: 10, md: 8, lg: 12 }}
+          alignItems="start"
+        >
+          {/* Brand */}
+          <FooterColumn align="flex-start" textAlign="left">
+            <Box alignSelf={{ base: 'center', md: 'flex-start' }}>
+              <FluideLogo to="/" />
+            </Box>
+            {!compact && (
+              <>
+                <Text
+                  fontSize="sm"
+                  color="primary"
+                  fontWeight="600"
+                  lineHeight="1.5"
+                  maxW="xs"
+                  mt="2"
+                  fontStyle="italic"
+                >
+                  {copy.tagline}
+                </Text>
+                <Text fontSize="sm" color="onSurfaceVariant" lineHeight="1.7" maxW="sm" mt="2">
+                  {copy.mission}
+                </Text>
+                <Flex
+                  mt="4"
+                  px="3"
+                  py="2"
+                  borderRadius="pill"
+                  bg="primaryContainer"
+                  align="center"
+                  gap="2"
+                  alignSelf={{ base: 'center', md: 'flex-start' }}
+                  maxW="fit-content"
+                >
+                  <MaterialIcon name="verified_user" size={16} color="primary" />
+                  <Text fontSize="xs" fontWeight="600" color="onPrimaryContainer" lineHeight="1.4">
+                    {copy.trustLine}
+                  </Text>
+                </Flex>
+              </>
+            )}
+          </FooterColumn>
+
+          {/* Platform */}
+          <FooterColumn>
+            <FooterColumnTitle>{copy.platformTitle}</FooterColumnTitle>
+            {copy.platformLinks.map((link) => (
+              <FooterNavLink key={link.href} to={link.href}>
+                {link.label}
+              </FooterNavLink>
+            ))}
+          </FooterColumn>
+
+          {/* Legal */}
+          <FooterColumn>
+            <FooterColumnTitle>{copy.infoTitle}</FooterColumnTitle>
+            {copy.links.map((link) => (
+              <FooterNavLink key={link.href} to={link.href}>
+                {link.label}
+              </FooterNavLink>
+            ))}
+          </FooterColumn>
+
+          {/* Contact */}
+          <FooterColumn>
+            <FooterColumnTitle>{contact.sectionTitle}</FooterColumnTitle>
+            <Text fontSize="sm" color="onSurfaceVariant" lineHeight="1.7" maxW="xs" mb="2">
+              {contact.emailIntro}
             </Text>
-          )}
-          <Text textStyle="bodySm" color="onSurfaceVariant" as="span" display="block">
+            <Link
+              href={`mailto:${CONTACT_EMAIL}`}
+              display="inline-flex"
+              alignItems="center"
+              gap="2"
+              fontSize="sm"
+              color="primary"
+              fontWeight="600"
+              mb="2"
+              _hover={{ color: 'secondary' }}
+              transition="color 0.15s"
+            >
+              <MaterialIcon name="mail" size={17} color="primary" />
+              {CONTACT_EMAIL}
+            </Link>
+            <FooterNavLink to="/contact">{contact.formLink} →</FooterNavLink>
+            {!compact && (
+              <Text fontSize="xs" color="onSurfaceVariant" lineHeight="1.55" mt="2" maxW="xs">
+                {contact.hint}
+              </Text>
+            )}
+          </FooterColumn>
+        </Grid>
+      </Box>
+
+      {/* Copyright bar */}
+      <Box bg="navy" color="onNavy">
+        <Flex
+          maxW="contentMax"
+          mx="auto"
+          px={{ base: 'marginMobile', lg: 'marginDesktop' }}
+          py="4"
+          direction={{ base: 'column', sm: 'row' }}
+          align="center"
+          justify="space-between"
+          gap="2"
+        >
+          <Text fontSize="xs" color="whiteAlpha.800" textAlign="center">
             <BrandInlineText before={`© ${year}`} after={copy.copyrightAfter} />
           </Text>
+          <Text fontSize="xs" color="whiteAlpha.600" textAlign="center">
+            {locale === 'fr' ? 'Coordination de sorties de groupe' : 'Group outing coordination'}
+          </Text>
         </Flex>
-        <HStack as="nav" gap="6" flexWrap="wrap" justify="center">
-          {copy.links.map((link) => (
-            <RouterLink key={link.label} to={link.href}>
-              <Text textStyle="bodySm" color="onSurfaceVariant" textDecoration="underline" _hover={{ color: 'primary' }}>
-                {link.label}
-              </Text>
-            </RouterLink>
-          ))}
-        </HStack>
-      </Flex>
+      </Box>
     </Box>
   )
 }

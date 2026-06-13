@@ -68,7 +68,15 @@ export const INSTALL_APP = {
 export const FOOTER = {
   en: {
     tagline: 'Outings, connection, purpose.',
+    mission: 'B2B marketplace for group trip coordination — built for municipalities, schools and associations.',
+    trustLine: 'Secure platform · GDPR-aware · Trusted suppliers',
     copyrightAfter: '. All rights reserved.',
+    infoTitle: 'Information',
+    platformTitle: 'Platform',
+    platformLinks: [
+      { label: 'Home', href: '/' },
+      { label: 'Contact', href: '/contact' },
+    ],
     links: [
       { label: 'About Us', href: '/about' },
       { label: 'Terms of Service', href: '/terms' },
@@ -78,7 +86,15 @@ export const FOOTER = {
   },
   fr: {
     tagline: 'Des sorties, du lien, du sens.',
+    mission: 'Place de marché B2B pour la coordination des sorties — conçue pour les collectivités, écoles et associations.',
+    trustLine: 'Plateforme sécurisée · Conforme RGPD · Prestataires de confiance',
     copyrightAfter: '. Tous droits réservés.',
+    infoTitle: 'Informations',
+    platformTitle: 'Plateforme',
+    platformLinks: [
+      { label: 'Accueil', href: '/' },
+      { label: 'Contact', href: '/contact' },
+    ],
     links: [
       { label: 'À propos de nous', href: '/about' },
       { label: "Conditions d'utilisation", href: '/terms' },

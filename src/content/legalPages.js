@@ -376,3 +376,87 @@ export const LEGAL_PAGE_PATHS = {
   privacy: '/privacy',
   impact: '/impact',
 }
+
+export const INFO_PAGE_META = {
+  about: {
+    icon: 'groups',
+    badge: { en: 'Company', fr: 'Entreprise' },
+    navLabel: { en: 'About us', fr: 'À propos' },
+    highlights: {
+      en: [
+        { icon: 'hub', title: 'One platform', text: 'Trips, requests, offers and messaging in a single workspace.' },
+        { icon: 'visibility', title: 'Full transparency', text: 'Compare supplier proposals with a clear audit trail.' },
+        { icon: 'diversity_3', title: 'For every audience', text: 'Municipalities, schools, associations and local suppliers.' },
+      ],
+      fr: [
+        { icon: 'hub', title: 'Une seule plateforme', text: 'Voyages, demandes, offres et messagerie dans un espace unique.' },
+        { icon: 'visibility', title: 'Transparence totale', text: 'Comparez les propositions avec une traçabilité claire.' },
+        { icon: 'diversity_3', title: 'Pour tous les publics', text: 'Collectivités, écoles, associations et prestataires locaux.' },
+      ],
+    },
+  },
+  terms: {
+    icon: 'gavel',
+    badge: { en: 'Legal', fr: 'Juridique' },
+    navLabel: { en: 'Terms of service', fr: "Conditions d'utilisation" },
+    highlights: {
+      en: [
+        { icon: 'badge', title: 'Clear roles', text: 'Organizers, suppliers and platform responsibilities defined.' },
+        { icon: 'receipt_long', title: 'Offers & billing', text: 'Contracts and payments remain between parties.' },
+        { icon: 'policy', title: 'Legal notice', text: 'Publisher and hosting information included.' },
+      ],
+      fr: [
+        { icon: 'badge', title: 'Rôles définis', text: 'Responsabilités des organisateurs, prestataires et de la plateforme.' },
+        { icon: 'receipt_long', title: 'Offres et facturation', text: 'Contrats et paiements entre les parties concernées.' },
+        { icon: 'policy', title: 'Mentions légales', text: 'Éditeur et hébergement indiqués dans le document.' },
+      ],
+    },
+  },
+  privacy: {
+    icon: 'shield',
+    badge: { en: 'Privacy', fr: 'Confidentialité' },
+    navLabel: { en: 'Privacy policy', fr: 'Politique de confidentialité' },
+    highlights: {
+      en: [
+        { icon: 'lock', title: 'GDPR aligned', text: 'Rights of access, rectification and erasure respected.' },
+        { icon: 'database', title: 'Minimal data', text: 'Only what is needed to run trips and coordination.' },
+        { icon: 'cloud_done', title: 'Secure hosting', text: 'Encrypted connections and trusted cloud providers.' },
+      ],
+      fr: [
+        { icon: 'lock', title: 'Conforme RGPD', text: 'Droits d’accès, de rectification et d’effacement respectés.' },
+        { icon: 'database', title: 'Données limitées', text: 'Uniquement ce qui est nécessaire à la coordination.' },
+        { icon: 'cloud_done', title: 'Hébergement sécurisé', text: 'Connexions chiffrées et prestataires de confiance.' },
+      ],
+    },
+  },
+  impact: {
+    icon: 'eco',
+    badge: { en: 'Impact', fr: 'Impact' },
+    navLabel: { en: 'Impact report', fr: "Rapport d'impact" },
+    highlights: {
+      en: [
+        { icon: 'favorite', title: 'Social value', text: 'Outings that strengthen community bonds.' },
+        { icon: 'public', title: 'Public sector', text: 'Less admin burden for territories and schools.' },
+        { icon: 'storefront', title: 'Local economy', text: 'Regional suppliers connected to institutional demand.' },
+      ],
+      fr: [
+        { icon: 'favorite', title: 'Valeur sociale', text: 'Des sorties qui renforcent les liens sur les territoires.' },
+        { icon: 'public', title: 'Secteur public', text: 'Moins de charge administrative pour les institutions.' },
+        { icon: 'storefront', title: 'Économie locale', text: 'Des prestataires régionaux reliés aux organisateurs.' },
+      ],
+    },
+  },
+}
+
+export const INFO_PAGE_ORDER = ['about', 'terms', 'privacy', 'impact']
+
+export const INFO_PAGE_UI = {
+  en: {
+    onThisPage: 'On this page',
+    relatedPages: 'Legal & information',
+  },
+  fr: {
+    onThisPage: 'Sur cette page',
+    relatedPages: 'Informations légales',
+  },
+}

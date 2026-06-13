@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { Box, Flex, Spinner, Text } from '@chakra-ui/react'
 import { Navigate, Outlet, ScrollRestoration, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { canAccessPath, getHomePath } from '../../lib/roles'
+import { canAccessPath, getHomePath, ROLES } from '../../lib/roles'
 import { PortalHeader } from '../organisms/PortalHeader'
+import { PortalFooter } from '../organisms/PortalFooter'
 import { PortalSidebar } from '../organisms/PortalSidebar'
 
 export function PortalShell() {
@@ -44,6 +45,7 @@ export function PortalShell() {
           <Outlet />
         </Box>
       </Flex>
+      {(user?.role === ROLES.ORGANIZER || user?.role === ROLES.PROVIDER) && <PortalFooter />}
     </Box>
   )
 }

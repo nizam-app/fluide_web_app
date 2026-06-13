@@ -4,7 +4,8 @@ Production web client for **Flunexia** — the organizer–supplier platform for
 
 | | |
 |---|---|
-| **Production** | [https://fluide-web-app.vercel.app](https://fluide-web-app.vercel.app) |
+| **Staging (current)** | [https://staging.flunexia.fr](https://staging.flunexia.fr) |
+| **Production (after testing)** | [https://flunexia.fr](https://flunexia.fr) |
 | **Repository** | [github.com/nizam-app/fluide_web_app](https://github.com/nizam-app/fluide_web_app) |
 | **API** | [https://api.flunexia.fr/api/v1](https://api.flunexia.fr/api/v1) |
 | **Stack** | React 19 · Vite 8 · Chakra UI v3 · React Router 7 |
@@ -128,7 +129,7 @@ Set in **Project → Settings → Environment Variables**:
 VITE_API_URL=https://api.flunexia.fr/api/v1
 ```
 
-Redeploy after changing env vars (Vite bakes them in at build time).
+Set on your staging/production host. Redeploy after changing env vars (Vite bakes them in at build time).
 
 ---
 
@@ -239,8 +240,8 @@ on authenticated requests. On `401`, the session is cleared and the user is prom
 **CORS:** the backend `CLIENT_ORIGIN` must include:
 
 - `http://localhost:5173` (local dev)
-- `https://fluide-web-app.vercel.app` (production)
-- Any custom domain (e.g. `https://flunexia.fr`)
+- `https://staging.flunexia.fr` (staging — current)
+- `https://flunexia.fr` and `https://www.flunexia.fr` (production — after testing)
 
 ---
 

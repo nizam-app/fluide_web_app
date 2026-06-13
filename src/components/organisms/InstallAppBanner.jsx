@@ -67,7 +67,7 @@ export function InstallAppBanner() {
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [installing, setInstalling] = useState(false)
 
-  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://fluide-web-app.vercel.app'
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://staging.flunexia.fr'
 
   useEffect(() => {
     let cancelled = false
