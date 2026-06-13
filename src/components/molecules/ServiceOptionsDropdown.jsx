@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
+import { getPortalCopy } from '../../content/portalCopy'
+import { useLocale } from '../../context/LocaleContext'
 import { SERVICE_NEED_CONFIG } from '../../lib/servicePlan'
 
 export function ServiceOptionsDropdown({ options, value = [], onChange }) {
+  const { locale } = useLocale()
+  const shared = getPortalCopy(locale).shared
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
 
@@ -51,7 +55,7 @@ export function ServiceOptionsDropdown({ options, value = [], onChange }) {
         cursor="pointer"
         onClick={() => setOpen((prev) => !prev)}
       >
-        Choose options
+        {shared.chooseOptions}
         <MaterialIcon name={open ? 'expand_less' : 'expand_more'} size={20} />
       </Flex>
 
@@ -103,7 +107,7 @@ export function ServiceOptionsDropdown({ options, value = [], onChange }) {
 
       {value.length === 0 && (
         <Text textStyle="bodySm" color="onSurfaceVariant" mt="2">
-          Select at least one option.
+          {shared.selectOneOption}
         </Text>
       )}
     </Box>

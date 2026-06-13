@@ -1,14 +1,19 @@
 import { Flex, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
+import { getPortalCopy } from '../../content/portalCopy'
+import { useLocale } from '../../context/LocaleContext'
 import { NEED_TYPE_OPTIONS } from '../../data/mockData'
 import { getNeedTypeIcon } from '../../lib/format'
 
 export function NeedTypePicker({
   value = [],
   onChange,
-  label = 'What do you need?',
+  label,
   options = NEED_TYPE_OPTIONS,
 }) {
+  const { locale } = useLocale()
+  const shared = getPortalCopy(locale).shared
+  const pickerLabel = label ?? (locale === 'fr' ? 'De quoi avez-vous besoin ?' : 'What do you need?')
   const selected = Array.isArray(value) ? value : []
 
   const toggle = (option) => {
@@ -22,7 +27,7 @@ export function NeedTypePicker({
   return (
     <Flex direction="column" gap="2">
       <Text textStyle="labelMd" color="onSurfaceVariant">
-        {label}
+        {pickerLabel}
       </Text>
       <Flex gap="2" flexWrap="wrap">
         {options.map((option) => {
@@ -56,7 +61,7 @@ export function NeedTypePicker({
       </Flex>
       {selected.length === 0 && (
         <Text textStyle="bodySm" color="onSurfaceVariant">
-          Select at least one need type.
+          {shared.selectOneNeedType}
         </Text>
       )}
     </Flex>

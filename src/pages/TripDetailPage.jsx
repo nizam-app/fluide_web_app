@@ -27,6 +27,8 @@ import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
 import { StatusBadge } from '../components/molecules/StatusBadge'
 import { useAuth } from '../context/AuthContext'
+import { useLocale } from '../context/LocaleContext'
+import { getPortalCopy } from '../content/portalCopy'
 import { NEED_TYPE_OPTIONS } from '../data/mockData'
 import api from '../lib/api'
 import { BOOKING_MODES, bundledRequestMessage } from '../lib/itinerary'
@@ -125,6 +127,8 @@ function useTripDetail(id) {
 }
 
 function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdraw, busy }) {
+  const { locale } = useLocale()
+  const shared = getPortalCopy(locale).shared
   const providerId = offer.provider?._id || offer.provider
 
   return (
@@ -146,12 +150,12 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
           {providerId ? (
             <ProviderNameLink provider={offer.provider} />
           ) : (
-            <Text textStyle="labelMd">{offer.provider?.name || 'Provider'}</Text>
+            <Text textStyle="labelMd">{offer.provider?.name || shared.provider}</Text>
           )}
           <StatusBadge status={offer.status} />
           {offer.tier === 'recommended' && (
             <Text textStyle="labelSm" color="primary" fontWeight="700">
-              Recommended
+              {shared.recommended}
             </Text>
           )}
         </Flex>
@@ -186,7 +190,7 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
       {canManage && offer.status === 'submitted' && (
         <HStack>
           <Button size="sm" {...stitchGreenButton} {...stableBusyProps(busy)} onClick={() => onAccept(offer)}>
-            Accept
+            {shared.accept}
           </Button>
           <Button
             size="sm"
@@ -195,7 +199,7 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
             {...stableBusyProps(busy)}
             onClick={() => onReject(offer)}
           >
-            Reject
+            {shared.reject}
           </Button>
         </HStack>
       )}
@@ -207,7 +211,7 @@ function OfferRow({ offer, onAccept, onReject, onWithdraw, canManage, canWithdra
           {...stableBusyProps(busy)}
           onClick={() => onWithdraw(offer)}
         >
-          Withdraw
+          {shared.withdraw}
         </Button>
       )}
     </Flex>
@@ -424,6 +428,9 @@ function DeleteTripButton({ tripId, tripTitle, requestCount, offerCount, backTo 
 }
 
 function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNeedTypes, requestCount = 0, onCreated }) {
+  const { locale } = useLocale()
+  const t = getPortalCopy(locale).tripDetail
+  const shared = getPortalCopy(locale).shared
   const isBundled = trip?.bookingMode === BOOKING_MODES.BUNDLED
   const allowedTypes = tripNeedTypes.length > 0 ? tripNeedTypes : NEED_TYPE_OPTIONS
   const remaining = allowedTypes.filter((n) => !existingNeedTypes.includes(n))
@@ -445,7 +452,7 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
     event.preventDefault()
     setError('')
     if (requestCount > 0) {
-      setError('The package request for this trip is already open.')
+      setError(t.packageAlreadyOpenError)
       return
     }
     setPendingAction({ mode: 'bundled' })
@@ -469,7 +476,7 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       setPendingAction(null)
       await onCreated()
     } catch (err) {
-      setError(err?.message || 'Could not create the package request.')
+      setError(err?.message || t.createPackageFailed)
     } finally {
       setSubmitting(false)
     }
@@ -480,16 +487,16 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
     setError('')
 
     if (!remaining.length) {
-      setError('All need types for this trip already have an open request.')
+      setError(t.allTypesHaveRequestsError)
       return
     }
     if (!selectedTypes.length) {
-      setError('Select at least one need type.')
+      setError(t.selectOneNeedTypeError)
       return
     }
     const invalid = selectedTypes.filter((t) => !remaining.includes(t))
     if (invalid.length) {
-      setError(`Choose need types listed on this trip: ${allowedTypes.join(', ')}.`)
+      setError(t.chooseTripTypes(allowedTypes))
       return
     }
 
@@ -516,13 +523,11 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       const failed = results.filter((r) => r.status === 'rejected')
       if (failed.length === results.length) {
         const reason = failed[0].reason
-        setError(reason?.message || 'Could not create the service request.')
+        setError(reason?.message || t.createRequestFailed)
         return
       }
       if (failed.length) {
-        setError(
-          `${failed.length} of ${results.length} requests could not be opened. The rest were created.`,
-        )
+        setError(t.partialRequestsFailed(failed.length, results.length))
       } else {
         setMessage('')
       }
@@ -530,7 +535,7 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       setPendingAction(null)
       await onCreated()
     } catch (err) {
-      setError(err?.message || 'Could not create the service request.')
+      setError(err?.message || t.createRequestFailed)
     } finally {
       setSubmitting(false)
     }
@@ -549,27 +554,24 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
         borderColor="outlineVariant"
       >
         <Text textStyle="labelMd" mb="2">
-          Open package request
+          {t.openPackageRequestTitle}
         </Text>
         <Text textStyle="bodySm" color="onSurfaceVariant" mb="4">
-          This is a full-package group booking. One provider (typically the hotel) handles transport,
-          stay, and transfers — you only need a single request.
-          {(tripNeedTypes || []).length > 0 && (
-            <> Services included: {tripNeedTypes.join(', ')}.</>
-          )}
+          {t.packageRequestBody}
+          {(tripNeedTypes || []).length > 0 && t.servicesIncluded(tripNeedTypes)}
         </Text>
         {requestCount > 0 ? (
           <Text textStyle="bodySm" color="onSurfaceVariant">
-            A package request is already open for this trip.
+            {t.packageAlreadyOpen}
           </Text>
         ) : (
           <Stack gap="4">
             <Box>
               <Text textStyle="labelSm" color="onSurfaceVariant" mb="2">
-                Message (optional)
+                {shared.messageOptional}
               </Text>
               <Input
-                placeholder="Add context for the provider…"
+                placeholder={shared.addContextProvider}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 css={fluideInputStyles}
@@ -578,7 +580,7 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
             <Flex justify="flex-end">
               <Button type="submit" {...stitchBlackButton} px="6" {...stableBusyProps(submitting)}>
                 <MaterialIcon name="inventory_2" size={18} />
-                Open package request
+                {t.openPackageRequest}
               </Button>
             </Flex>
           </Stack>
@@ -590,14 +592,14 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
         )}
         <RequestSummaryModal
           open={showSummary}
-          title="Confirm package request"
+          title={t.confirmPackageRequest}
           trip={trip}
           rows={buildRequestSummaryRows({
             needTypes: tripNeedTypes,
             message: message.trim() || undefined,
-            statusLabel: 'Pending',
+            statusLabel: shared.pending,
           })}
-          confirmLabel="Confirm request"
+          confirmLabel={t.confirmRequest}
           loading={submitting}
           onCancel={() => {
             setShowSummary(false)
@@ -621,26 +623,20 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       borderColor="outlineVariant"
     >
       <Text textStyle="labelMd" mb="2">
-        Open a new service request
+        {t.openNewServiceRequest}
       </Text>
       <Text textStyle="bodySm" color="onSurfaceVariant" mb="4">
-        Notify suppliers that you need services for this trip. Select one or more need types — each
-        opens a separate request so the right suppliers can respond.
-        {tripNeedTypes.length > 0 && (
-          <>
-            {' '}
-            Only types defined for this trip are shown ({tripNeedTypes.join(', ')}).
-          </>
-        )}
+        {t.newRequestBody}
+        {tripNeedTypes.length > 0 && t.tripTypesOnly(tripNeedTypes)}
       </Text>
       {remaining.length === 0 ? (
         <Text textStyle="bodySm" color="onSurfaceVariant">
-          Every need type for this trip already has a service request.
+          {t.allTypesHaveRequests}
         </Text>
       ) : (
         <Stack gap="4">
           <NeedTypePicker
-            label="Need types"
+            label={shared.needTypes}
             options={remaining}
             value={selectedTypes}
             onChange={setSelectedTypes}
@@ -648,10 +644,10 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
           <Grid templateColumns={{ base: '1fr', sm: '1fr auto' }} gap="3" alignItems="end">
             <Box>
               <Text textStyle="labelSm" color="onSurfaceVariant" mb="2">
-                Message (optional)
+                {shared.messageOptional}
               </Text>
               <Input
-                placeholder="Add context for suppliers…"
+                placeholder={shared.addContextSuppliers}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 css={fluideInputStyles}
@@ -665,7 +661,7 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
               disabled={submitting || selectedTypes.length === 0}
             >
               <MaterialIcon name="add" size={18} />
-              Open {selectedTypes.length > 1 ? `${selectedTypes.length} requests` : 'request'}
+              {selectedTypes.length > 1 ? t.openRequests(selectedTypes.length) : t.openRequest}
             </Button>
           </Grid>
         </Stack>
@@ -677,14 +673,14 @@ function OrganizerNewRequestForm({ tripId, trip, tripNeedTypes = [], existingNee
       )}
       <RequestSummaryModal
         open={showSummary}
-        title="Confirm service requests"
+        title={t.confirmServiceRequests}
         trip={trip}
         rows={buildRequestSummaryRows({
           needTypes: pendingAction?.types || selectedTypes,
           message: message.trim() || undefined,
-          statusLabel: 'Pending',
+          statusLabel: shared.pending,
         })}
-        confirmLabel="Confirm requests"
+        confirmLabel={t.confirmRequests}
         loading={submitting}
         onCancel={() => {
           setShowSummary(false)
@@ -1067,6 +1063,8 @@ function RequestSection({ request, offers, role, currentUserId, trip, onChange, 
 
 export function TripDetailPage() {
   const { isOrganizer, isProvider, isAdmin, user } = useAuth()
+  const { locale } = useLocale()
+  const t = getPortalCopy(locale).tripDetail
   const { tripId: id } = useParams()
   const {
     trip,
@@ -1087,7 +1085,7 @@ export function TripDetailPage() {
 
   const role = isAdmin ? 'admin' : isProvider ? 'provider' : 'organizer'
   const backTo = isAdmin ? '/admin/trips' : '/trips'
-  const backLabel = isAdmin ? 'Back to All Trips' : isProvider ? 'Back to Available Trips' : 'Back to My Trips'
+  const backLabel = isAdmin ? t.backAdmin : isProvider ? t.backProvider : t.backOrganizer
 
   if (loading) {
     return (
@@ -1101,7 +1099,7 @@ export function TripDetailPage() {
     return (
         <Box p="10" textAlign="center">
           <Text textStyle="bodyMd" color="error" mb="4">
-            {error?.message || 'Trip not found.'}
+            {error?.message || t.tripNotFound}
           </Text>
           <Button {...stitchGreenButton} onClick={() => window.location.assign(backTo)}>
             {backLabel}
@@ -1140,7 +1138,7 @@ export function TripDetailPage() {
                   fontWeight="600"
                 >
                   <MaterialIcon name="inventory_2" size={14} />
-                  Full package
+                  {t.fullPackage}
                 </Flex>
               )}
               <Text textStyle="labelSm" color="onSurfaceVariant">
@@ -1152,7 +1150,7 @@ export function TripDetailPage() {
           <Flex direction="column" align={{ base: 'stretch', sm: 'flex-end' }} gap="2">
           {isAdmin && (
               <Text textStyle="bodySm" color="onSurfaceVariant" textAlign={{ base: 'left', sm: 'right' }}>
-                Platform admin view
+                {t.platformAdminView}
             </Text>
           )}
             {canDeleteTrip && (
@@ -1182,7 +1180,7 @@ export function TripDetailPage() {
                 {(trip.itinerary || []).length > 0 && (
                   <Box mb={trip.description ? '8' : '0'}>
                     <Text textStyle="headlineSm" mb="4">
-                      Itinerary
+                      {t.itinerary}
                     </Text>
                     <ItineraryTimeline itinerary={trip.itinerary} />
                   </Box>
@@ -1190,7 +1188,7 @@ export function TripDetailPage() {
                 {trip.description ? (
                   <Box>
                 <Text textStyle="headlineSm" mb="3">
-                      About this trip
+                      {t.aboutTrip}
                 </Text>
                     <Text textStyle="bodyMd" color="onSurfaceVariant" whiteSpace="pre-wrap" lineHeight="1.7">
                   {trip.description}
@@ -1203,10 +1201,10 @@ export function TripDetailPage() {
             {recommendedProviders.length > 0 && (
               <Box mb="8">
                 <Text textStyle="headlineSm" mb="1">
-                  Recommended providers
+                  {t.recommendedProviders}
                 </Text>
                 <Text textStyle="bodySm" color="onSurfaceVariant" mb="4">
-                  Expert services tailored to your trip details
+                  {t.recommendedSubtitle}
                 </Text>
                 <Stack gap="3">
                   {recommendedProviders.map((provider) => (
@@ -1270,9 +1268,9 @@ export function TripDetailPage() {
 
                 <Box>
               <Flex align="center" gap="3" mb="4">
-                <Text textStyle="headlineSm">Service requests</Text>
+                <Text textStyle="headlineSm">{t.serviceRequests}</Text>
                 <Box bg="infoBg" color="infoFg" px="3" py="1" borderRadius="pill" textStyle="labelSm" fontWeight="600">
-                  {requests.length} {requests.length === 1 ? 'request' : 'requests'}
+                  {requests.length} {requests.length === 1 ? t.request : t.requests}
                 </Box>
               </Flex>
 
@@ -1292,7 +1290,7 @@ export function TripDetailPage() {
                 {requests.length === 0 && !isOrganizer && (
                   <Box bg="surface" p="6" borderRadius="fluide3xl" borderWidth="1px" borderColor="outlineVariant">
                     <Text textStyle="bodySm" color="onSurfaceVariant">
-                      No service requests yet for this trip.
+                      {t.noServiceRequestsYet}
                   </Text>
             </Box>
             )}

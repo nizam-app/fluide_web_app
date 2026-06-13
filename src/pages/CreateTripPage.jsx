@@ -6,6 +6,8 @@ import { BookingModePicker } from '../components/molecules/BookingModePicker'
 import { CurrencyPicker } from '../components/molecules/CurrencyPicker'
 import { TripServiceNeedsBuilder } from '../components/molecules/TripServiceNeedsBuilder'
 import { RolePageHeader } from '../components/molecules/RolePageHeader'
+import { getPortalCopy } from '../content/portalCopy'
+import { useLocale } from '../context/LocaleContext'
 import api from '../lib/api'
 import {
   collectNeedTypesFromSteps,
@@ -49,6 +51,8 @@ function applyBundledTypesToSteps(steps) {
 
 export function CreateTripPage() {
   const navigate = useNavigate()
+  const { locale } = useLocale()
+  const createCopy = getPortalCopy(locale).createTrip
   const fileInputRef = useRef(null)
   const [form, setForm] = useState({
     title: '',
@@ -162,7 +166,7 @@ export function CreateTripPage() {
       return
     }
     if (!filledSteps.length) {
-      setError('Select at least one service option in at least one step.')
+      setError(createCopy.selectOneServiceError)
       return
     }
 
@@ -380,11 +384,11 @@ export function CreateTripPage() {
               <Flex justify="flex-end" gap="3" flexWrap="wrap">
                 {pendingTripId && (
                   <Button variant="outline" borderRadius="pill" onClick={handleContinueWithoutImage}>
-                    Continue without image
+                    {createCopy.continueWithoutImage}
                   </Button>
                 )}
                 <Button {...stitchBlackButton} px="10" py="3" type="submit" {...stableBusyProps(submitting)}>
-                  {pendingTripId ? 'Retry image upload' : 'Publish Request'}
+                  {pendingTripId ? createCopy.retryImageUpload : createCopy.publishRequest}
                 </Button>
               </Flex>
             </Stack>

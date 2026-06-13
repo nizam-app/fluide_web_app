@@ -12,10 +12,13 @@ import {
 } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { FormSelect } from '../components/molecules/FormSelect'
+import { EmailLanguagePicker } from '../components/molecules/EmailLanguagePicker'
 import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { ProfileField, ProfileSection } from '../components/molecules/ProfileSection'
 import { stableBusyProps } from '../lib/stableButton'
 import { useAuth } from '../context/AuthContext'
+import { useLocale } from '../context/LocaleContext'
+import { getPortalCopy } from '../content/portalCopy'
 import api from '../lib/api'
 import { ORGANIZATION_TYPES, PROVIDER_TYPES } from '../data/mockData'
 import { getSelectedProviderTypes, getApprovedProviderTypes, getPendingProviderTypes } from '../lib/providerTypes'
@@ -34,6 +37,7 @@ function buildProfileStateFromUser(user) {
   return {
     name: user?.name || '',
     email: user?.email || '',
+    locale: user?.locale === 'en' ? 'en' : 'fr',
     organizationType: user?.organizationType || 'Municipality',
     providerTypes: getSelectedProviderTypes(user).length ? getSelectedProviderTypes(user) : ['Transport'],
     contactPerson: user?.contactPerson || '',
@@ -101,6 +105,9 @@ export function ProfilePage() {
   const fileInputRef = useRef(null)
   const documentInputRef = useRef(null)
   const { user, isOrganizer, isProvider, isAdmin, updateProfile, updatePassword, logout, refresh } = useAuth()
+  const { locale, setLocale } = useLocale()
+  const profileCopy = getPortalCopy(locale).profile
+  const sharedCopy = getPortalCopy(locale).shared
 
   const [profile, setProfile] = useState(() => buildProfileStateFromUser(user))
   const [avatarBusy, setAvatarBusy] = useState(false)
@@ -195,7 +202,7 @@ export function ProfilePage() {
     try {
       const payload = {
         name: profile.name.trim(),
-        locale: 'en',
+        locale: profile.locale,
       }
       if (profile.email.trim() && profile.email.trim() !== user?.email) {
         payload.email = profile.email.trim()
@@ -209,10 +216,11 @@ export function ProfilePage() {
       const result = await updateProfile(payload)
       if (result?.user) {
         setProfile(buildProfileStateFromUser(result.user))
+        if (result.user.locale) setLocale(result.user.locale)
       }
       setProfileStatus({
         type: 'success',
-        message: result?.message || 'Changes saved.',
+        message: result?.message || profileCopy.changesSaved,
       })
     } catch (err) {
       setProfileStatus({ type: 'error', message: err?.message || 'Could not update your profile.' })
@@ -420,6 +428,13 @@ export function ProfilePage() {
               )}
             </Grid>
 
+            <ProfileField label={sharedCopy.interfaceLanguage} hint={sharedCopy.interfaceLanguageHint}>
+              <EmailLanguagePicker
+                value={profile.locale}
+                onChange={(next) => setProfile((prev) => ({ ...prev, locale: next }))}
+              />
+            </ProfileField>
+
             {isProvider && (
               <Stack gap="5">
                 <Box>
@@ -448,7 +463,7 @@ export function ProfilePage() {
 
             <Flex align="center" gap="4" flexWrap="wrap" pt="1">
               <Button type="submit" {...stitchGreenButton} px="8" minH="44px" {...stableBusyProps(profileBusy)}>
-                Save changes
+                {profileCopy.saveChanges}
               </Button>
               <StatusMessage status={profileStatus} />
             </Flex>

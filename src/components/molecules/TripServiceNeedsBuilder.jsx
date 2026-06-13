@@ -2,6 +2,8 @@ import { Box, Button, Flex, Input, Stack, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import { DestinationAddressPreview } from './DestinationAddressPreview'
 import { ServiceOptionsDropdown } from './ServiceOptionsDropdown'
+import { getPortalCopy } from '../../content/portalCopy'
+import { useLocale } from '../../context/LocaleContext'
 import {
   CREATE_TRIP_SERVICE_OPTIONS,
   SERVICE_FIELD_KIND,
@@ -128,7 +130,7 @@ function ServiceNeedRow({ needType, plan, onChange }) {
   )
 }
 
-function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemoveStep, canRemove }) {
+function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemoveStep, canRemove, copy }) {
   const handleTypesChange = (selectedTypes) => {
     const needs = { ...plan.needs }
     for (const type of selectedTypes) {
@@ -165,7 +167,7 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemov
               {stepIndex + 1}
             </Flex>
             <Text textStyle="labelMd" fontWeight="600">
-              Step {stepIndex + 1}
+              {copy.step(stepIndex + 1)}
             </Text>
           </Flex>
           {canRemove && (
@@ -177,13 +179,13 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemov
               onClick={onRemoveStep}
             >
               <MaterialIcon name="delete" size={16} />
-              Remove
+              {copy.remove}
             </Button>
           )}
         </Flex>
 
         <Flex gap="4" flexWrap="wrap" align="flex-end">
-          <StepField label="Service date">
+          <StepField label={copy.serviceDate}>
             <Input
               type="date"
               value={plan.serviceDate}
@@ -194,7 +196,7 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemov
             />
           </StepField>
 
-          <StepField label="From">
+          <StepField label={copy.from}>
             <Input
               type="time"
               value={plan.timeFrom}
@@ -205,7 +207,7 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemov
             />
           </StepField>
 
-          <StepField label="To">
+          <StepField label={copy.to}>
             <Input
               type="time"
               value={plan.timeTo}
@@ -242,7 +244,7 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemov
             onClick={onAddStep}
           >
             <MaterialIcon name="add" size={18} />
-            Add step
+            {copy.addStep}
           </Button>
         )}
       </Stack>
@@ -251,6 +253,8 @@ function ServicePlanStep({ stepIndex, plan, onChange, isLast, onAddStep, onRemov
 }
 
 export function TripServiceNeedsBuilder({ value, onChange }) {
+  const { locale } = useLocale()
+  const copy = getPortalCopy(locale).createTrip
   const steps = (value?.length ? value : [createEmptyServicePlan()]).map((step) =>
     step.id ? step : { ...step, id: createServicePlanStepId() },
   )
@@ -273,10 +277,10 @@ export function TripServiceNeedsBuilder({ value, onChange }) {
   return (
     <Box pt="2">
       <Text textStyle="headlineSm" color="onSurface" fontWeight="600" mb="1">
-        What do you need?
+        {copy.whatDoYouNeed}
       </Text>
       <Text textStyle="bodySm" color="onSurfaceVariant" mb="5">
-        Add as many steps as your route needs. Use &ldquo;Add step&rdquo; to continue.
+        {copy.addStepsHint}
       </Text>
 
       <Stack gap="5">
@@ -290,6 +294,7 @@ export function TripServiceNeedsBuilder({ value, onChange }) {
             onAddStep={handleAddStep}
             onRemoveStep={() => handleRemoveStep(index)}
             canRemove={steps.length > 1}
+            copy={copy}
           />
         ))}
       </Stack>
