@@ -31,7 +31,7 @@ export function AuthBrandingPanel() {
         Save time on group outings — one place for transport, activities, and services.
       </Text>
       <Text textStyle="bodySm" color="whiteAlpha.500" as="span">
-        <BrandInlineText before="© 2024" after="" />
+        <BrandInlineText before="© 2026" after="" />
       </Text>
     </Box>
   )

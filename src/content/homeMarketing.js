@@ -68,24 +68,24 @@ export const INSTALL_APP = {
 export const FOOTER = {
   en: {
     tagline: 'Des sorties, du lien, du sens.',
-    copyrightBefore: '© 2024',
+    copyrightBefore: '© 2026',
     copyrightAfter: '. All rights reserved.',
     links: [
-      { label: 'About Us', href: '#' },
-      { label: 'Terms of Service', href: '#' },
-      { label: 'Privacy Policy', href: '#' },
-      { label: 'Impact Report', href: '#' },
+      { label: 'About Us', href: '/about' },
+      { label: 'Terms of Service', href: '/terms' },
+      { label: 'Privacy Policy', href: '/privacy' },
+      { label: 'Impact Report', href: '/impact' },
     ],
   },
   fr: {
     tagline: 'Des sorties, du lien, du sens.',
-    copyrightBefore: '© 2024',
+    copyrightBefore: '© 2026',
     copyrightAfter: '. Tous droits réservés.',
     links: [
-      { label: 'À propos de nous', href: '#' },
-      { label: "Conditions d'utilisation", href: '#' },
-      { label: 'Politique de confidentialité', href: '#' },
-      { label: "Rapport d'impact", href: '#' },
+      { label: 'À propos de nous', href: '/about' },
+      { label: "Conditions d'utilisation", href: '/terms' },
+      { label: 'Politique de confidentialité', href: '/privacy' },
+      { label: "Rapport d'impact", href: '/impact' },
     ],
   },
 }

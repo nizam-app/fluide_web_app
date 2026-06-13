@@ -5,7 +5,11 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { AdminRequestsPage } from './pages/AdminRequestsPage'
 import { AdminTripsPage } from './pages/AdminTripsPage'
 import { AuthPage } from './pages/AuthPage'
+import { AboutPage } from './pages/AboutPage'
 import { ContactPage } from './pages/ContactPage'
+import { ImpactPage } from './pages/ImpactPage'
+import { PrivacyPage } from './pages/PrivacyPage'
+import { TermsPage } from './pages/TermsPage'
 import { CreateTripPage } from './pages/CreateTripPage'
 import { HomePage } from './pages/HomePage'
 import { OrganizerFavoritesPage } from './pages/OrganizerFavoritesPage'
@@ -19,6 +23,10 @@ import { ProviderProfilePage } from './pages/ProviderProfilePage'
 export const appRouter = createBrowserRouter([
   { path: '/', element: <HomePage /> },
   { path: '/contact', element: <ContactPage /> },
+  { path: '/about', element: <AboutPage /> },
+  { path: '/terms', element: <TermsPage /> },
+  { path: '/privacy', element: <PrivacyPage /> },
+  { path: '/impact', element: <ImpactPage /> },
   { path: '/auth', element: <Navigate to="/login" replace /> },
   { path: '/login', element: <AuthPage /> },
   { path: '/trips/new', element: <Navigate to="/create-trip" replace /> },
