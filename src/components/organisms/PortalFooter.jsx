@@ -1,5 +1,6 @@
-import { Box, Flex, Grid, Link, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
+import { ContactEmailLink } from '../atoms/ContactEmailLink'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import { CONTACT_EMAIL, PORTAL_FOOTER } from '../../content/siteContact'
 
@@ -49,19 +50,19 @@ export function PortalFooter() {
             <Text fontSize="xs" color="whiteAlpha.700" lineHeight="1.55" maxW="md">
               {copy.emailIntro}
             </Text>
-            <Link
-              href={`mailto:${CONTACT_EMAIL}`}
+            <ContactEmailLink
               display="inline-flex"
               alignItems="center"
               gap="2"
               fontSize="sm"
               color="accentMint"
               fontWeight="600"
+              textDecoration="none"
               _hover={{ textDecoration: 'underline' }}
             >
               <MaterialIcon name="mail" size={16} color="accentMint" />
               {CONTACT_EMAIL}
-            </Link>
+            </ContactEmailLink>
           </Stack>
 
           <Flex gap="5" flexWrap="wrap" align="center" justify={{ base: 'center', md: 'flex-end' }}>

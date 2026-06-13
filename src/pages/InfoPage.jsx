@@ -1,6 +1,7 @@
 import { Box, Flex, Grid, Heading, Link, Stack, Text, VStack } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
+import { ContactEmailLink } from '../components/atoms/ContactEmailLink'
 import {
   MarketingHighlightCards,
   MarketingPageHero,
@@ -40,9 +41,9 @@ function RichLegalText({ text }) {
   return (
     <>
       {textWithBrand(before)}
-      <Link href={`mailto:${CONTACT_EMAIL}`} color="primary" fontWeight="600" textDecoration="underline">
+      <ContactEmailLink color="primary" fontWeight="600" textDecoration="underline">
         {CONTACT_EMAIL}
-      </Link>
+      </ContactEmailLink>
       {textWithBrand(after)}
     </>
   )
@@ -230,8 +231,7 @@ function InfoSidebar({ pageKey, sections, ui, locale }) {
         <Text fontSize="sm" color="whiteAlpha.900" lineHeight="1.6" mb="4">
           {marketingUi.sidebarContactBody}
         </Text>
-        <Link
-          href={`mailto:${CONTACT_EMAIL}`}
+        <ContactEmailLink
           display="inline-flex"
           alignItems="center"
           gap="2"
@@ -242,7 +242,7 @@ function InfoSidebar({ pageKey, sections, ui, locale }) {
         >
           <MaterialIcon name="mail" size={18} color="accentMint" />
           {marketingUi.sidebarEmail}
-        </Link>
+        </ContactEmailLink>
       </Box>
     </Stack>
   )

@@ -2,6 +2,7 @@ import { Box, Flex, Grid, Link, Stack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { BrandInlineText } from '../atoms/BrandInlineText'
 import { FluideLogo } from '../atoms/FluideLogo'
+import { ContactEmailLink } from '../atoms/ContactEmailLink'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import { FOOTER } from '../../content/homeMarketing'
 import { CONTACT_EMAIL, FOOTER_CONTACT } from '../../content/siteContact'
@@ -135,21 +136,24 @@ export function MarketingFooter({ compact = false }) {
             <Text fontSize="sm" color="onSurfaceVariant" lineHeight="1.7" maxW="xs" mb="2">
               {contact.emailIntro}
             </Text>
-            <Link
-              href={`mailto:${CONTACT_EMAIL}`}
+            <ContactEmailLink
               display="inline-flex"
               alignItems="center"
               gap="2"
               fontSize="sm"
               color="primary"
               fontWeight="600"
-              mb="2"
+              mb="1"
+              textDecoration="none"
               _hover={{ color: 'secondary' }}
               transition="color 0.15s"
             >
               <MaterialIcon name="mail" size={17} color="primary" />
               {CONTACT_EMAIL}
-            </Link>
+            </ContactEmailLink>
+            <Text fontSize="xs" color="onSurfaceVariant" lineHeight="1.5" mb="2" maxW="xs">
+              {contact.emailClickHint}
+            </Text>
             <FooterNavLink to="/contact">{contact.formLink} →</FooterNavLink>
             {!compact && (
               <Text fontSize="xs" color="onSurfaceVariant" lineHeight="1.55" mt="2" maxW="xs">

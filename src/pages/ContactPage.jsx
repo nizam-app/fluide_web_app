@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
+import { ContactEmailLink } from '../components/atoms/ContactEmailLink'
 import { FaqAccordion } from '../components/molecules/FaqAccordion'
 import {
   MarketingHighlightCards,
@@ -261,9 +262,14 @@ export function ContactPage() {
                     </Text>
                   </Box>
                 </Flex>
-                <Link href={`mailto:${CONTACT_EMAIL}`} fontSize="md" fontWeight="700" color="accentMint">
+                <ContactEmailLink fontSize="md" fontWeight="700" color="accentMint" textDecoration="underline">
                   {CONTACT_EMAIL}
-                </Link>
+                </ContactEmailLink>
+                <Text fontSize="xs" color="whiteAlpha.800" mt="2" lineHeight="1.5">
+                  {locale === 'fr'
+                    ? 'Ouvre votre application e-mail (Gmail, Outlook, etc.) pour nous écrire.'
+                    : 'Opens your email app (Gmail, Outlook, etc.) to write to us.'}
+                </Text>
               </Box>
 
               <Box

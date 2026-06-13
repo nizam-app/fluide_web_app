@@ -7,12 +7,14 @@ export const FOOTER_CONTACT = {
     sectionTitle: 'Contact',
     emailIntro: 'Partnerships, demos and institutional support.',
     hint: 'We typically respond within two business days.',
+    emailClickHint: 'Click the email to open your mail app (Gmail, Outlook, etc.).',
     formLink: 'Send a message',
   },
   fr: {
     sectionTitle: 'Contact',
     emailIntro: 'Partenariats, démonstrations et accompagnement institutionnel.',
     hint: 'Réponse habituelle sous deux jours ouvrés.',
+    emailClickHint: "Cliquez sur l'e-mail pour ouvrir votre messagerie (Gmail, Outlook, etc.).",
     formLink: 'Envoyer un message',
   },
 }
