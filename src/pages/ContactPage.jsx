@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Box, Button, Flex, Grid, Input, NativeSelect, Text, Textarea } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, Input, Link, NativeSelect, Text, Textarea } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { FaqAccordion } from '../components/molecules/FaqAccordion'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
+import { CONTACT_EMAIL } from '../content/siteContact'
 import { contactFaqItems } from '../data/mockData'
+import { useLocale } from '../context/LocaleContext'
 import api from '../lib/api'
 import { textWithBrand } from '../lib/textWithBrand'
 import { fluideInputStyles, stitchBlackButton } from '../theme/fluide-theme'
@@ -21,6 +23,7 @@ function FormField({ label, children }) {
 }
 
 export function ContactPage() {
+  const { locale } = useLocale()
   const [form, setForm] = useState({ name: '', email: '', role: 'organizer', message: '' })
   const [status, setStatus] = useState({ type: null, message: '' })
   const [submitting, setSubmitting] = useState(false)
@@ -63,6 +66,12 @@ export function ContactPage() {
           </Text>
           <Text textStyle="bodyMd" color="onSurfaceVariant" maxW="lg" mx="auto" lineHeight="1.6">
             {textWithBrand('Organizer or Supplier — send a message and Flunexia will respond as soon as possible.')}
+          </Text>
+          <Text textStyle="bodyMd" color="onSurfaceVariant" mt="3">
+            {locale === 'fr' ? 'Ou écrivez directement à ' : 'Or email us directly at '}
+            <Link href={`mailto:${CONTACT_EMAIL}`} color="primary" textDecoration="underline" fontWeight="600">
+              {CONTACT_EMAIL}
+            </Link>
           </Text>
         </Box>
 

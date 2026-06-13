@@ -1,5 +1,7 @@
 /** Bilingual informational & legal pages — footer links */
 
+import { CONTACT_EMAIL } from './siteContact'
+
 export const LEGAL_PAGES = {
   about: {
     en: {
@@ -31,7 +33,7 @@ export const LEGAL_PAGES = {
         {
           heading: 'Contact',
           paragraphs: [
-            'Questions about Flunexia or a partnership? Visit our contact page or write to contact@flunexia.fr.',
+            `Questions about Flunexia or a partnership? Visit our contact page or write to ${CONTACT_EMAIL}.`,
           ],
         },
       ],
@@ -65,7 +67,7 @@ export const LEGAL_PAGES = {
         {
           heading: 'Contact',
           paragraphs: [
-            'Une question sur Flunexia ou un partenariat ? Rendez-vous sur notre page contact ou écrivez à contact@flunexia.fr.',
+            `Une question sur Flunexia ou un partenariat ? Rendez-vous sur notre page contact ou écrivez à ${CONTACT_EMAIL}.`,
           ],
         },
       ],
@@ -118,7 +120,7 @@ export const LEGAL_PAGES = {
         {
           heading: '7. Legal notice',
           paragraphs: [
-            'Platform publisher: Flunexia. Hosting: according to production infrastructure (Vercel for the web application; VPS or cloud provider for the API). For any legal inquiry: contact@flunexia.fr.',
+            `Platform publisher: Flunexia. Hosting: according to production infrastructure (Vercel for the web application; VPS or cloud provider for the API). For any legal inquiry: ${CONTACT_EMAIL}.`,
           ],
         },
       ],
@@ -168,7 +170,7 @@ export const LEGAL_PAGES = {
         {
           heading: '7. Mentions légales',
           paragraphs: [
-            'Éditeur de la Plateforme : Flunexia. Hébergement : selon l’infrastructure de production (Vercel pour l’application web ; VPS ou hébergeur cloud pour l’API). Pour toute demande juridique : contact@flunexia.fr.',
+            `Éditeur de la Plateforme : Flunexia. Hébergement : selon l’infrastructure de production (Vercel pour l’application web ; VPS ou hébergeur cloud pour l’API). Pour toute demande juridique : ${CONTACT_EMAIL}.`,
           ],
         },
       ],
@@ -183,7 +185,7 @@ export const LEGAL_PAGES = {
         {
           heading: '1. Data controller',
           paragraphs: [
-            'Flunexia is responsible for processing personal data collected through the Platform. Contact: contact@flunexia.fr.',
+            `Flunexia is responsible for processing personal data collected through the Platform. Contact: ${CONTACT_EMAIL}.`,
           ],
         },
         {
@@ -219,7 +221,7 @@ export const LEGAL_PAGES = {
         {
           heading: '6. Your rights',
           paragraphs: [
-            'Under the GDPR, you may request access, rectification, erasure, restriction, portability, or object to processing. Contact contact@flunexia.fr. You may also lodge a complaint with your supervisory authority (CNIL in France).',
+            `Under the GDPR, you may request access, rectification, erasure, restriction, portability, or object to processing. Contact ${CONTACT_EMAIL}. You may also lodge a complaint with your supervisory authority (CNIL in France).`,
           ],
         },
         {
@@ -237,7 +239,7 @@ export const LEGAL_PAGES = {
         {
           heading: '1. Responsable du traitement',
           paragraphs: [
-            'Flunexia est responsable du traitement des données personnelles collectées via la Plateforme. Contact : contact@flunexia.fr.',
+            `Flunexia est responsable du traitement des données personnelles collectées via la Plateforme. Contact : ${CONTACT_EMAIL}.`,
           ],
         },
         {
@@ -273,7 +275,7 @@ export const LEGAL_PAGES = {
         {
           heading: '6. Vos droits',
           paragraphs: [
-            'Conformément au RGPD, vous pouvez demander l’accès, la rectification, l’effacement, la limitation, la portabilité ou vous opposer au traitement. Contact : contact@flunexia.fr. Vous pouvez également saisir l’autorité de contrôle compétente (CNIL en France).',
+            `Conformément au RGPD, vous pouvez demander l’accès, la rectification, l’effacement, la limitation, la portabilité ou vous opposer au traitement. Contact : ${CONTACT_EMAIL}. Vous pouvez également saisir l’autorité de contrôle compétente (CNIL en France).`,
           ],
         },
         {
@@ -321,7 +323,7 @@ export const LEGAL_PAGES = {
           heading: 'Looking ahead',
           paragraphs: [
             'We continue to measure adoption across organizers and suppliers, gather feedback from territories and partners, and publish updates to this report as the platform grows.',
-            'For partnership or impact inquiries: contact@flunexia.fr.',
+            `For partnership or impact inquiries: ${CONTACT_EMAIL}.`,
           ],
         },
       ],
@@ -360,7 +362,7 @@ export const LEGAL_PAGES = {
           heading: 'Perspectives',
           paragraphs: [
             'Nous poursuivons le suivi de l’adoption par les organisateurs et les prestataires, recueillons les retours des territoires et partenaires, et mettons à jour ce rapport au fil de la croissance de la plateforme.',
-            'Pour un partenariat ou une question sur notre impact : contact@flunexia.fr.',
+            `Pour un partenariat ou une question sur notre impact : ${CONTACT_EMAIL}.`,
           ],
         },
       ],

@@ -67,8 +67,7 @@ export const INSTALL_APP = {
 
 export const FOOTER = {
   en: {
-    tagline: 'Des sorties, du lien, du sens.',
-    copyrightBefore: '© 2026',
+    tagline: 'Outings, connection, purpose.',
     copyrightAfter: '. All rights reserved.',
     links: [
       { label: 'About Us', href: '/about' },
@@ -79,7 +78,6 @@ export const FOOTER = {
   },
   fr: {
     tagline: 'Des sorties, du lien, du sens.',
-    copyrightBefore: '© 2026',
     copyrightAfter: '. Tous droits réservés.',
     links: [
       { label: 'À propos de nous', href: '/about' },

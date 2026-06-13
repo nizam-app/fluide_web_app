@@ -6,7 +6,6 @@ import { DemoCredentialsPanel } from '../components/molecules/DemoCredentialsPan
 import { NeedTypePicker } from '../components/molecules/NeedTypePicker'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { useAuth } from '../context/AuthContext'
-import { useLocale } from '../context/LocaleContext'
 import { accountTypeOptions, PROVIDER_TYPES } from '../data/mockData'
 import { getHomePath, ROLES } from '../lib/roles'
 import { BrandName } from '../components/atoms/BrandName'
@@ -48,7 +47,6 @@ export function AuthPage() {
   const [submitting, setSubmitting] = useState(false)
   const [showDemo, setShowDemo] = useState(false)
   const { login, register, isAuthenticated, user } = useAuth()
-  const { locale } = useLocale()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -109,7 +107,7 @@ export function AuthPage() {
         password,
         accountType,
         name: fullName,
-        locale,
+        locale: 'en',
         organizationType: accountType === ROLES.ORGANIZER ? 'Municipality' : undefined,
         providerTypes: accountType === ROLES.PROVIDER ? providerTypes : undefined,
       })

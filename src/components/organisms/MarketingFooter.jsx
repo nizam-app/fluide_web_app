@@ -8,6 +8,7 @@ import { useLocale } from '../../context/LocaleContext'
 export function MarketingFooter({ compact = false }) {
   const { locale } = useLocale()
   const copy = FOOTER[locale]
+  const year = new Date().getFullYear()
 
   return (
     <Box as="footer" w="full" py="8" borderTopWidth="1px" borderColor="outlineVariant" bg="surface" mt="auto">
@@ -28,7 +29,7 @@ export function MarketingFooter({ compact = false }) {
             </Text>
           )}
           <Text textStyle="bodySm" color="onSurfaceVariant" as="span" display="block">
-            <BrandInlineText before={copy.copyrightBefore} after={copy.copyrightAfter} />
+            <BrandInlineText before={`© ${year}`} after={copy.copyrightAfter} />
           </Text>
         </Flex>
         <HStack as="nav" gap="6" flexWrap="wrap" justify="center">

@@ -1,9 +1,28 @@
-import { Box, Heading, List, Text, VStack } from '@chakra-ui/react'
+import { Box, Heading, Link, List, Text, VStack } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { LEGAL_PAGES } from '../content/legalPages'
+import { CONTACT_EMAIL } from '../content/siteContact'
 import { useLocale } from '../context/LocaleContext'
 import { textWithBrand } from '../lib/textWithBrand'
+
+function RichLegalText({ text }) {
+  if (!text.includes(CONTACT_EMAIL)) {
+    return textWithBrand(text)
+  }
+
+  const [before, after] = text.split(CONTACT_EMAIL)
+
+  return (
+    <>
+      {textWithBrand(before)}
+      <Link href={`mailto:${CONTACT_EMAIL}`} color="primary" textDecoration="underline">
+        {CONTACT_EMAIL}
+      </Link>
+      {textWithBrand(after)}
+    </>
+  )
+}
 
 function InfoSection({ section }) {
   return (
@@ -13,14 +32,14 @@ function InfoSection({ section }) {
       </Heading>
       {section.paragraphs?.map((paragraph) => (
         <Text key={paragraph.slice(0, 40)} textStyle="bodyMd" color="onSurfaceVariant" lineHeight="1.7" mb="3">
-          {textWithBrand(paragraph)}
+          <RichLegalText text={paragraph} />
         </Text>
       ))}
       {section.bullets?.length > 0 && (
         <List.Root as="ul" ps="5" gap="2" mb="2">
           {section.bullets.map((item) => (
             <List.Item key={item.slice(0, 40)} textStyle="bodyMd" color="onSurfaceVariant" lineHeight="1.7">
-              {textWithBrand(item)}
+              <RichLegalText text={item} />
             </List.Item>
           ))}
         </List.Root>
