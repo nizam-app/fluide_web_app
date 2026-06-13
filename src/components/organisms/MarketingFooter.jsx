@@ -74,7 +74,7 @@ export function MarketingFooter({ compact = false }) {
 
       <Box maxW="contentMax" mx="auto" px={{ base: 'marginMobile', lg: 'marginDesktop' }} py={{ base: 12, md: 14 }}>
         <Grid
-          templateColumns={{ base: '1fr', sm: '1fr 1fr', lg: '1.5fr 1fr 1fr 1.15fr' }}
+          templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)', lg: '1.5fr 1fr 1.15fr' }}
           gap={{ base: 10, md: 8, lg: 12 }}
           alignItems="start"
         >
@@ -117,16 +117,6 @@ export function MarketingFooter({ compact = false }) {
                 </Flex>
               </>
             )}
-          </FooterColumn>
-
-          {/* Platform */}
-          <FooterColumn>
-            <FooterColumnTitle>{copy.platformTitle}</FooterColumnTitle>
-            {copy.platformLinks.map((link) => (
-              <FooterNavLink key={link.href} to={link.href}>
-                {link.label}
-              </FooterNavLink>
-            ))}
           </FooterColumn>
 
           {/* Legal */}

@@ -72,11 +72,6 @@ export const FOOTER = {
     trustLine: 'Secure platform · GDPR-aware · Trusted suppliers',
     copyrightAfter: '. All rights reserved.',
     infoTitle: 'Information',
-    platformTitle: 'Platform',
-    platformLinks: [
-      { label: 'Home', href: '/' },
-      { label: 'Contact', href: '/contact' },
-    ],
     links: [
       { label: 'About Us', href: '/about' },
       { label: 'Terms of Service', href: '/terms' },
@@ -90,11 +85,6 @@ export const FOOTER = {
     trustLine: 'Plateforme sécurisée · Conforme RGPD · Prestataires de confiance',
     copyrightAfter: '. Tous droits réservés.',
     infoTitle: 'Informations',
-    platformTitle: 'Plateforme',
-    platformLinks: [
-      { label: 'Accueil', href: '/' },
-      { label: 'Contact', href: '/contact' },
-    ],
     links: [
       { label: 'À propos de nous', href: '/about' },
       { label: "Conditions d'utilisation", href: '/terms' },
