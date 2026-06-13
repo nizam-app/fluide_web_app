@@ -67,7 +67,7 @@ export const INSTALL_APP = {
 
 export const FOOTER = {
   en: {
-    tagline: 'Outings, connection, purpose.',
+    tagline: 'Simplify your organization, our priority.',
     mission: 'B2B marketplace for group trip coordination — built for municipalities, schools and associations.',
     trustLine: 'Secure platform · GDPR-aware · Trusted suppliers',
     copyrightAfter: '. All rights reserved.',
@@ -85,7 +85,7 @@ export const FOOTER = {
     ],
   },
   fr: {
-    tagline: 'Des sorties, du lien, du sens.',
+    tagline: 'Simplifier votre organisation, notre priorité.',
     mission: 'Place de marché B2B pour la coordination des sorties — conçue pour les collectivités, écoles et associations.',
     trustLine: 'Plateforme sécurisée · Conforme RGPD · Prestataires de confiance',
     copyrightAfter: '. Tous droits réservés.',
