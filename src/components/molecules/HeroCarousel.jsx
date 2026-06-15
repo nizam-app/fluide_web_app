@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { MaterialIcon } from '../atoms/MaterialIcon'
+import { BrandName } from '../atoms/BrandName'
 
 const STYLE_ID = 'hero-carousel-keyframes'
 const KEYFRAMES = `
@@ -147,9 +148,7 @@ export function HeroCarousel({ slides = [], videoSrc = '', poster = '', interval
           bg="accentMint"
           style={reducedMotion ? undefined : { animation: 'hcPulse 1.8s ease-in-out infinite' }}
         />
-        <Text fontSize="2xs" fontWeight="700" color="white" letterSpacing="0.06em" textTransform="uppercase" translate="no">
-          Flunexia
-        </Text>
+        <BrandName uppercase fontSize="2xs" fontWeight="700" color="white" letterSpacing="0.06em" />
       </Flex>
 
       {/* Bottom-left: frosted caption chip */}
