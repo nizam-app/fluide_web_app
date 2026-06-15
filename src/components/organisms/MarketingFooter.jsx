@@ -98,7 +98,16 @@ export function MarketingFooter({ compact = false }) {
                   {copy.tagline}
                 </Text>
                 <Text fontSize="sm" color="onSurfaceVariant" lineHeight="1.7" maxW="sm" mt="2">
-                  {copy.mission}
+                  <Box
+                    as="span"
+                    color="primary"
+                    fontWeight="700"
+                    className="notranslate"
+                    translate="no"
+                  >
+                    {copy.missionLead}
+                  </Box>
+                  {copy.missionAfter}
                 </Text>
                 <Flex
                   mt="4"

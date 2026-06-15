@@ -68,7 +68,9 @@ export const INSTALL_APP = {
 export const FOOTER = {
   en: {
     tagline: 'Optimize your organization, our priority.',
-    mission: 'B2B marketplace for group trip coordination — built for municipalities, schools and associations.',
+    missionLead: 'First',
+    missionAfter:
+      ' B2B platform for group travel coordination – designed for municipalities, schools, and associations.',
     trustLine: 'Secure platform · GDPR-aware · Trusted suppliers',
     copyrightAfter: '. All rights reserved.',
     infoTitle: 'Information',
@@ -81,7 +83,9 @@ export const FOOTER = {
   },
   fr: {
     tagline: 'Optimiser votre organisation, notre priorité.',
-    mission: 'Place de marché B2B pour la coordination des sorties — conçue pour les collectivités, écoles et associations.',
+    missionLead: 'Première',
+    missionAfter:
+      ' plateforme B2B pour la coordination de voyages de groupe – conçue pour les municipalités, les écoles et les associations.',
     trustLine: 'Plateforme sécurisée · Conforme RGPD · Prestataires de confiance',
     copyrightAfter: '. Tous droits réservés.',
     infoTitle: 'Informations',
