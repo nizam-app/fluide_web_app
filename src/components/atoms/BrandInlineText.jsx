@@ -48,18 +48,21 @@ export function splitAfterBrand(after) {
   return { suffix: '', rest: after }
 }
 
-export function BrandInlineText({ before, after }) {
+export function BrandInlineText({ before, after, lockCopy = false, lang = 'en' }) {
   const { suffix, rest } = splitAfterBrand(after)
   const trimmedBefore = before?.replace(/\s+$/, '') ?? ''
+  const copyProps = lockCopy
+    ? { translate: 'no', className: 'notranslate', lang }
+    : { translate: 'yes' }
 
   return (
     <>
-      <Box as="span" translate="yes">
+      <Box as="span" {...copyProps}>
         {trimmedBefore}
       </Box>
       <BrandLockChunk suffix={suffix} />
       {rest ? (
-        <Box as="span" translate="yes">
+        <Box as="span" {...copyProps}>
           {rest}
         </Box>
       ) : null}

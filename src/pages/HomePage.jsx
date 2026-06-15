@@ -62,7 +62,12 @@ export function HomePage() {
               mb="6"
               lineHeight="1.65"
             >
-              <BrandInlineText before={hero.introBefore} after={hero.introAfter} />
+              <BrandInlineText
+                before={hero.introBefore}
+                after={hero.introAfter}
+                lockCopy
+                lang={locale}
+              />
             </Text>
 
             <Stack gap="3" mb="6" direction="column" w="full" maxW={{ lg: '100%' }}>
