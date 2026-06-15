@@ -7,6 +7,9 @@ const LocaleContext = createContext(null)
 function readInitialLocale() {
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved === 'en' || saved === 'fr') return saved
+  if (typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('fr')) {
+    return 'fr'
+  }
   return 'en'
 }
 

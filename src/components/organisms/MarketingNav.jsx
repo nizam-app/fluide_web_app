@@ -23,7 +23,7 @@ const publicLinks = {
 
 export function MarketingNav() {
   const { pathname } = useLocation()
-  const { locale } = useLocale()
+  const { locale, setLocale } = useLocale()
   const { isAuthenticated, user } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const links = publicLinks[locale]
@@ -81,6 +81,36 @@ export function MarketingNav() {
           </HStack>
 
           <HStack gap="4" display={{ base: 'none', md: 'flex' }} justifySelf="end">
+            <HStack
+              gap="0"
+              p="0.5"
+              borderRadius="md"
+              borderWidth="1px"
+              borderColor="outlineVariant"
+              bg="surfaceContainerLow"
+              className="notranslate"
+              translate="no"
+            >
+              {['fr', 'en'].map((code) => (
+                <Button
+                  key={code}
+                  type="button"
+                  size="xs"
+                  minW="2.5rem"
+                  borderRadius="sm"
+                  variant={locale === code ? 'solid' : 'ghost'}
+                  bg={locale === code ? 'surface' : 'transparent'}
+                  color={locale === code ? 'onSurface' : 'onSurfaceVariant'}
+                  fontWeight="700"
+                  fontSize="xs"
+                  onClick={() => setLocale(code)}
+                  aria-pressed={locale === code}
+                  aria-label={code === 'fr' ? 'Français' : 'English'}
+                >
+                  {code.toUpperCase()}
+                </Button>
+              ))}
+            </HStack>
             {isAuthenticated ? (
               <RouterLink to={getHomePath(user.role)}>
                 <Button {...stitchBlackButton} px="6" py="2" size="sm">
@@ -127,6 +157,39 @@ export function MarketingNav() {
                 </Box>
               </RouterLink>
             ))}
+            <HStack
+              gap="0"
+              p="0.5"
+              borderRadius="md"
+              borderWidth="1px"
+              borderColor="outlineVariant"
+              bg="surfaceContainerLow"
+              w="fit-content"
+              className="notranslate"
+              translate="no"
+            >
+              {['fr', 'en'].map((code) => (
+                <Button
+                  key={code}
+                  type="button"
+                  size="xs"
+                  minW="2.5rem"
+                  borderRadius="sm"
+                  variant={locale === code ? 'solid' : 'ghost'}
+                  bg={locale === code ? 'surface' : 'transparent'}
+                  color={locale === code ? 'onSurface' : 'onSurfaceVariant'}
+                  fontWeight="700"
+                  fontSize="xs"
+                  onClick={() => {
+                    setLocale(code)
+                    setMenuOpen(false)
+                  }}
+                  aria-pressed={locale === code}
+                >
+                  {code.toUpperCase()}
+                </Button>
+              ))}
+            </HStack>
             <RouterLink to="/login" onClick={() => setMenuOpen(false)}>
               <Box textStyle="labelMd" fontWeight="600" py="1">
                 Login

@@ -94,20 +94,27 @@ export function MarketingFooter({ compact = false }) {
                   maxW="xs"
                   mt="2"
                   fontStyle="italic"
+                  className="notranslate"
+                  translate="no"
+                  lang={locale}
                 >
                   {copy.tagline}
                 </Text>
-                <Text fontSize="sm" color="onSurfaceVariant" lineHeight="1.7" maxW="sm" mt="2">
-                  <Box
-                    as="span"
-                    color="primary"
-                    fontWeight="700"
-                    className="notranslate"
-                    translate="no"
-                  >
+                <Text
+                  fontSize="sm"
+                  color="onSurfaceVariant"
+                  lineHeight="1.7"
+                  maxW="sm"
+                  mt="2"
+                  className="notranslate"
+                  translate="no"
+                  lang={locale}
+                >
+                  <Box as="span" color="primary" fontWeight="700">
                     {copy.missionLead}
                   </Box>
-                  {copy.missionAfter}
+                  {' '}
+                  <Box as="span">{copy.missionRest}</Box>
                 </Text>
                 <Flex
                   mt="4"

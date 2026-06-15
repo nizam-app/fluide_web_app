@@ -69,8 +69,8 @@ export const FOOTER = {
   en: {
     tagline: 'Optimize your organization, our priority.',
     missionLead: 'First',
-    missionAfter:
-      ' B2B platform for group travel coordination – designed for municipalities, schools, and associations.',
+    missionRest:
+      'B2B platform for group travel coordination – designed for municipalities, schools, and associations.',
     trustLine: 'Secure platform · GDPR-aware · Trusted suppliers',
     copyrightAfter: '. All rights reserved.',
     infoTitle: 'Information',
@@ -84,8 +84,8 @@ export const FOOTER = {
   fr: {
     tagline: 'Optimiser votre organisation, notre priorité.',
     missionLead: 'Première',
-    missionAfter:
-      ' plateforme B2B pour la coordination de voyages de groupe – conçue pour les municipalités, les écoles et les associations.',
+    missionRest:
+      'plateforme B2B pour la coordination de voyages de groupe – conçue pour les municipalités, les écoles et les associations.',
     trustLine: 'Plateforme sécurisée · Conforme RGPD · Prestataires de confiance',
     copyrightAfter: '. Tous droits réservés.',
     infoTitle: 'Informations',
