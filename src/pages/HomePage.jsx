@@ -145,15 +145,30 @@ export function HomePage() {
             </Flex>
           </Box>
 
-          <Box w="full" minW={0} maxW="100%">
+          <Box w="full" minW={0} maxW="100%" position="relative">
             <Box
+              position="absolute"
+              inset="-6"
+              bg="primaryContainer"
+              opacity={0.4}
+              filter="blur(48px)"
+              borderRadius="full"
+              zIndex={0}
+              display={{ base: 'none', lg: 'block' }}
+              pointerEvents="none"
+            />
+            <Box
+              position="relative"
+              zIndex={1}
               w="full"
               maxW="100%"
               borderRadius="fluide3xl"
               overflow="hidden"
-              shadow="level2"
-              borderWidth="2px"
-              borderColor="primary"
+              boxShadow="0 24px 60px -20px rgba(8,15,12,0.45), 0 8px 24px -12px rgba(8,15,12,0.25)"
+              borderWidth="1px"
+              borderColor="whiteAlpha.700"
+              ring="1px"
+              ringColor="blackAlpha.100"
               bg="surface"
               aspectRatio={{ base: '16/10', lg: '4/3' }}
             >
