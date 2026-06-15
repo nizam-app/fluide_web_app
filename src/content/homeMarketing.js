@@ -22,6 +22,29 @@ export const HOME_HERO = {
   },
 }
 
+/**
+ * Home hero looping visual — storyboard slides (bus → hotel → restaurant → visit → app).
+ * `src` paths live in /public/hero. Swap `HOME_HERO_VIDEO` in once the final MP4 loop exists.
+ */
+export const HOME_HERO_VIDEO = '' // e.g. '/hero/flunexia-loop.mp4' — when set, plays instead of slides
+
+export const HOME_HERO_SLIDES = {
+  en: [
+    { src: '/hero/hero-bus.jpg', alt: 'Travelers boarding a modern coach', caption: 'Organize your group travel with ease.' },
+    { src: '/hero/hero-hotel.jpg', alt: 'A group arriving at a hotel', caption: 'Find the right accommodation in a few clicks.' },
+    { src: '/hero/hero-restaurant.jpg', alt: 'A group sharing a meal at a restaurant', caption: 'Transport, lodging and dining — all in one place.' },
+    { src: '/hero/hero-visit.jpg', alt: 'A guided tour in front of a monument', caption: 'Connect with trusted suppliers near you.' },
+    { src: '/hero/hero-app.jpg', alt: 'A phone showing the Flunexia app', caption: 'Coordinate every trip from your phone.' },
+  ],
+  fr: [
+    { src: '/hero/hero-bus.jpg', alt: 'Un groupe montant dans un autocar moderne', caption: 'Organisez vos déplacements de groupe en toute simplicité.' },
+    { src: '/hero/hero-hotel.jpg', alt: 'Un groupe arrivant à un hôtel', caption: 'Trouvez l’hébergement idéal en quelques clics.' },
+    { src: '/hero/hero-restaurant.jpg', alt: 'Un groupe partageant un repas au restaurant', caption: 'Transport, hébergement et restauration — au même endroit.' },
+    { src: '/hero/hero-visit.jpg', alt: 'Une visite guidée devant un monument', caption: 'Connectez-vous aux prestataires de confiance près de chez vous.' },
+    { src: '/hero/hero-app.jpg', alt: 'Un téléphone affichant l’application Flunexia', caption: 'Coordonnez chaque voyage depuis votre téléphone.' },
+  ],
+}
+
 /** Install app banner — brand split for translate-safe spacing */
 export const INSTALL_APP = {
   en: {

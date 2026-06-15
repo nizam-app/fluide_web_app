@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Grid, Image, SimpleGrid, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Grid, SimpleGrid, Stack, Text } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getHomePath, ROLES } from '../lib/roles'
@@ -6,10 +6,17 @@ import { BrandInlineText } from '../components/atoms/BrandInlineText'
 import { BrandName } from '../components/atoms/BrandName'
 import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { InstallAppBanner } from '../components/organisms/InstallAppBanner'
+import { HeroCarousel } from '../components/molecules/HeroCarousel'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
-import { featureCards, HERO_IMAGE } from '../data/mockData'
+import { featureCards } from '../data/mockData'
 import { textWithBrand } from '../lib/textWithBrand'
-import { HOME_HERO, HOME_STEPS, HOME_STEPS_SECTION } from '../content/homeMarketing'
+import {
+  HOME_HERO,
+  HOME_HERO_SLIDES,
+  HOME_HERO_VIDEO,
+  HOME_STEPS,
+  HOME_STEPS_SECTION,
+} from '../content/homeMarketing'
 import { useLocale } from '../context/LocaleContext'
 import { stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
 
@@ -25,6 +32,7 @@ export function HomePage() {
   const { locale } = useLocale()
   const { isAuthenticated, user } = useAuth()
   const hero = HOME_HERO[locale]
+  const heroSlides = HOME_HERO_SLIDES[locale]
   const steps = HOME_STEPS[locale]
   const stepsSection = HOME_STEPS_SECTION[locale]
   const portalPath = user ? getHomePath(user.role) : '/login'
@@ -149,15 +157,10 @@ export function HomePage() {
               bg="surface"
               aspectRatio={{ base: '16/10', lg: '4/3' }}
             >
-              <Image
-                src={HERO_IMAGE}
-                alt="Flunexia platform preview"
-                w="full"
-                h="full"
-                objectFit="cover"
-                objectPosition="center"
-                translate="no"
-                display="block"
+              <HeroCarousel
+                slides={heroSlides}
+                videoSrc={HOME_HERO_VIDEO}
+                lang={locale}
               />
             </Box>
           </Box>
