@@ -262,7 +262,13 @@ export function ContactPage() {
                     </Text>
                   </Box>
                 </Flex>
-                <ContactEmailLink fontSize="md" fontWeight="700" color="accentMint" textDecoration="underline">
+                <ContactEmailLink
+                  mode="mailto"
+                  fontSize="md"
+                  fontWeight="700"
+                  color="accentMint"
+                  textDecoration="underline"
+                >
                   {CONTACT_EMAIL}
                 </ContactEmailLink>
                 <Text fontSize="xs" color="whiteAlpha.800" mt="2" lineHeight="1.5">
