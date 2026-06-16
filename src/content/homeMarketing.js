@@ -169,3 +169,45 @@ export const HOME_STEPS_SECTION = {
     subheading: "De l'idée à la réservation, en toute simplicité.",
   },
 }
+
+/** Home “Everything in one place” feature section */
+export const HOME_FEATURES_SECTION = {
+  en: {
+    heading: 'Everything in one place',
+    cards: [
+      { icon: 'directions_bus', title: 'Transport', description: 'Coaches, shuttles, local transport.' },
+      { icon: 'hiking', title: 'Activities', description: 'Guides, venues, outdoor programs.' },
+      { icon: 'storefront', title: 'Services', description: 'Restaurants, hotels, local partners.' },
+    ],
+    organizerLogin: 'Organizer — Log in',
+    supplierLogin: 'Supplier — Log in',
+  },
+  fr: {
+    heading: 'Tout au même endroit',
+    cards: [
+      { icon: 'directions_bus', title: 'Transport', description: 'Autocars, navettes, transport local.' },
+      { icon: 'hiking', title: 'Activités', description: 'Guides, lieux, programmes en plein air.' },
+      { icon: 'storefront', title: 'Services', description: 'Restaurants, hôtels, partenaires locaux.' },
+    ],
+    organizerLogin: 'Organisateur — Connexion',
+    supplierLogin: 'Prestataire — Connexion',
+  },
+}
+
+/** Home bottom call-to-action section */
+export const HOME_CTA = {
+  en: {
+    heading: 'Start your next outing',
+    description: 'Create a trip now, or request a demo — we will show you how Flunexia simplifies coordination.',
+    ctaCreate: 'Create a trip',
+    ctaDemo: 'Request a demo',
+    dashboard: 'Open your dashboard →',
+  },
+  fr: {
+    heading: 'Lancez votre prochaine sortie',
+    description: 'Créez un voyage dès maintenant, ou demandez une démo — nous vous montrerons comment Flunexia simplifie la coordination.',
+    ctaCreate: 'Créer un voyage',
+    ctaDemo: 'Demander une démo',
+    dashboard: 'Ouvrir votre tableau de bord →',
+  },
+}

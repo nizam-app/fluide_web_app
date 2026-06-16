@@ -8,7 +8,6 @@ import { MaterialIcon } from '../components/atoms/MaterialIcon'
 import { InstallAppBanner } from '../components/organisms/InstallAppBanner'
 import { HeroCarousel } from '../components/molecules/HeroCarousel'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
-import { featureCards } from '../data/mockData'
 import { textWithBrand } from '../lib/textWithBrand'
 import {
   HOME_HERO,
@@ -16,6 +15,8 @@ import {
   HOME_HERO_VIDEO,
   HOME_STEPS,
   HOME_STEPS_SECTION,
+  HOME_FEATURES_SECTION,
+  HOME_CTA,
 } from '../content/homeMarketing'
 import { useLocale } from '../context/LocaleContext'
 import { stitchBlackButton, stitchGreenButton } from '../theme/fluide-theme'
@@ -35,6 +36,8 @@ export function HomePage() {
   const heroSlides = HOME_HERO_SLIDES[locale]
   const steps = HOME_STEPS[locale]
   const stepsSection = HOME_STEPS_SECTION[locale]
+  const featuresSection = HOME_FEATURES_SECTION[locale]
+  const cta = HOME_CTA[locale]
   const portalPath = user ? getHomePath(user.role) : '/login'
   const createTripPath =
     isAuthenticated && user?.role === ROLES.ORGANIZER ? '/create-trip' : '/login'
@@ -226,10 +229,10 @@ export function HomePage() {
       {/* Everything in one place */}
       <Box w="full" maxW="contentMax" mx="auto" px={sectionPx} py={{ base: 10, md: 14, lg: 16 }}>
         <Text textStyle="headlineLg" mb={{ base: 6, md: 8 }} textAlign="center">
-          Everything in one place
+          {featuresSection.heading}
         </Text>
         <SimpleGrid columns={{ base: 1, md: 3 }} gap="6" mb={{ base: 8, md: 10 }} w="full">
-          {featureCards.map((f) => (
+          {featuresSection.cards.map((f) => (
             <Flex
               key={f.title}
               bg="surface"
@@ -272,11 +275,11 @@ export function HomePage() {
               px="6"
               py="3"
               w="full"
-              aria-label="Organizer log in"
+              aria-label={featuresSection.organizerLogin}
             >
               <MaterialIcon name="groups" size={18} color="primary" />
               <Box as="span" ml="2">
-                Organizer — Log in
+                {featuresSection.organizerLogin}
               </Box>
             </Button>
           </RouterLink>
@@ -288,11 +291,11 @@ export function HomePage() {
               px="6"
               py="3"
               w="full"
-              aria-label="Supplier log in"
+              aria-label={featuresSection.supplierLogin}
             >
               <MaterialIcon name="storefront" size={18} color="primary" />
               <Box as="span" ml="2">
-                Supplier — Log in
+                {featuresSection.supplierLogin}
               </Box>
             </Button>
           </RouterLink>
@@ -310,15 +313,15 @@ export function HomePage() {
           mx="auto"
         >
           <Text textStyle="headlineLg" mb="3" fontSize={{ base: 'xl', md: '2xl' }}>
-            Start your next outing
+            {cta.heading}
           </Text>
           <Text textStyle="bodyMd" color="whiteAlpha.800" mb="8" maxW="md" mx="auto" px="2" lineHeight="1.6">
-            {textWithBrand('Create a trip now, or request a demo — we will show you how Flunexia simplifies coordination.')}
+            {textWithBrand(cta.description)}
           </Text>
           <Stack direction={{ base: 'column', sm: 'row' }} gap="3" justify="center" align="center" px="2">
             <RouterLink to={createTripPath} style={{ width: '100%', maxWidth: '16rem' }}>
               <Button {...stitchGreenButton} px="8" py="3.5" w="full">
-                Create a trip
+                {cta.ctaCreate}
               </Button>
             </RouterLink>
             <RouterLink to="/contact" style={{ width: '100%', maxWidth: '16rem' }}>
@@ -332,14 +335,14 @@ export function HomePage() {
                 py="3.5"
                 w="full"
               >
-                Request a demo
+                {cta.ctaDemo}
               </Button>
             </RouterLink>
           </Stack>
           {isAuthenticated && (
             <RouterLink to={portalPath}>
               <Text textStyle="labelMd" color="accentMint" mt="6" display="inline-block">
-                Open your dashboard →
+                {cta.dashboard}
               </Text>
             </RouterLink>
           )}
