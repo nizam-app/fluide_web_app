@@ -19,8 +19,11 @@ export const FOOTER_CONTACT = {
     hint: 'We typically respond within two business days.',
     emailClickHint: 'Click the email to open our contact page.',
     formLink: 'Send a message',
+    quickContactTitle: 'One-click contact',
     whatsappLabel: 'Chat on WhatsApp',
-    linkedinLabel: 'LinkedIn',
+    whatsappHint: 'Opens WhatsApp — instant reply when we’re online.',
+    linkedinLabel: 'Connect on LinkedIn',
+    linkedinHint: 'Follow updates and message our team.',
   },
   fr: {
     sectionTitle: 'Contact',
@@ -28,8 +31,11 @@ export const FOOTER_CONTACT = {
     hint: 'Réponse habituelle sous deux jours ouvrés.',
     emailClickHint: "Cliquez sur l'e-mail pour accéder à notre page contact.",
     formLink: 'Envoyer un message',
+    quickContactTitle: 'Contact en un clic',
     whatsappLabel: 'Discuter sur WhatsApp',
-    linkedinLabel: 'LinkedIn',
+    whatsappHint: 'Ouvre WhatsApp — réponse rapide lorsque nous sommes en ligne.',
+    linkedinLabel: 'Nous suivre sur LinkedIn',
+    linkedinHint: 'Actualités et échanges avec notre équipe.',
   },
 }
 
