@@ -26,7 +26,7 @@ function FooterColumnTitle({ children }) {
   )
 }
 
-function FooterNavLink({ to, children, external = false }) {
+function FooterNavLink({ to, children, external = false, icon = null }) {
   const textProps = {
     fontSize: 'sm',
     color: 'onSurfaceVariant',
@@ -38,7 +38,16 @@ function FooterNavLink({ to, children, external = false }) {
 
   if (external) {
     return (
-      <Link href={to} {...textProps}>
+      <Link
+        href={to}
+        target="_blank"
+        rel="noopener noreferrer"
+        display="inline-flex"
+        alignItems="center"
+        gap="2"
+        {...textProps}
+      >
+        {icon}
         {children}
       </Link>
     )
@@ -46,7 +55,10 @@ function FooterNavLink({ to, children, external = false }) {
 
   return (
     <RouterLink to={to}>
-      <Text {...textProps}>{children}</Text>
+      <Text as="span" display="inline-flex" alignItems="center" gap="2" {...textProps}>
+        {icon}
+        {children}
+      </Text>
     </RouterLink>
   )
 }
@@ -61,75 +73,6 @@ function FooterColumn({ children, align = 'flex-start', textAlign = 'left' }) {
     >
       {children}
     </Stack>
-  )
-}
-
-function FooterQuickAction({ href, icon, title, hint, variant }) {
-  const isWhatsApp = variant === 'whatsapp'
-  const iconBg = isWhatsApp ? 'whiteAlpha.300' : '#0A66C2'
-
-  return (
-    <Link
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      display="flex"
-      alignItems="center"
-      gap="3"
-      w="full"
-      maxW="xs"
-      px="3.5"
-      py="3"
-      borderRadius="fluide"
-      bg={isWhatsApp ? 'linear-gradient(135deg, #128C7E 0%, #25D366 100%)' : 'surface'}
-      borderWidth={isWhatsApp ? '0' : '1px'}
-      borderColor={isWhatsApp ? undefined : 'outlineVariant'}
-      boxShadow={isWhatsApp ? '0 4px 14px rgba(37, 211, 102, 0.28)' : 'level1'}
-      textDecoration="none"
-      transition="transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease"
-      _hover={{
-        transform: 'translateY(-1px)',
-        boxShadow: isWhatsApp ? '0 6px 18px rgba(37, 211, 102, 0.35)' : 'level2',
-        borderColor: isWhatsApp ? undefined : '#0A66C2',
-      }}
-    >
-      <Flex
-        w="9"
-        h="9"
-        borderRadius="lg"
-        bg={iconBg}
-        align="center"
-        justify="center"
-        flexShrink={0}
-      >
-        {icon}
-      </Flex>
-      <Box minW={0} textAlign="left">
-        <Text
-          fontSize="sm"
-          fontWeight="700"
-          color={isWhatsApp ? 'white' : 'onSurface'}
-          lineHeight="1.3"
-        >
-          {title}
-        </Text>
-        <Text
-          fontSize="2xs"
-          color={isWhatsApp ? 'whiteAlpha.900' : 'onSurfaceVariant'}
-          lineHeight="1.4"
-          mt="0.5"
-        >
-          {hint}
-        </Text>
-      </Box>
-      <MaterialIcon
-        name="arrow_outward"
-        size={16}
-        color={isWhatsApp ? 'whiteAlpha.900' : 'onSurfaceVariant'}
-        ml="auto"
-        flexShrink={0}
-      />
-    </Link>
   )
 }
 
@@ -219,78 +162,41 @@ export function MarketingFooter({ compact = false }) {
           {/* Contact */}
           <FooterColumn>
             <FooterColumnTitle>{contact.sectionTitle}</FooterColumnTitle>
-            <Text fontSize="sm" color="onSurfaceVariant" lineHeight="1.7" maxW="xs" mb="3">
+            <Text fontSize="sm" color="onSurfaceVariant" lineHeight="1.7" maxW="xs" mb="1">
               {contact.emailIntro}
             </Text>
-
-            <Stack gap="3" w="full" maxW="xs" align={{ base: 'center', md: 'flex-start' }}>
-              <Box
-                w="full"
-                px="3.5"
-                py="3"
-                borderRadius="fluide"
-                bg="surface"
-                borderWidth="1px"
-                borderColor="outlineVariant"
-                boxShadow="level1"
-              >
-                <ContactEmailLink
-                  display="inline-flex"
-                  alignItems="center"
-                  gap="2"
-                  fontSize="sm"
-                  color="primary"
-                  fontWeight="600"
-                  textDecoration="none"
-                  _hover={{ color: 'secondary' }}
-                  transition="color 0.15s"
-                >
-                  <MaterialIcon name="mail" size={17} color="primary" />
-                  {CONTACT_EMAIL}
-                </ContactEmailLink>
-                <Text fontSize="2xs" color="onSurfaceVariant" lineHeight="1.5" mt="1.5">
-                  {contact.emailClickHint}
-                </Text>
-              </Box>
-
-              <Box w="full">
-                <Text
-                  fontSize="2xs"
-                  fontWeight="700"
-                  letterSpacing="0.08em"
-                  textTransform="uppercase"
-                  color="onSurfaceVariant"
-                  mb="2"
-                  textAlign={{ base: 'center', md: 'left' }}
-                >
-                  {contact.quickContactTitle}
-                </Text>
-                <Stack gap="2" w="full">
-                  <FooterQuickAction
-                    href={getWhatsAppUrl(locale)}
-                    variant="whatsapp"
-                    title={contact.whatsappLabel}
-                    hint={contact.whatsappHint}
-                    icon={<WhatsAppIcon size={18} color="white" />}
-                  />
-                  <FooterQuickAction
-                    href={LINKEDIN_URL}
-                    variant="linkedin"
-                    title={contact.linkedinLabel}
-                    hint={contact.linkedinHint}
-                    icon={<LinkedInIcon size={18} color="white" />}
-                  />
-                </Stack>
-              </Box>
-
-              <FooterNavLink to="/contact">{contact.formLink} →</FooterNavLink>
-
-              {!compact && (
-                <Text fontSize="xs" color="onSurfaceVariant" lineHeight="1.55" maxW="xs">
-                  {contact.hint}
-                </Text>
-              )}
-            </Stack>
+            <ContactEmailLink
+              display="inline-flex"
+              fontSize="sm"
+              color="onSurfaceVariant"
+              fontWeight="500"
+              lineHeight="2"
+              textDecoration="none"
+              _hover={{ color: 'primary' }}
+              transition="color 0.15s"
+            >
+              {CONTACT_EMAIL}
+            </ContactEmailLink>
+            <FooterNavLink to="/contact">{contact.formLink}</FooterNavLink>
+            <FooterNavLink
+              to={getWhatsAppUrl(locale)}
+              external
+              icon={<WhatsAppIcon size={14} color="currentColor" />}
+            >
+              {contact.whatsappLabel}
+            </FooterNavLink>
+            <FooterNavLink
+              to={LINKEDIN_URL}
+              external
+              icon={<LinkedInIcon size={14} color="currentColor" />}
+            >
+              {contact.linkedinLabel}
+            </FooterNavLink>
+            {!compact && (
+              <Text fontSize="xs" color="onSurfaceVariant" lineHeight="1.55" mt="2" maxW="xs" opacity={0.85}>
+                {contact.hint}
+              </Text>
+            )}
           </FooterColumn>
         </Grid>
       </Box>
