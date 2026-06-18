@@ -22,7 +22,8 @@ import {
 } from '../components/organisms/MarketingPageSections'
 import { MarketingLayout } from '../components/templates/MarketingLayout'
 import { CONTACT_PAGE_UI } from '../content/marketingPages'
-import { CONTACT_EMAIL } from '../content/siteContact'
+import { CONTACT_CHANNELS, CONTACT_EMAIL, getWhatsAppUrl, LINKEDIN_URL } from '../content/siteContact'
+import { WhatsAppIcon, LinkedInIcon } from '../components/atoms/SocialBrandIcon'
 import { contactFaqItems } from '../data/mockData'
 import { useLocale } from '../context/LocaleContext'
 import api from '../lib/api'
@@ -44,6 +45,7 @@ function FormField({ label, children }) {
 export function ContactPage() {
   const { locale } = useLocale()
   const ui = CONTACT_PAGE_UI[locale]
+  const channels = CONTACT_CHANNELS[locale]
   const [form, setForm] = useState({ name: '', email: '', role: 'organizer', message: '' })
   const [status, setStatus] = useState({ type: null, message: '' })
   const [submitting, setSubmitting] = useState(false)
@@ -275,6 +277,99 @@ export function ContactPage() {
                   {locale === 'fr'
                     ? 'Ouvre votre application e-mail (Gmail, Outlook, etc.) pour nous écrire.'
                     : 'Opens your email app (Gmail, Outlook, etc.) to write to us.'}
+                </Text>
+              </Box>
+
+              <Box
+                p="6"
+                borderRadius="fluide3xl"
+                style={{ background: 'linear-gradient(135deg, #128C7E 0%, #25D366 100%)' }}
+                color="onPrimary"
+                shadow="level2"
+              >
+                <Flex align="center" gap="3" mb="4">
+                  <Flex w="12" h="12" borderRadius="xl" bg="whiteAlpha.200" align="center" justify="center">
+                    <WhatsAppIcon size={26} color="white" />
+                  </Flex>
+                  <Box>
+                    <Text fontWeight="700" fontSize="md">
+                      {channels.whatsappTitle}
+                    </Text>
+                    <Text fontSize="sm" color="whiteAlpha.900">
+                      {channels.whatsappSubtitle}
+                    </Text>
+                  </Box>
+                </Flex>
+                <Link
+                  href={getWhatsAppUrl(locale)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  display="inline-flex"
+                  alignItems="center"
+                  gap="2"
+                  px="4"
+                  py="2.5"
+                  borderRadius="fluide"
+                  bg="whiteAlpha.200"
+                  fontSize="sm"
+                  fontWeight="700"
+                  color="white"
+                  _hover={{ bg: 'whiteAlpha.300' }}
+                  transition="background 0.15s"
+                >
+                  <WhatsAppIcon size={18} color="white" />
+                  {channels.whatsappCta}
+                </Link>
+                <Text fontSize="xs" color="whiteAlpha.800" mt="2" lineHeight="1.5">
+                  {channels.whatsappHint}
+                </Text>
+              </Box>
+
+              <Box
+                p="6"
+                borderRadius="fluide3xl"
+                bg="surface"
+                borderWidth="1px"
+                borderColor="outlineVariant"
+                shadow="level2"
+              >
+                <Flex align="center" gap="3" mb="4">
+                  <Flex w="12" h="12" borderRadius="xl" bg="#0A66C2" align="center" justify="center">
+                    <LinkedInIcon size={24} color="white" />
+                  </Flex>
+                  <Box>
+                    <Text fontWeight="700" fontSize="md" color="onSurface">
+                      {channels.linkedinTitle}
+                    </Text>
+                    <Text fontSize="sm" color="onSurfaceVariant">
+                      {channels.linkedinSubtitle}
+                    </Text>
+                  </Box>
+                </Flex>
+                <Link
+                  href={LINKEDIN_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  display="inline-flex"
+                  alignItems="center"
+                  gap="2"
+                  px="4"
+                  py="2.5"
+                  borderRadius="fluide"
+                  bg="surfaceContainerLow"
+                  borderWidth="1px"
+                  borderColor="outlineVariant"
+                  fontSize="sm"
+                  fontWeight="700"
+                  color="#0A66C2"
+                  _hover={{ bg: 'surfaceContainerHigh' }}
+                  transition="background 0.15s"
+                >
+                  <LinkedInIcon size={18} color="#0A66C2" />
+                  {channels.linkedinCta}
+                </Link>
+                <Text fontSize="xs" color="onSurfaceVariant" mt="2" lineHeight="1.5">
+                  {channels.linkedinHint}
                 </Text>
               </Box>
 

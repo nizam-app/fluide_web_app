@@ -5,7 +5,8 @@ import { FluideLogo } from '../atoms/FluideLogo'
 import { ContactEmailLink } from '../atoms/ContactEmailLink'
 import { MaterialIcon } from '../atoms/MaterialIcon'
 import { FOOTER } from '../../content/homeMarketing'
-import { CONTACT_EMAIL, FOOTER_CONTACT } from '../../content/siteContact'
+import { CONTACT_EMAIL, FOOTER_CONTACT, getWhatsAppUrl, LINKEDIN_URL } from '../../content/siteContact'
+import { WhatsAppIcon, LinkedInIcon } from '../atoms/SocialBrandIcon'
 import { useLocale } from '../../context/LocaleContext'
 
 function FooterColumnTitle({ children }) {
@@ -171,6 +172,40 @@ export function MarketingFooter({ compact = false }) {
               {contact.emailClickHint}
             </Text>
             <FooterNavLink to="/contact">{contact.formLink} →</FooterNavLink>
+            <Flex gap="3" mt="3" flexWrap="wrap" justify={{ base: 'center', md: 'flex-start' }}>
+              <Link
+                href={getWhatsAppUrl(locale)}
+                target="_blank"
+                rel="noopener noreferrer"
+                display="inline-flex"
+                alignItems="center"
+                gap="2"
+                fontSize="sm"
+                color="onSurfaceVariant"
+                fontWeight="600"
+                _hover={{ color: '#25D366' }}
+                transition="color 0.15s"
+              >
+                <WhatsAppIcon size={18} color="currentColor" />
+                {contact.whatsappLabel}
+              </Link>
+              <Link
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                display="inline-flex"
+                alignItems="center"
+                gap="2"
+                fontSize="sm"
+                color="onSurfaceVariant"
+                fontWeight="600"
+                _hover={{ color: '#0A66C2' }}
+                transition="color 0.15s"
+              >
+                <LinkedInIcon size={18} color="currentColor" />
+                {contact.linkedinLabel}
+              </Link>
+            </Flex>
             {!compact && (
               <Text fontSize="xs" color="onSurfaceVariant" lineHeight="1.55" mt="2" maxW="xs">
                 {contact.hint}
