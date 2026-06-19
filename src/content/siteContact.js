@@ -4,7 +4,7 @@ export const CONTACT_EMAIL = 'contact@flunexia.fr'
 /** One-click channels — update here if URLs change */
 export const WHATSAPP_NUMBER = '+33766726271'
 export const WHATSAPP_URL = 'https://wa.me/33766726271'
-export const LINKEDIN_URL = 'https://www.linkedin.com/in/flunexia'
+export const LINKEDIN_URL = 'https://www.linkedin.com/company/120063960/'
 
 export function getWhatsAppUrl(locale = 'en') {
   const text = locale === 'fr' ? 'Bonjour Flunexia' : 'Hello Flunexia'
@@ -43,7 +43,7 @@ export const CONTACT_CHANNELS = {
     linkedinTitle: 'LinkedIn',
     linkedinSubtitle: 'Follow Flunexia and connect with our team.',
     linkedinCta: 'View on LinkedIn',
-    linkedinHint: 'Opens our LinkedIn profile in a new tab.',
+    linkedinHint: 'Opens our LinkedIn company page in a new tab.',
   },
   fr: {
     whatsappTitle: 'Discuter sur WhatsApp',
@@ -53,7 +53,7 @@ export const CONTACT_CHANNELS = {
     linkedinTitle: 'LinkedIn',
     linkedinSubtitle: 'Suivez Flunexia et échangez avec notre équipe.',
     linkedinCta: 'Voir sur LinkedIn',
-    linkedinHint: 'Ouvre notre profil LinkedIn dans un nouvel onglet.',
+    linkedinHint: 'Ouvre notre page entreprise LinkedIn dans un nouvel onglet.',
   },
 }
 
