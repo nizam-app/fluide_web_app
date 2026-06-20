@@ -4,7 +4,7 @@ export const CONTACT_EMAIL = 'contact@flunexia.fr'
 /** One-click channels — update here if URLs change */
 export const WHATSAPP_NUMBER = '+33766726271'
 export const WHATSAPP_URL = 'https://wa.me/33766726271'
-export const LINKEDIN_URL = 'https://www.linkedin.com/company/120063960/'
+export const LINKEDIN_URL = 'https://www.linkedin.com/company/flunexia/'
 
 export function getWhatsAppUrl(locale = 'en') {
   const text = locale === 'fr' ? 'Bonjour Flunexia' : 'Hello Flunexia'
