@@ -2,8 +2,8 @@
 export const CONTACT_EMAIL = 'contact@flunexia.fr'
 
 /** One-click channels — update here if URLs change */
-export const WHATSAPP_NUMBER = '+33766726271'
-export const WHATSAPP_URL = 'https://wa.me/33766726271'
+export const WHATSAPP_NUMBER = '33743285526'
+export const WHATSAPP_URL = 'https://wa.me/33743285526'
 export const LINKEDIN_URL = 'https://www.linkedin.com/company/flunexia/'
 
 export function getWhatsAppUrl(locale = 'en') {
@@ -56,7 +56,7 @@ export const CONTACT_CHANNELS = {
     linkedinHint: 'Ouvre notre page entreprise LinkedIn dans un nouvel onglet.',
   },
 }
-
+/** Whatsapp number */
 /** Portal footer (organizer & supplier) — English copy per buyer request */
 export const PORTAL_FOOTER = {
   supportHint: 'Support',
